@@ -26,14 +26,19 @@ params = {
 
 def usage():
     """
-    describes the layer_stack.py module and how to stack files
+    describes the aeilas.py procedure in case of incorrect parameter calls
     
     syntax: usage()
     """
 
     print(
         """
-        $ aeilas.py [-cores cores] [-proj proj4string] [-odir output_directory] input_files
+        $ aeilas.py [-cores cores] [-lt las_type][-max_tch max_tch] 
+        [-o output_file] [-proj proj4string]
+        [-res resolution] [-sres slicer_resolution] [-tile_size tile_size] 
+        input_files
+        
+        
         """
         )
         
@@ -56,6 +61,16 @@ def main ():
         arg = sys.argv[i]
         
         params['cores'] = arg
+        
+    if arg.lower() == '-lt':
+        i += 1
+        arg = sys.argv[i]
+        try:
+            if arg < multiprocessing.cpu_count():
+                params['cores'] = arg
+        except ValueError:
+            print("Could not parse -cores argument: %s" % (arg))
+            usage()
         
 if __name__ == "__main__":
     main()
