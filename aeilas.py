@@ -82,7 +82,7 @@ def main ():
             print("Could not parse -cores argument: %s" % (arg))
             usage()
         
-    if arg.lower() == '-lt':
+    elif arg.lower() == '-lt':
         i += 1
         arg = sys.argv[i]
         try:
@@ -92,7 +92,7 @@ def main ():
             print("Could not parse -lt argument: %s" % (arg))
             usage()
             
-    if arg.lower() == '-max_tch':
+    elif arg.lower() == '-max_tch':
         i += 1
         arg = sys.argv[i]
         try:
@@ -102,9 +102,46 @@ def main ():
             print("Could not parse -max_tch argument: %s" % (arg))
             usage()
             
-    if arg.lower() == '-o':
+    elif arg.lower() == '-o':
         i += 1
         arg = sys.argv[i]
+        
+    elif arg.lower() == '-overwrite':
+        params['overwrite'] = True
+        
+    elif arg.lower() == '-proj':
+        i += 1
+        arg = sys.argv[i]
+        
+    elif arg.lower() == '-res':
+        i += 1
+        arg = sys.argv[i]
+        try:
+            if arg > 0:
+                params['res'] = arg
+        except ValueError:
+            usage()
+            print('Could not parse -res argument: %s' % ( arg))
+        
+    elif arg.lower() == '-sres':
+        i += 1
+        arg = sys.argv[i]
+        try:
+            if arg > 0:
+                params['sres'] = arg
+        except ValueError:
+            usage()
+            print('Could not parse -sres argument: %s' % ( arg))
+        
+    elif arg.lower() == '-tile_size':
+        i += 1
+        arg = sys.argv[i]
+        try:
+            if arg > 0:
+                params['tile_size'] = arg
+        except ValueError:
+            usage()
+            print('Could not parse -tile_size argument: %s' % ( arg))
         
 if __name__ == "__main__":
     main()
