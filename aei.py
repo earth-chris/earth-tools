@@ -13,7 +13,7 @@ import gdal as gdal
 import numpy as np
 
 ## allow python exceptions
-gdal.UseException()
+gdal.UseExceptions()
 
 ## get environment variables
 environ = platform.os.environ
@@ -25,13 +25,11 @@ try:
     ltbase = environ['LTBASE']
 except KeyError:
     ltbase = ''
-
     
 try:
     gdalbase = environ['GDALBASE']
 except KeyError:
     gdalbase = ''
-
     
 ## set up commands to call binaries
 cmd_lasmerge = {
@@ -126,7 +124,7 @@ class command(list):
         outfile.write(str(self))
         return
     def run(self,outfile=sys.stdout):
-        ret = call(self,stdout=outfile,stderr=STDOUT)
+        ret = call(strjoin(self),stdout=outfile,stderr=STDOUT)
         outfile.flush()
         if ret > 0:
             raise Exception("Failed at command (return code %d): %s"%(ret,str(self)))
@@ -161,11 +159,10 @@ def lasmerge(inputs, outputs,
         print('Unable to parse the etc argument.')
         type(etc)
         etc=''
-    cmd = [cat_cmd(cmd_lasmerge,['-i', inputs, '-o', outputs,
-            rs, etc])]
-    #sys.stdout.write(cmd)
-    #ret=command.run(cmd)
-    return cmd#ret
+    cmd = cat_cmd(cmd_lasmerge,['-i', inputs, '-o', outputs,
+            rs, etc])
+    ret=command.run(cmd)
+    return ret
 
 # set up the return functions from params. can be done by param
 #  or with just returning all params
@@ -196,7 +193,7 @@ data type for the params dictionary.
             params['ot'] = 'UInt32'
         elif (str(arg).lower() == 'float32'):
             params['ot'] = 'Float32'
-        elif (str(arg).lower() -- 'float64'):
+        elif (str(arg).lower() == 'float64'):
             params['ot'] = 'Float64'
         elif (str(arg).lower() == 'cint16'):
             params['ot'] = 'CInt16'
@@ -244,6 +241,7 @@ data type for the params dictionary.
             params['lt'] = 'laz'
     except ValueError:
         print('Unable to parse -ot argument: %s' % (arg))
+    return params['ot']
    
 def get_outdir():
     return params['outdir']
