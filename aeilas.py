@@ -79,8 +79,8 @@ def main ():
             if arg < multiprocessing.cpu_count():
                 params['cores'] = arg
         except ValueError:
-            print("Could not parse -cores argument: %s" % (arg))
             usage()
+            print("Could not parse -cores argument: %s" % (arg))
         
     elif arg.lower() == '-lt':
         i += 1
@@ -89,8 +89,8 @@ def main ():
             if (arg.lower() != 'las') or (arg.lower() != 'laz'):
                 params['lt'] = arg
         except ValueError:
-            print("Could not parse -lt argument: %s" % (arg))
             usage()
+            print("Could not parse -lt argument: %s" % (arg))
             
     elif arg.lower() == '-max_tch':
         i += 1
@@ -99,8 +99,8 @@ def main ():
             if arg > 0:
                 params['max_tch'] = arg
         except ValueError:
-            print("Could not parse -max_tch argument: %s" % (arg))
             usage()
+            print("Could not parse -max_tch argument: %s" % (arg))
             
     elif arg.lower() == '-o':
         i += 1

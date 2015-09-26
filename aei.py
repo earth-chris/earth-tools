@@ -15,16 +15,71 @@ gdal.UseException()
 
 ## get environment variables
 environ = platform.os.environ
+pathsep = platform.os.pathsep
+pathcat = platform.os.path.join
+sys     = platform.system
 
 try:
     ltbase = environ['LTBASE']
+    ltbase = ltbase.append(pathsep)
 except KeyError:
     ltbase = ''
     
 try:
-    gdalbase = envron['GDALBASE']
+    gdalbase = environ['GDALBASE']
+    gdalbase = gdalbase.append(pathsep)
 except KeyError:
     gdalbase = ''
+    
+## set up commands to call binaries
+cmd_lasmerge = {
+    'Windows' : [pathcat(ltbase, 'lasmerge.exe')], 
+    'Linux'   : ['wine', pathcat(ltbase, 'lasmerge.exe')]
+    }[sys]
+cmd_lasboundary = {
+    'Windows' : [pathcat(ltbase, 'lasboundary.exe')], 
+    'Linux'   : ['wine', pathcat(ltbase, 'lasboundary.exe')]
+    }[sys]
+cmd_lasclip = {
+    'Windows' : [pathcat(ltbase, 'lasclip.exe')], 
+    'Linux'   : ['wine', pathcat(ltbase, 'lasclip.exe')]
+    }[sys]
+cmd_lasheight = {
+    'Windows' : [pathcat(ltbase, 'lasheight.exe')], 
+    'Linux'   : ['wine', pathcat(ltbase, 'lasheight.exe')]
+    }[sys]
+cmd_lasground = {
+    'Windows' : [pathcat(ltbase, 'lasground.exe')], 
+    'Linux'   : ['wine', pathcat(ltbase, 'lasground.exe')]
+    }[sys]
+cmd_lascanopy = {
+    'Windows' : [pathcat(ltbase, 'lascanopy.exe')], 
+    'Linux'   : ['wine', pathcat(ltbase, 'lascanopy.exe')]
+    }[sys]
+cmd_las2dem = {
+    'Windows' : [pathcat(ltbase, 'las2dem.exe')], 
+    'Linux'   : ['wine', pathcat(ltbase, 'las2dem.exe')]
+    }[sys]
+cmd_ogr2ogr = {
+    'Windows' : [pathcat(gdalbase, 'ogr2ogr.exe')],
+    'Linux'   : [pathcat(gdalbase, 'ogr2ogr')]
+    }[sys]
+cmd_gdalbuildvrt = {
+    'Windows' : [pathcat(gdalbase, 'gdalbuildvrt.exe')],
+    'Linux'   : [pathcat(gdalbase, 'gdalbuildvrt')]
+    }[sys]
+cmd_gdalwarp = {
+    'Windows' : [pathcat(gdalbase, 'gdalwarp.exe')],
+    'Linux'   : [pathcat(gdalbase, 'gdalwarp')]
+    }[sys]
+cmd_gdal_translate = {
+    'Windows' : [pathcat(gdalbase, 'gdal_translate.exe')],
+    'Linux'   : [pathcat(gdalbase, 'gdal_translate')]
+    }[sys]
+cmd_gdal_rasterize = {
+    'Windows' : [pathcat(gdalbase, 'gdal_rasterize.exe')],
+    'Linux'   : [pathcat(gdalbase, 'gdal_rasterize')]
+    }[sys]
 
 ###################
 ## 
@@ -33,6 +88,7 @@ except KeyError:
 ###################
 ##
 params = {
+    'cores' : multiprocessing.cpu_count()/-1, # num threads for processing
     'gdalbase' : gdalbase, # gdal path
     'lt' : 'laz', # las/laz type
     'ltbase' : ltbase, # lastools path
@@ -40,6 +96,41 @@ params = {
     'ot' : 'Float32', # data type
     'procdir' : 'G:\\AEI\\Data\\scratch\\default\\' # default scratch product directory
     }
+    
+## set command class
+class command(list):
+    def __init__(self, *args, **kwargs):
+        super(command, self).__init__(args[0])
+        return
+    def __str__(self):
+        return "%s\n"%(" ".join(self))
+    def write(self,outfile=sys.stdout):
+        outfile.write(str(self))
+        return
+    def run(self,outfile=sys.stdout):
+        ret = call(self,stdout=outfile,stderr=STDOUT)
+        outfile.flush()
+        if ret > 0:
+            raise Exception("Failed at command (return code %d): %s"%(ret,str(self)))
+        return ret
+        
+# set command merger
+def cat_cmd(cmd, args):
+    parts = command(cmd)
+    parts.extend(args)
+    return parts
+
+# build executable commands
+def lasmerge(inputs, outputs, etc):
+    """
+    runs lasmerge.exe using lastools to merge multiple las/laz
+    files to a single file.
+
+    syntax: lasmerge(inputs, output, etc)
+    """
+    cmd = [cat_cmd(lasmerge,['-i', inputs, '-o', outputs])]
+    # set up lastools functions here
+    return
     
 def get_ot(arg):
     """
@@ -113,16 +204,15 @@ data type for the params dictionary.
             params['lt'] = 'laz'
     except ValueError:
         print('Unable to parse -ot argument: %s' % (arg))
+
+def get_params():
+    return params
     
 def get_outdir():
     return params['outdir']
     
 def get_procdir():
     return params['procdir']
-    
-def lasmerge(arg1,arg2,etc):
-    # set up lastools functions here
-    return
     
 if __name__ == "__main__":
     main()
