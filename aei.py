@@ -7,6 +7,8 @@
 import sys
 import platform
 import threading
+import multiprocessing
+from subprocess import call, STDOUT
 import gdal as gdal
 import numpy as np
 
@@ -17,69 +19,85 @@ gdal.UseException()
 environ = platform.os.environ
 pathsep = platform.os.pathsep
 pathcat = platform.os.path.join
-sys     = platform.system
+system  = platform.system()
 
 try:
     ltbase = environ['LTBASE']
-    ltbase = ltbase.append(pathsep)
 except KeyError:
     ltbase = ''
+
     
 try:
     gdalbase = environ['GDALBASE']
-    gdalbase = gdalbase.append(pathsep)
 except KeyError:
     gdalbase = ''
+
     
 ## set up commands to call binaries
 cmd_lasmerge = {
     'Windows' : [pathcat(ltbase, 'lasmerge.exe')], 
     'Linux'   : ['wine', pathcat(ltbase, 'lasmerge.exe')]
-    }[sys]
+    }[system]
+cmd_las2las = {
+    'Windows' : [pathcat(ltbase, 'las2las.exe')],
+    'Linux'   : ['wine', pathcat(ltbase, 'las2las.exe')]
+    }[system]
+cmd_lasnoise = {
+    'Windows' : [pathcat(ltbase, 'lasnoise.exe')],
+    'Linux'   : ['wine', pathcat(ltbase, 'lasnoise.exe')]
+    }[system]
+cmd_lastile = {
+    'Windows' : [pathcat(ltbase, 'lastile.exe')],
+    'Linux'   : ['wine', pathcat(ltbase, 'lastile.exe')]
+    }[system]
+cmd_lasclassify = {
+    'Windows' : [pathcat(ltbase, 'lasclassify.exe')],
+    'Linux'   : ['wine', pathcat(ltbase, 'lasclassify.exe')]
+    }[system]
 cmd_lasboundary = {
     'Windows' : [pathcat(ltbase, 'lasboundary.exe')], 
     'Linux'   : ['wine', pathcat(ltbase, 'lasboundary.exe')]
-    }[sys]
+    }[system]
 cmd_lasclip = {
     'Windows' : [pathcat(ltbase, 'lasclip.exe')], 
     'Linux'   : ['wine', pathcat(ltbase, 'lasclip.exe')]
-    }[sys]
+    }[system]
 cmd_lasheight = {
     'Windows' : [pathcat(ltbase, 'lasheight.exe')], 
     'Linux'   : ['wine', pathcat(ltbase, 'lasheight.exe')]
-    }[sys]
+    }[system]
 cmd_lasground = {
     'Windows' : [pathcat(ltbase, 'lasground.exe')], 
     'Linux'   : ['wine', pathcat(ltbase, 'lasground.exe')]
-    }[sys]
+    }[system]
 cmd_lascanopy = {
     'Windows' : [pathcat(ltbase, 'lascanopy.exe')], 
     'Linux'   : ['wine', pathcat(ltbase, 'lascanopy.exe')]
-    }[sys]
+    }[system]
 cmd_las2dem = {
     'Windows' : [pathcat(ltbase, 'las2dem.exe')], 
     'Linux'   : ['wine', pathcat(ltbase, 'las2dem.exe')]
-    }[sys]
+    }[system]
 cmd_ogr2ogr = {
     'Windows' : [pathcat(gdalbase, 'ogr2ogr.exe')],
     'Linux'   : [pathcat(gdalbase, 'ogr2ogr')]
-    }[sys]
+    }[system]
 cmd_gdalbuildvrt = {
     'Windows' : [pathcat(gdalbase, 'gdalbuildvrt.exe')],
     'Linux'   : [pathcat(gdalbase, 'gdalbuildvrt')]
-    }[sys]
+    }[system]
 cmd_gdalwarp = {
     'Windows' : [pathcat(gdalbase, 'gdalwarp.exe')],
     'Linux'   : [pathcat(gdalbase, 'gdalwarp')]
-    }[sys]
+    }[system]
 cmd_gdal_translate = {
     'Windows' : [pathcat(gdalbase, 'gdal_translate.exe')],
     'Linux'   : [pathcat(gdalbase, 'gdal_translate')]
-    }[sys]
+    }[system]
 cmd_gdal_rasterize = {
     'Windows' : [pathcat(gdalbase, 'gdal_rasterize.exe')],
     'Linux'   : [pathcat(gdalbase, 'gdal_rasterize')]
-    }[sys]
+    }[system]
 
 ###################
 ## 
@@ -119,25 +137,47 @@ def cat_cmd(cmd, args):
     parts = command(cmd)
     parts.extend(args)
     return parts
+    
+# set basic tools
+def strjoin(list, join=' '):
+    outstr = join.join(map(str,list))
+    return outstr
 
 # build executable commands
-def lasmerge(inputs, outputs, etc):
+def lasmerge(inputs, outputs,
+    rescale=[0.01, 0.01, 0.01],
+    etc=''
+    ):
     """
-    runs lasmerge.exe using lastools to merge multiple las/laz
-    files to a single file.
+    merges and rescales las files
 
-    syntax: lasmerge(inputs, output, etc)
+    syntax: lasmerge(inputs, output, etc, rescale=rescale)
     """
-    cmd = [cat_cmd(lasmerge,['-i', inputs, '-o', outputs])]
-    # set up lastools functions here
-    return
-    
+    if rescale == False:
+        rs = ''
+    if rescale:
+        rs=strjoin(['-rescale',strjoin(rescale)])
+    if type(etc) is not str:
+        print('Unable to parse the etc argument.')
+        type(etc)
+        etc=''
+    cmd = [cat_cmd(cmd_lasmerge,['-i', inputs, '-o', outputs,
+            rs, etc])]
+    #sys.stdout.write(cmd)
+    #ret=command.run(cmd)
+    return cmd#ret
+
+# set up the return functions from params. can be done by param
+#  or with just returning all params
+def get_params():
+    return params
+
 def get_ot(arg):
     """
-    reads the argument passed by -ot and returns the correct output
+    reads the argument passed by -ot and returns the output
 data type for the params dictionary.
 
-    accepts both python style data type codes (e.g. Float32, Int16) or IDL
+    accepts both python style data type codes (e.g. Float32, Int16) and IDL
     style data type codes (e.g. 4 for Float32, 1 for Byte)
 
     syntax: read_ot(arg)
@@ -204,10 +244,7 @@ data type for the params dictionary.
             params['lt'] = 'laz'
     except ValueError:
         print('Unable to parse -ot argument: %s' % (arg))
-
-def get_params():
-    return params
-    
+   
 def get_outdir():
     return params['outdir']
     
