@@ -319,7 +319,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
     fparams.append(parse_etc(etc))
     fparams=strjoin(fparams)
     
-    cmd = cat_cmd(cmd_gdalwarp,[fparams, inputs, output])
+    cmd = [cat_cmd(cmd_gdalwarp,[fparams, inputs, output])]
     ret=command.run(cmd)
     return ret
 
