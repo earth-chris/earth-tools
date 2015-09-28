@@ -188,7 +188,7 @@ def lasmerge(inputs, output, etc='',
     return ret
 
 # GDAL stuff    
-def gdalwarp(inputs, output, etc='', dstnodata=False, 
+def gdalwarp(inputs='', output='', etc='', dstnodata=False, 
         multi=False, n_threads=False, overwrite=False,
         of=False, ot=False, r='', srcnodata=False,
         s_srs='', t_srs='', te=[], tr=[]):
@@ -216,6 +216,39 @@ def gdalwarp(inputs, output, etc='', dstnodata=False,
     te       [list] - output extent [xmin, ymin, xmax, ymax]
     tr       [list] - output resolution [xres, yres]
     """
+    # set up return string if user does not set inputs correctly
+    if not (inputs or output):
+        print("""
+              mosaics, reprojects or warps raster imagery
+              
+              syntax: gdalwarp(inputs, output, etc=etc, dstnodata=dstnodata, multi=multi, n_threads=n_threads, overwrite=overwrite, of=of, ot=ot, r=r, srcnodata=srcnodata, s_srs=s_srs, t_srs=t_srs, te=te, tr=tr)
+              
+              inputs [string] - the input raster file(s). accepts wild
+                                cards. enter multiple files as one string.
+              output [string] - the output raster file
+              etc    [string] - additional command line params. enter all
+                                as a scalar string. 
+              dstnodata [num] - output no data value
+              multi     [T/F] - set multithreading. True/False
+              n_threads [num] - set the number of threads. use in place of
+                                the multi=True command. 
+              overwrite [T/F] - set to overwrite output file. True/False
+              of     [string] - output format (e.g. 'ENVI')
+              ot      [multi] - output data type (idl or python style)
+              r      [string] - resampling method (e.g. 'average')
+              srcnodata [num] - input no data value
+              s_srs  [string] - the input projection
+              t_srs  [string] - the output projection 
+              te       [list] - output extent [xmin, ymin, xmax, ymax]
+              tr       [list] - output resolution [xres, yres]
+              """
+              )
+        return -1
+        
+    # add quotes to input and output strings to handle wildcards/escape chars
+    inputs = strjoin(['"', inputs, '"'], join='')
+    output = strjoin(['"', output, '"'], join='')
+    
     # parse input params
     fparams = []
     if dstnodata:
@@ -282,6 +315,7 @@ def gdalwarp(inputs, output, etc='', dstnodata=False,
             return -1
         else:
             fparams.append(strjoin(['-tr', strjoin(tr)]))
+
     fparams.append(parse_etc(etc))
     fparams=strjoin(fparams)
     
