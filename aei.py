@@ -246,8 +246,8 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
         return -1
         
     # add quotes to input and output strings to handle wildcards/escape chars
-    inputs = strjoin(['"', inputs, '"'], join='')
-    output = strjoin(['"', output, '"'], join='')
+#    inputs = strjoin(['"', inputs, '"'], join='')
+#    output = strjoin(['"', output, '"'], join='')
     
     # parse input params
     fparams = []
@@ -322,7 +322,6 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
     cmd = cat_cmd(cmd_gdalwarp,[fparams, inputs, output])
     #ret=command.run(cmd)
     print('PRINTING: %s' % (cmd))
-    type(cmd)
     return(cmd)
 #    try:
 #        ret = call(cmd, stdout=STDOUT, stderr=STDOUT)
