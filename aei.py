@@ -322,11 +322,17 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
     cmd = cat_cmd(cmd_gdalwarp,[fparams, inputs, output])
     #ret=command.run(cmd)
     print('PRINTING: %s' % (cmd))
+    type(cmd)
     try:
         ret = call(cmd, stdout=STDOUT, stderr=STDOUT)
     except:
         print('Unable to call command %s' % (cmd))
-    
+        print('Trying as list')
+        try:
+            ret=call([cmd], stdout=STDOUT, stderr=STDOUT)
+        except:
+            print('Still unable')
+        return -1
     return ret
 
 # set up the return functions from params. can be done by param
