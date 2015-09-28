@@ -124,7 +124,10 @@ class command(list):
         outfile.write(str(self))
         return
     def run(self,outfile=sys.stdout):
-        ret = call(strjoin(self),stdout=outfile,stderr=STDOUT)
+        try:
+            ret = call(strjoin(self),stdout=outfile,stderr=STDOUT)
+        except:
+            print('Unable to call command %s'%(self))
         outfile.flush()
         if ret > 0:
             raise Exception("Failed at command (return code %d): %s"%(ret,str(self)))
@@ -141,26 +144,148 @@ def strjoin(list, join=' '):
     outstr = join.join(map(str,list))
     return outstr
 
-# build executable commands
-def lasmerge(inputs, outputs,
-    rescale=[0.01, 0.01, 0.01],
-    etc=''
-    ):
-    """
-    merges and rescales las files
-
-    syntax: lasmerge(inputs, output, etc, rescale=rescale)
-    """
-    if rescale == False:
-        rs = ''
-    if rescale:
-        rs=strjoin(['-rescale',strjoin(rescale)])
+def parse_etc(etc): 
+    if type(etc) is list:
+        etc=strjoin(etc)
     if type(etc) is not str:
         print('Unable to parse the etc argument.')
         type(etc)
         etc=''
-    cmd = cat_cmd(cmd_lasmerge,['-i', inputs, '-o', outputs,
-            rs, etc])
+    return etc
+
+#########################################
+## build executable commands
+#########################################
+
+# LASTOOLS stuff
+def lasmerge(inputs, output, etc='',
+    rescale=[0.01, 0.01, 0.01]
+    ):
+    """
+    merges and rescales las files
+
+    syntax: lasmerge(inputs, output, etc=etc, rescale=rescale)
+    
+    inputs [string] - the input las/laz file(s). accepts wild
+                      cards. enter multiple files as one string.
+    output [string] - the output merged las/laz file. 
+    etc    [string] - additional command line params. enter all
+                      as a scalar string. 
+    rescale  [list] - the rescale/precision parameters for the
+                      output merged output file. default: 
+                      [0.01, 0.01, 0.01]. set to False to not
+                      rescale
+    """
+    # parse input params
+    fparams = []
+    if rescale:
+        fparams.append(strjoin(['-rescale', strjoin(rescale)]))
+    fparams.append(parse_etc(etc))
+    fparams = strjoin(fparams)
+    cmd = cat_cmd(cmd_lasmerge,['-i', inputs, '-o', output,
+            fparams])
+    ret=command.run(cmd)
+    return ret
+
+# GDAL stuff    
+def gdalwarp(inputs, output, etc='', dstnodata=False, 
+        multi=False, n_threads=False, overwrite=False,
+        of=False, ot=False, r='', srcnodata=False,
+        s_srs='', t_srs='', te=[], tr=[]):
+    """
+    mosaics, reprojects or warps raster imagery
+    
+    syntax: gdalwarp(inputs, output, etc=etc, dstnodata=dstnodata, multi=multi, n_threads=n_threads, overwrite=overwrite, of=of, ot=ot, r=r, srcnodata=srcnodata, s_srs=s_srs, t_srs=t_srs, te=te, tr=tr)
+    
+    inputs [string] - the input raster file(s). accepts wild
+                      cards. enter multiple files as one string.
+    output [string] - the output raster file
+    etc    [string] - additional command line params. enter all
+                      as a scalar string. 
+    dstnodata [num] - output no data value
+    multi     [T/F] - set multithreading. True/False
+    n_threads [num] - set the number of threads. use in place of
+                      the multi=True command. 
+    overwrite [T/F] - set to overwrite output file. True/False
+    of     [string] - output format (e.g. 'ENVI')
+    ot      [multi] - output data type (idl or python style)
+    r      [string] - resampling method (e.g. 'average')
+    srcnodata [num] - input no data value
+    s_srs  [string] - the input projection
+    t_srs  [string] - the output projection 
+    te       [list] - output extent [xmin, ymin, xmax, ymax]
+    tr       [list] - output resolution [xres, yres]
+    """
+    # parse input params
+    fparams = []
+    if dstnodata:
+        if not isinstance(dstnodata, (int, long, float, complex)):
+            print('Unable to parse -dstnodata option %s' % (dstnodata))
+            print('Must be scalar int, long or float')
+            return 01
+        else:
+            fparams.append(strjoin(['-dstnodata', dstnodata]))
+    if srcnodata:
+        if not isinstance(srcnodata, (int, long, float, complex)):
+            print('Unable to parse -srcnodata option %s' % (srcnodata))
+            print('Must be scalar int, long or float')
+            return -1
+        else:
+            fparams.append(strjoin(['-srcnodata', srcnodata]))
+    if n_threads:
+        if not isinstance(n_threads, (int, long, float, complex)):
+            print('Unable to parse -n_threads option %s' % (n_threads))
+            print('Must be scalar int, long or float')
+            return -1
+        else:
+            fparams.append(strjoin(['-multi -wo NUM_THREADS',n_threads], join='='))
+        multi = False
+    if multi:
+        fparams.append('-multi')
+    if overwrite:
+        fparams.append('-overwrite')
+    if of:
+        if type(of) is not str:
+            print('Unable to parse -of option %s' % (of))
+            print('Must be scalar string')
+            return -1
+        else:
+            fparams.append(strjoin(['-of', of]))
+    if ot:
+        ot=get_ot(ot)
+        fparams.append(strjoin(['-ot', ot]))
+    if s_srs:
+        if type(s_srs) is not str:
+            print('Unable to parse -s_srs option %s' % (s_srs))
+            print('Must be scalar string')
+            return -1
+        else:
+            fparams.append(strjoin(['-s_srs', s_srs]))
+    if t_srs:
+        if type(t_srs) is not str:
+            print('Unable to parse -t_srs option %s' % (t_srs))
+            print('Must be a scalar string')
+            return -1
+        else:
+            fparams.append(strjoin(['-t_srs', t_srs]))
+    if te:
+        if type(te) is not list and len(te) is not 4:
+            print('Unable to parse -te option %s' % (te))
+            print('Must be a 4-element list')
+            return -1
+        else:
+            fparams.append(strjoin(['-te', strjoin(te)]))
+    if tr:
+        if type(te) is not list and len (tr) is not 2:
+            print('Unable to parse -tr option %s' % (tr))
+            print('Must be a 2-element list')
+            return -1
+        else:
+            fparams.append(strjoin(['-tr', strjoin(tr)]))
+    fparams.append(parse_etc(etc))
+    fparams=strjoin(fparams)
+    
+    cmd = cat_cmd(cmd_gdalwarp,[fparams, inputs, output])
     ret=command.run(cmd)
     return ret
 
