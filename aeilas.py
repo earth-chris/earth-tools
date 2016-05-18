@@ -12,7 +12,7 @@ import mutliprocessing
 # define global parameters
 params = {
     'buffer': 20, # buffer distance in units of output projection
-    'cores' : multiprocessing.cpu_count()/-1, # default to all cores but 1
+    'cores' : multiprocessing.cpu_count()-1, # default to all cores but 1
     'lt' : 'laz', # las format for output
     'ot' : 'Float32', # raster output format
     'max_tch' : 65, # max height above which to clip spurious (noise) points
