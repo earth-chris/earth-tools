@@ -1,4 +1,47 @@
-def list():
+#####
+# contains the parameters accessed by aei functions
+# c. 2016 Christopher Anderson
+#####
+
+import os
+import sys
+import platform
+import threading
+import multiprocessing
+from psutil import virtual_memory
+
+## get environment variables
+environ = platform.os.environ
+pathsep = platform.os.path.sep
+pathcat = platform.os.path.join
+system  = platform.system()
+
+try:
+    ltbase = environ['LTBASE']
+except KeyError:
+    ltbase = ''
+
+try:
+    gdalbase = environ['GDALBASE']
+except KeyError:
+    gdalbase = ''
+
+try:
+    outdir = environ['OUTPUT_DIR']
+except KeyError:
+    outdir = './'
+
+try:
+    scratchdir = environ['SCRATCH_DIR']
+except KeyError:
+    scratchdir = './'
+    self.cores = multiprocessing.cpu_count()
+    
+mem = virtual_memory().total
+scratchdir = scratchdir
+
+# list of gdal data types
+def gdal_types():
     return ["AAIGrid",
             "ACE2",
             "ADRG",

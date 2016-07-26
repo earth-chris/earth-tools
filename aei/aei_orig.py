@@ -4,65 +4,15 @@
 ##
 ###################
 ##
-import os
-import sys
-import math
-import platform
-import threading
-import multiprocessing
-from psutil import virtual_memory
 from subprocess import call, STDOUT
 import gdal as gdal
 import osr as osr
 import numpy as np
 import spectral as spectral
 
-## allow python exceptions
-gdal.UseExceptions()
-
-## get environment variables
-environ = platform.os.environ
-pathsep = platform.os.path.sep
-pathcat = platform.os.path.join
-system  = platform.system()
-
 ###################
 ## set up system params and defaults
 ###################
-
-# set up class to return os/fs/computing defaults
-class getParams:
-    def __init__(self):
-        try:
-            ltbase = environ['LTBASE']
-        except KeyError:
-          ltbase = ''
-
-        try:
-            gdalbase = environ['GDALBASE']
-        except KeyError:
-            gdalbase = ''
-        
-        try:
-            outdir = environ['OUTPUT_DIR']
-        except KeyError:
-            outdir = './'
-        
-        try:
-            scratchdir = environ['SCRATCH_DIR']
-        except KeyError:
-            scratchdir = './'
-
-        self.cores = multiprocessing.cpu_count()
-        self.gdalbase = gdalbase
-        self.lt = 'laz'
-        self.ltbase = ltbase
-        self.mem = virtual_memory().total
-        self.outdir = outdir
-        self.ot = 'Float32'
-        self.scratchdir = scratchdir
-
-params = getParams()
 
 # set up a file check function
 def checkFile(infile, quiet=False):
@@ -72,76 +22,6 @@ def checkFile(infile, quiet=False):
         if not quiet:
             print("[ ERROR ]: Unable to read file: %s" % infile)
         return False
-
-# set up commands to call binaries
-class getCommands:
-    def __init__(self):
-        self.lasmerge = {
-            'Windows' : [pathcat(params.ltbase, 'lasmerge.exe')], 
-            'Linux'   : ['wine', pathcat(params.ltbase, 'lasmerge.exe')]
-            }[system]
-        self.las2las = {
-            'Windows' : [pathcat(params.ltbase, 'lasmerge.exe')], 
-            'Linux'   : ['wine', pathcat(params.ltbase, 'lasmerge.exe')]
-            }[system]
-        self.lasnoise = {
-            'Windows' : [pathcat(params.ltbase, 'lasnoise.exe')],
-            'Linux'   : ['wine', pathcat(params.ltbase, 'lasnoise.exe')]
-            }[system]
-        self.lastile = {
-            'Windows' : [pathcat(params.ltbase, 'lastile.exe')],
-            'Linux'   : ['wine', pathcat(params.ltbase, 'lastile.exe')]
-            }[system]
-        self.lasclassify = {
-            'Windows' : [pathcat(params.ltbase, 'lasclassify.exe')],
-            'Linux'   : ['wine', pathcat(params.ltbase, 'lasclassify.exe')]
-            }[system]
-        self.lasboundary = {
-            'Windows' : [pathcat(params.ltbase, 'lasboundary.exe')], 
-            'Linux'   : ['wine', pathcat(params.ltbase, 'lasboundary.exe')]
-            }[system]
-        self.lasclip = {
-            'Windows' : [pathcat(params.ltbase, 'lasclip.exe')], 
-            'Linux'   : ['wine', pathcat(params.ltbase, 'lasclip.exe')]
-            }[system]
-        self.lasheight = {
-            'Windows' : [pathcat(params.ltbase, 'lasheight.exe')], 
-            'Linux'   : ['wine', pathcat(params.ltbase, 'lasheight.exe')]
-            }[system]
-        self.lasground = {
-            'Windows' : [pathcat(params.ltbase, 'lasground.exe')], 
-            'Linux'   : ['wine', pathcat(params.ltbase, 'lasground.exe')]
-            }[system]
-        self.lascanopy = {
-            'Windows' : [pathcat(params.ltbase, 'lascanopy.exe')], 
-            'Linux'   : ['wine', pathcat(params.ltbase, 'lascanopy.exe')]
-            }[system]
-        self.las2dem = {
-            'Windows' : [pathcat(params.ltbase, 'las2dem.exe')], 
-            'Linux'   : ['wine', pathcat(params.ltbase, 'las2dem.exe')]
-            }[system]
-        self.ogr2ogr = {
-            'Windows' : [pathcat(params.gdalbase, 'ogr2ogr.exe')],
-            'Linux'   : [pathcat(params.gdalbase, 'ogr2ogr')]
-            }[system]
-        self.gdalbuildvrt = {
-            'Windows' : [pathcat(params.gdalbase, 'gdalbuildvrt.exe')],
-            'Linux'   : [pathcat(params.gdalbase, 'gdalbuildvrt')]
-            }[system]
-        self.gdalwarp = {
-            'Windows' : [pathcat(params.gdalbase, 'gdalwarp.exe')],
-            'Linux'   : [pathcat(params.gdalbase, 'gdalwarp')]
-            }[system]
-        self.gdal_translate = {
-            'Windows' : [pathcat(params.gdalbase, 'gdal_translate.exe')],
-            'Linux'   : [pathcat(params.gdalbase, 'gdal_translate')]
-            }[system]
-        self.gdal_rasterize = {
-            'Windows' : [pathcat(params.gdalbase, 'gdal_rasterize.exe')],
-            'Linux'   : [pathcat(params.gdalbase, 'gdal_rasterize')]
-            }[system]
-
-cmd = getCommands()
 
 # set function to return a standardized data type used by gdal, based on idl/python inputs
 def getOt(arg):
@@ -1043,7 +923,16 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
     os.system(ocmd)
     
     return(ocmd)
+    
+def main():
+    
+    # import modules to namespace
+    from aei import cmd
+    from aei import landsat
+    from aei import objects
+    from aei import params
+    from aei import read
 
-# set up main string
+# run main on load
 if __name__ == "__main__":
     main()
