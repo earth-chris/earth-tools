@@ -1,7 +1,8 @@
-#
+####
 # contains the classes and functions of frequently used objects
 #  to support aei
-###################
+# c. 2016 Christopher Anderson
+#####
 
 # set up class for spectral objects
 class spectral:
@@ -168,12 +169,15 @@ class spectral:
   
 # class for las/laz data  
 class las:
-    
-    import numpy as np
-    
     def __init__(self, n_pts=1):
-    
-        # the stuff
+        import numpy as np
+        
+        # geometry data
         self.x = np.zeros(n_pts)
         self.y = np.zeros(n_pts)
         self.z = np.zeros(n_pts)
+        
+        # output parameters
+        self.of = 'las'
+        self.ext = '.' + self.of
+        

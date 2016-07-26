@@ -1,5 +1,7 @@
+#####
 # sets up paths and calls to external executables.
-###################
+# c. 2016 Christopher Anderson
+#####
 
 # set up commands to call binaries
 class getPaths:
@@ -197,7 +199,8 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
     
     # join and run the command
     ocmd = aei.strJoin([raw.gdalwarp[0], fparams, inputs, output])
-    print('[ RUNNING ]: %s' % (ocmd))
+    print("[ STATUS ]: Running gdalwarp")
+    print("[ STATUS ]: %s" % ocmd)
     os.system(ocmd)
     
     return(ocmd)
@@ -205,6 +208,12 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
 ###
 # LAStools commands
 ###
+las2dem
+las2las
+lasclassify
+lasgrid
+lasheight
+
 def lasmerge(inputs, output, etc='',
     rescale=[0.01, 0.01, 0.01]
     ):
@@ -223,14 +232,76 @@ def lasmerge(inputs, output, etc='',
                       [0.01, 0.01, 0.01]. set to False to not
                       rescale
     """
+    import aei as aei
+    
     # parse input params
     fparams = []
+    
+    # add rescaling to param list if set
     if rescale:
-        fparams.append(strJoin(['-rescale', strJoin(rescale)]))
-    fparams.append(read.etc(etc))
-    fparams = strJoin(fparams)
-    call = catCmd(cmd.lasmerge,['-i', inputs, '-o', output,
+        fparams.append(aei.strJoin(['-rescale', aei.strJoin(rescale)]))
+    
+    # add additional parameters passed through etc keyword
+    fparams.append(aei.read.etc(etc))
+    
+    # concatenate params list to string
+    fparams = aei.strJoin(fparams)
+    
+    # join and run the command
+    ocmd = aei.strjoin(raw.lasmerge,['-i', inputs, '-o', output,
             fparams])
-    ret=command.run(call)
-    return ret
+    
+    # report status
+    print("[ STATUS ]: Running lasmerge")
+    print("[ STATUS ]: %s" % ocmd)
+    
+    os.system(ocmd)
+    
+    return ocmd
 
+def lastile(inputs, outdir='', etc='', tile_size=1000, buffer=100
+    ):
+    """
+    tiles las files
+    
+    syntax: lastile(inputs, outdir=outdir, etc=etc, tile_size=tile_size)
+    
+    inputs   [string] - the input las/laz file(s). accepts wild
+                        cards. enter multiple files as one string.
+    outdir   [string] - the output directory for the tiles. if not set,
+                        outputs tiles to the default output directory
+                        (set under aei.params)
+    etc      [string] - additional command line params. enter all
+                        as a scalar string. 
+    tile_size [float] - the output tile size in units of the horizontal
+                        projection. default = 1000
+    buffer    [float] - the buffer surrounding each tile. default = 100
+    """
+    import aei as aei
+    
+    # parse input params
+    fparams = []
+                
+    # add tile_size to parameters list
+    fparams.append(aei.strJoin(['-tile_size', tile_size]))
+    
+    # add buffer distance to parameters list
+    fparams.append(aei.strJoin(['-buffer', buffer]))
+    
+    # add additional parameters passed through etc keyword
+    fparams.append(aei.read.etc(etc))
+    
+    # concatenate params list to string
+    fparams = aei.strJoin(fparams)
+    
+    # join and run the command
+    ocmd = aei.strjoin(raw.lasmerge,['-i', inputs, '-o', output,
+            fparams])
+    
+    # report status
+    print("[ STATUS ]: Running lasmerge")
+    print("[ STATUS ]: %s" % ocmd)
+    
+    os.system(ocmd)
+    
+    return ocmd

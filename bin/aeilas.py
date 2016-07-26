@@ -25,11 +25,59 @@ params = {
     'tile_size' : 500 # tile size in units of output projection
     }
 
-def usage():
+class parse_args:
+    def __init__(self, arglist):
+        
+        # set up main variables and defaults to parse
+        self.infile = ''
+        self.outfile = ''
+        self.spectral_libs = []
+        self.n = 20
+        self.bands = []
+        self.of = 'GTiff'
+        self.normalize = False
+        
+        # exit if no arguments passed
+        if len(arglist) == 1:
+            usage(exit=True)
+
+        # read arguments from command line
+        i = 1
+        while i < len(arglist):
+            arg = arglist[i]
+        
+            # check input flag    
+            if arg.lower() == '-i':
+                i += 1
+                arg = arglist[i]
+                
+                if type(arg) is str:
+                    self.infile = arg
+                    if not aei.checkFile(self.infile, quiet = True):
+                        usage()
+                        aei.checkFile(self.infile)
+                        sys.exit(1)
+            
+            # check output flag
+            if arg.lower() == '-o':
+                i += 1
+                arg = arglist[i]
+                
+                if type(arg) is str:
+                    self.outfile = arg
+                    outpath = os.path.dirname(self.outfile)
+                    if outpath == '':
+                        outpath = '.'
+                    if not os.access(outpath, os.W_OK):
+                        usage()
+                        print("[ ERROR ]: unable to write to output path: %s" % outpath)
+                        sys.exit(1)
+    
+def usage(exit=False):
     """
     describes the aeilas.py procedure in case of incorrect parameter calls
     
-    syntax: usage()
+    syntax: usage(exit=False)
     """
 
     print(
@@ -42,10 +90,12 @@ def usage():
         
         """
         )
-        
-    sys.exit(1)
+    
+    if exit:    
+        sys.exit(1)
 
 step = 0
+
 def resume():
     """
     resumes the aeilas.py procedure when flagged at runtime

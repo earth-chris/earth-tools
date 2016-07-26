@@ -16,21 +16,29 @@ pathsep = platform.os.path.sep
 pathcat = platform.os.path.join
 system  = platform.system()
 
+# check if LTBASE environment variable set
+#  points to where lastools is installed
 try:
     ltbase = environ['LTBASE']
 except KeyError:
     ltbase = ''
 
+# check if GDALBASE environment variable set
+#  points to custom install of gdal binaries
 try:
     gdalbase = environ['GDALBASE']
 except KeyError:
     gdalbase = ''
 
+# check OUTPUT_DIR environment variable
+#  points to where default outputs go if not set
 try:
     outdir = environ['OUTPUT_DIR']
 except KeyError:
     outdir = './'
 
+# check SCRATCH_DIR environment variable
+#  points to where intermediate files go if not set
 try:
     scratchdir = environ['SCRATCH_DIR']
 except KeyError:

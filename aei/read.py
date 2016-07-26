@@ -1,5 +1,6 @@
 #####
-# the functions that read or parse various formats of data
+# the functions that read or parse frequently used data formats
+# c. 2016 Christopher Anderson
 #####
 
 # set function to return a standardized data type used by gdal, based on idl/python inputs
