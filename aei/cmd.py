@@ -216,7 +216,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
     fparams=aei.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.gdalwarp[0], fparams, inputs, output])
+    ocmd = aei.strJoin([raw.gdalwarp, fparams, inputs, output])
     print("[ STATUS ]: Running gdalwarp")
     print("[ STATUS ]: %s" % ocmd)
     os.system(ocmd)
@@ -237,7 +237,7 @@ def lasboundary(inputs, output='', etc='', odir='', odix='',
     """
     creates a boundary polygon for las files
     
-    syntax: lasboundary(input[s], output='', etc='', odir='', odix='',
+    syntax: lasboundary(inputs, output='', etc='', odir='', odix='',
       use_bb=False, disjoint=False, concavity=50, oshp=True)
     
     inputs   [string] - the input las/laz file(s). accepts wild
@@ -321,7 +321,7 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
       cover_cutoff=5.0, count=[], density=[], fractions=False, otif=True)
     
     inputs        [string] - the input las/laz file(s). accepts wild
-                       cards. enter multiple files as one string.
+                             cards. enter multiple files as one string.
     output        [string] - the output merged las/laz file. 
     etc           [string] - additional command line params. enter all
                              as a scalar string. 
@@ -450,20 +450,22 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
     aei.params.os.system(ocmd)
 
 # lasclassify
-def lasclassify(inputs, output, etc='',
+def lasclassify(inputs, output='', etc='', odir='', odix='',
     planar=0.1, ground_offset=2.0, olaz=True):
     """
     classifies building and vegetation in las files. requires ground
       points and heights calculated in input file.
     
-    syntax: lasclassify(input[s], output, etc=etc, planar=0.1,
-      ground_offset=2.0, olaz=True)
+    syntax: lasclassify(input[s], output='', etc='', odir='', odix='',
+      planar=0.1, ground_offset=2.0, olaz=True)
     
     inputs       [string] - the input las/laz file(s). accepts wild
                             cards. enter multiple files as one string.
     output       [string] - the output merged las/laz file. 
     etc          [string] - additional command line params. enter all
                             as a scalar string. 
+    odir         [string] - the output directory. superceded by using 'output' variable
+    odix         [string] - a string to append to each output. superceded by using 'output' variable
     planar        [float] - threshold for determining planar surfaces.
                             increasing the value allows for fitting planes
                             to noisier (e.g. less-planar) data.
@@ -475,6 +477,24 @@ def lasclassify(inputs, output, etc='',
     
     # parse input params
     fparams = []
+    
+    # determine if -o, -odir, or -odix should be set
+    #  if -o
+    if output:
+        fparams.append(aei.strJoin(['-o', output]))
+    
+    else:
+        # if -odir
+        if odir:
+            fparams.append(aei.strJoin(['-odir', odir]))
+        else:
+            fparams.append(aei.strJoin(['-odir', aei.params.outdir]))
+        
+        # if -odix
+        if odix:
+            fparams.append(aei.strJoin(['-odix', odix]))
+        else:
+            fparams.append(aei.strJoin(['-odix', '_lascanopy']))
     
     # add planar parameter
     fparams.append(aei.strJoin(['-planar', planar]))
@@ -513,7 +533,10 @@ def lasgrid(inputs, output='', etc='', odir='', odix='',
     """
     grids and rasterizes las files
     
-    syntax: lasgrid(inputs, etc=etc)
+    syntax: lasgrid(inputs, output='', etc='', odir='', odix='',
+      step=2.0, fill=5, subcircle=0.4, nodata=-9999, elevation=True,
+      ground=False, lowest=False, highest=False, wgs84=True, 
+      utm='', otif=True)
     
     inputs   [string] - the input las/laz file(s). accepts wild
                         cards. enter multiple files as one string.
@@ -609,8 +632,8 @@ def lasgrid(inputs, output='', etc='', odir='', odix='',
     aei.params.os.system(ocmd)
 
 # lasground
-def lasground(inputs, output, etc='', olaz=True,
-    not_airborne=False, city=False, town=False,
+def lasground(inputs, output='', etc='', odir='', odix='',
+    olaz=True, not_airborne=False, city=False, town=False,
     compute_height=True, replace_z=False,
     fine=False, extra_fine=False,
     coarse=False, extra_coarse=False,
@@ -618,16 +641,20 @@ def lasground(inputs, output, etc='', olaz=True,
     """
     calculates ground points for las files
     
-    syntax: lasground(input[s], output, etc=etc, replace_z=False,
-      olaz=True, city=False, town=False, compute_height=True,
-      fine=False, extra_fine=False, coarse=false, extra_coarse=False
-      non_ground_unchanged=True)
+    syntax: lasground(input[s], output='', etc='',
+      odir='', odix='', replace_z=False, olaz=True,
+      city=False, town=False, compute_height=True,
+      fine=False, extra_fine=False, coarse=false, 
+      extra_coarse=False, non_ground_unchanged=True)
     
     inputs       [string] - the input las/laz file(s). accepts wild
                             cards. enter multiple files as one string.
     output       [string] - the output merged las/laz file. 
     etc          [string] - additional command line params. enter all
                             as a scalar string. 
+    odir         [string] - the output directory. superceded by using 'output' variable
+    odix         [string] - a string to append to each output. 
+                            superceded by using 'output' variable
     olaz           [bool] - ensures output format is laz. default = True
     not_airborne   [bool] - set this flag if using ground LiDAR data.
     city           [bool] - uses widest radius to find ground
@@ -647,6 +674,24 @@ def lasground(inputs, output, etc='', olaz=True,
     
     # parse input params
     fparams = []
+    
+    # determine if -o, -odir, or -odix should be set
+    #  if -o
+    if output:
+        fparams.append(aei.strJoin(['-o', output]))
+    
+    else:
+        # if -odir
+        if odir:
+            fparams.append(aei.strJoin(['-odir', odir]))
+        else:
+            fparams.append(aei.strJoin(['-odir', aei.params.outdir]))
+        
+        # if -odix
+        if odix:
+            fparams.append(aei.strJoin(['-odix', odix]))
+        else:
+            fparams.append(aei.strJoin(['-odix', '_lascanopy']))
     
     # add olaz parameter if set
     if olaz:
@@ -714,19 +759,21 @@ def lasground(inputs, output, etc='', olaz=True,
     aei.params.os.system(ocmd)
 
 # lasheight
-def lasheight(inputs, output, etc='',
+def lasheight(inputs, output='', etc='', odir='', odix='',
     replace_z=False, olaz=True):
     """
     calculates height of las files
     
-    syntax: lasheight(input[s], output, etc=etc, replace_z=False,
-      olaz=True)
+    syntax: lasheight(input[s], output='', etc='', odir='',
+      odix='', replace_z=False, olaz=True)
     
     inputs  [string] - the input las/laz file(s). accepts wild
                        cards. enter multiple files as one string.
     output  [string] - the output merged las/laz file. 
     etc     [string] - additional command line params. enter all
                        as a scalar string. 
+    odir    [string] - the output directory. superceded by using 'output' variable
+    odix    [string] - a string to append to each output. superceded by using 'output' variable
     replace_z [bool] - replaces the z value with the height above
                        ground. default = False
     olaz      [bool] - ensures output format is laz. default = True
@@ -735,6 +782,24 @@ def lasheight(inputs, output, etc='',
     
     # parse input params
     fparams = []
+    
+    # determine if -o, -odir, or -odix should be set
+    #  if -o
+    if output:
+        fparams.append(aei.strJoin(['-o', output]))
+    
+    else:
+        # if -odir
+        if odir:
+            fparams.append(aei.strJoin(['-odir', odir]))
+        else:
+            fparams.append(aei.strJoin(['-odir', aei.params.outdir]))
+        
+        # if -odix
+        if odix:
+            fparams.append(aei.strJoin(['-odix', odix]))
+        else:
+            fparams.append(aei.strJoin(['-odix', '_lascanopy']))
     
     # add replace_z to param list if set
     if replace_z:
@@ -845,18 +910,19 @@ def lasmerge(inputs, output, etc='',
     aei.params.os.system(ocmd)
     
 # lastile
-def lastile(inputs, outdir='', etc='', tile_size=1000, buffer=100,
+def lastile(inputs, odir, etc='', odix='', tile_size=1000, buffer=100,
     olaz=True):
     """
     tiles las files
     
-    syntax: lastile(inputs, outdir=outdir, etc=etc, tile_size=tile_size)
+    syntax: lastile(inputs, odir, etc=etc, odix=odix, tile_size=tile_size)
     
     inputs   [string] - the input las/laz file(s). accepts wild
                         cards. enter multiple files as one string.
-    outdir   [string] - the output directory for the tiles. if not set,
+    odir     [string] - the output directory for the tiles. if not set,
                         outputs tiles to the default output directory
                         (set under aei.params)
+    odix     [string] - a string to append to each output. superceded by using 'output' variable
     etc      [string] - additional command line params. enter all
                         as a scalar string. 
     tile_size [float] - the output tile size in units of the horizontal
@@ -867,7 +933,11 @@ def lastile(inputs, outdir='', etc='', tile_size=1000, buffer=100,
     
     # parse input params
     fparams = []
-                
+    
+    # if -odix
+    if odix:
+        fparams.append(aei.strJoin(['-odix', odix]))
+
     # add tile_size to parameters list
     fparams.append(aei.strJoin(['-tile_size', tile_size]))
     
@@ -886,7 +956,7 @@ def lastile(inputs, outdir='', etc='', tile_size=1000, buffer=100,
     fparams = aei.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lastile, '-i', inputs, '-odir', outdir,
+    ocmd = aei.strJoin([raw.lastile, '-i', inputs, '-odir', odir,
             fparams])
     
     # report status

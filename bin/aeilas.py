@@ -5,41 +5,113 @@
 ####################
 ##
 import aei as aei
-import liblas as ll
-import gdal as gdal
-import mutliprocessing
 
 # define global parameters
-params = {
-    'buffer': 20, # buffer distance in units of output projection
-    'cores' : multiprocessing.cpu_count()-1, # default to all cores but 1
-    'lt' : 'laz', # las format for output
-    'ot' : 'Float32', # raster output format
-    'max_tch' : 65, # max height above which to clip spurious (noise) points
-    'outdir' : aei.get_outdir(), # the output directory for final products
-    'outfile' : 'default', # the default output basename
-    'overwrite' : False, # default to not overwrite any existing files
-    'procdir' : aei.get_procdir(), # the output directory for scratch files
-    'res' : 1, # default raster resolution
-    'slicer_res' : 5, # slicer resolution (usually 5x raster res)
-    'tile_size' : 500 # tile size in units of output projection
-    }
+class default_params:
+    def __init__(self):
+        
+        import datetime
+        now = datetime.datetime.now()
+        
+        ### OUTPUT / PROCESSING PARAMETERS
+        
+        # default raster resolution
+        self.res = 1 
+        
+        # slicer resolution (usually 5x raster res)
+        self.slicer_res = 5 
+        
+        # tile size in units of output projection
+        self.tile_size = 500 
+        
+        # buffer distance in units of output projection
+        self.buffer = 50 
+        
+        # max height above which to clip spurious (noise) points
+        self.max_tch = 50
+        
+        # default to all cores but 1
+        self.cores = aei.params.cores - 1
+        
+        ### FILE FORMAT PARAMETERS
+        
+        # default format for output
+        self.lt = 'laz' 
+        
+        # raster output format
+        self.ot = 'Float32' 
+        
+        ### DEFAULT DATA PRODUCTS
+        
+        # output ground model
+        self.ground = True
+        
+        # output surface model
+        self.surface = True
+        
+        # output slicer
+        self.slicer = True
+        
+        # output shape file
+        self.shape = True
+        
+        # output merged las file
+        self.merged = True
+        
+        ### OUTPUT DIRECTORIES AN DEFAULT FILE NAMES
+        
+        # the input file list
+        self.input_files = []
+        
+        # the site name that will have everything appended to it e.g. site_tch.tif, site_merged.laz
+        self.sitename = 'aeilas'
+        
+        # the output directory for final products
+        #  default is to use outdir/YYYY-MM-DD_HH-MM/ if not set
+        datestring = ("%04d-%02d-%02d_%02d%02d" % (now.year, now.month, now.day, now.hour, now.minute))
+        self.outdir = aei.params.outdir + aei.params.pathsep + \
+          datestring + aei.params.pathsep
+        
+        # the output directory for intermediate products
+        self.scratchdir = aei.params.scratchdir
+        
+        # set directory names for temp outputs
+        self.dir_unclassified = 'unclassified'
+        self.dir_ground = 'ground'
+        self.dir_classified = 'classified'
+        self.dir_height = 'height_normalized'
+        
+        # the scratch directory for unclassified tiles
+        self.tiles_unclassified = self.scratchdir + aei.params.pathsep + self.dir_unclassified
+        
+        # the scratch directory for ground classification
+        self.tiles_ground = self.scratchdir + aei.params.pathsep + self.dir_ground
+        
+        # the scratch directory for classified tiles
+        self.tiles_classified = self.scratchdir + aei.params.pathsep + self.dir_classified
+        
+        # scratch directory for height-normalized tiles
+        self.tiles_neight = self.scratchdir + aei.params.pathsep + self.dir_height
+        
+        # default to overwrite any existing files
+        self.overwrite = True 
+        
+        # default to clean up temp files
+        self.cleanup = True
 
 class parse_args:
-    def __init__(self, arglist):
+    def __init__(self, arglist, params):
         
-        # set up main variables and defaults to parse
-        self.infile = ''
-        self.outfile = ''
-        self.spectral_libs = []
-        self.n = 20
-        self.bands = []
-        self.of = 'GTiff'
-        self.normalize = False
+        # we'll be parsing the command line arguments passed
+        #  via arglist, updating the default parameters,
+        #  then returning the params list 
         
         # exit if no arguments passed
         if len(arglist) == 1:
             usage(exit=True)
+            
+        # get glob to search for files
+        import glob
 
         # read arguments from command line
         i = 1
@@ -51,6 +123,20 @@ class parse_args:
                 i += 1
                 arg = arglist[i]
                 
+                # if glob finds files, use what was set in command line
+                if len(glob.glob(arg)) > 0:
+                    params.input_files = arg
+                    
+                # if glob fails to find files, try splitting up if there
+                #  are spaces between files
+                else:
+                    split = arg.split()
+                    for files in split:
+                        if not aei.checkFile(files):
+                            sys.exit(1)
+                            
+                    params.input_files = arg
+                
                 if type(arg) is str:
                     self.infile = arg
                     if not aei.checkFile(self.infile, quiet = True):
@@ -59,7 +145,7 @@ class parse_args:
                         sys.exit(1)
             
             # check output flag
-            if arg.lower() == '-o':
+            if arg.lower() == '-odir':
                 i += 1
                 arg = arglist[i]
                 
@@ -72,6 +158,43 @@ class parse_args:
                         usage()
                         print("[ ERROR ]: unable to write to output path: %s" % outpath)
                         sys.exit(1)
+            
+            if arg.lower() == '-scratchdir':
+            
+            if arg.lower() == '-name':
+            
+            if arg.lower() == '-keep_temp_files':
+                
+            if arg.lower() == '-res':
+                
+            if arg.lower() == '-sres':
+                
+            if arg.lower() == '-max_tch':
+                
+            if arg.lower() == '-tile_size':
+                
+            if arg.lower() == '-buffer_size':
+                
+            if arg.lower() == '-start_step':
+                
+            if arg.lower() == '-no_ground':
+                
+            if arg.lower() == '-no_surface':
+                
+            if arg.lower() == '-no_tch':
+                
+            if arg.lower() == '-no_merged':
+                
+            if arg.lower() == '-no_shape':
+                
+            if arg.lower() == '-no_slicer':
+                
+            if arg.lower() == '-no_density':
+                
+            
+            i += 1
+            
+        return params
     
 def usage(exit=False):
     """
@@ -82,116 +205,88 @@ def usage(exit=False):
 
     print(
         """
-        $ aeilas.py [-cores cores] [-lt las_type][-max_tch max_tch] 
-        [-o output_file] [-overwrite] [-proj proj4string]
-        [-res resolution] [-sres slicer_resolution] [-tile_size tile_size] 
-        -i input_files -o output_file
-        
-        
+        $ aeilas.py -i input_files [-odir output_directory]
+          [-scratchdir scratch_directory] [-name output_basename]
+          [-cores cores] [-max_tch max_tch] 
+          [-res resolution] [-sres slicer_resolution] [-tile_size tile_size] 
+          []
         """
         )
     
     if exit:    
         sys.exit(1)
-
-step = 0
-
-def resume():
-    """
-    resumes the aeilas.py procedure when flagged at runtime
-    
-    syntax: resume()
-    """
-    print(steps)
-    while True:
-        try:
-            step=int(raw_input('Select the step to resume: '))
-            break
-        except ValueError:
-            print('Invalid entry. Please enter number from 1 to %d' % (len(steps)))
         
 def main ():
     """
     the main program for aeilas.py
+    the order of operations for las processing is as follows:
+    
+    01. merge the input data files (assumes multiple *.las or *.laz files set)
+    02. tile the data
+    03. classify ground points
+    04. calculate height agl (in place)
+    05. classify the tiles
+    06. create height-normalized tiles
+    07. create ground models and mosaic
+    08. create surface models and mosaic
+    09. create tree-height models and mosaic
+    10. create canopy density models
+    11. create slicer models
     
     syntax: main()
     """
     
-    # read arguments from command line
-    i = 1
-    while i < len(sys.argv):
-        arg = sys.argv[i]
+    # first, read the default parameters to get the processing object
+    default_params = default_params()
+    
+    # then parse the arguments passed via command line
+    args = sys.argv
+    params = parse_args(args, default_params)
+    
+    # check that input files were specified
+    if not params.input_files:
+        print("[ ERROR ]: No input files specified")
+        sys.exit(1)
+    
+    # report that we're starting, and the parameters used
+    print("[ STATUS ]: Beginning aeilas.py")
+    print("[ STATUS ]: Parameters set:")
+    print("[ STATUS ]: Site name        : %s" % params.name)
+    print("[ STATUS ]: Output directory : %s" % params.odir)
+    
+    # based on these params, proces through each step
+    if params.step_1:
+        step_1(params)
         
-    if arg.lower() == '-cores':
-        i += 1
-        arg = sys.argv[i]
-        try:
-            if arg < multiprocessing.cpu_count():
-                params['cores'] = arg
-        except ValueError:
-            usage()
-            print("Could not parse -cores argument: %s" % (arg))
+    if params.step_2:
+        step_2(params)
+    
+    if params.step_3:
+        step_3(params)
         
-    elif arg.lower() == '-lt':
-        i += 1
-        arg = sys.argv[i]
-        try:
-            if (arg.lower() != 'las') or (arg.lower() != 'laz'):
-                params['lt'] = arg
-        except ValueError:
-            usage()
-            print("Could not parse -lt argument: %s" % (arg))
-            
-    elif arg.lower() == '-max_tch':
-        i += 1
-        arg = sys.argv[i]
-        try:
-            if arg > 0:
-                params['max_tch'] = arg
-        except ValueError:
-            usage()
-            print("Could not parse -max_tch argument: %s" % (arg))
-            
-    elif arg.lower() == '-o':
-        i += 1
-        arg = sys.argv[i]
+    if params.step_4:
+        step_4(params)
         
-    elif arg.lower() == '-overwrite':
-        params['overwrite'] = True
+    if params.step_5:
+        step_5(params)
         
-    elif arg.lower() == '-proj':
-        i += 1
-        arg = sys.argv[i]
+    if params.step_6:
+        step_6(params)
+    
+    if params.step_7:
+        step_7(params)
         
-    elif arg.lower() == '-res':
-        i += 1
-        arg = sys.argv[i]
-        try:
-            if arg > 0:
-                params['res'] = arg
-        except ValueError:
-            usage()
-            print('Could not parse -res argument: %s' % ( arg))
+    if params.step_8:
+        step_8(params)
         
-    elif arg.lower() == '-sres':
-        i += 1
-        arg = sys.argv[i]
-        try:
-            if arg > 0:
-                params['sres'] = arg
-        except ValueError:
-            usage()
-            print('Could not parse -sres argument: %s' % ( arg))
+    if params.step_9:
+        step_9(params)
         
-    elif arg.lower() == '-tile_size':
-        i += 1
-        arg = sys.argv[i]
-        try:
-            if arg > 0:
-                params['tile_size'] = arg
-        except ValueError:
-            usage()
-            print('Could not parse -tile_size argument: %s' % ( arg))
+    if params.step_10:
+        step_10(params)
+    
+    if params.step_11:
+        step_11(params)
 
 #################################
 ::
