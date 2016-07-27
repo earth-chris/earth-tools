@@ -34,6 +34,7 @@ def strJoin(list, join=' '):
     
 # set function to return an array of random floats based on a min/max
 def randomFloats(nIterations, minVal, maxVal):
+    import numpy as np
     return np.random.ranf(nIterations) * (maxVal - minVal) + minVal
     
 # set function to brightness normalize an array

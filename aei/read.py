@@ -81,11 +81,12 @@ def ot(arg):
    
 # set function to join miscellaneous arguments
 def etc(etcList): 
+    import aei
     if type(etcList) is list:
-        etcStr=strJoin(etcList)
+        etcStr=aei.strJoin(etcList)
     if type(etc) is not str:
         print('[ ERROR ]: Unable to parse the etc argument. Must be of type: list')
-        print('[ ERROR ]: Type: ' + type(etcList))
+        print('[ ERROR ]: ' + str(type(etcList)))
         etcStr=''
     return etcStr
 

@@ -1,0 +1,11 @@
+<GroundOverlay>
+  <name>E535.000k N4209.498k</name>
+  <Icon><href>20040506_ca_arra_goldengate_0621_canopy_avg.tif</href></Icon>
+  <LatLonBox>
+  <south>38.0324879572</south>
+  <west>-122.6011427629</west>
+  <north>38.0460253994</north>
+  <east>-122.5840487772</east>
+  <rotation>-0.2579858833</rotation>
+  </LatLonBox>
+</GroundOverlay>
