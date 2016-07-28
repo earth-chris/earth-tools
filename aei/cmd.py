@@ -128,7 +128,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
     tr       [list] - output resolution [xres, yres]
     """
     import os
-    import aei
+    import aei as aei
     
     # return the docstring if user does not set inputs correctly
     if not (inputs or output):
@@ -144,7 +144,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar int, long or float')
             return -1
         else:
-            fparams.append(strJoin(['-dstnodata', dstnodata]))
+            fparams.append(aei.strJoin(['-dstnodata', dstnodata]))
     
     if srcnodata:
         if not isinstance(srcnodata, (int, long, float, complex)):
@@ -152,7 +152,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar int, long or float')
             return -1
         else:
-            fparams.append(strJoin(['-srcnodata', srcnodata]))
+            fparams.append(aei.strJoin(['-srcnodata', srcnodata]))
     
     if n_threads:
         if not isinstance(n_threads, (int, long, float)):
@@ -160,7 +160,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar int, long or float')
             return -1
         else:
-            fparams.append(strJoin(['-multi -wo NUM_THREADS',n_threads], join='='))
+            fparams.append(aei.strJoin(['-multi -wo NUM_THREADS',n_threads], join='='))
         multi = False
     
     if multi:
@@ -175,10 +175,10 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar string')
             return -1
         else:
-            fparams.append(strJoin(['-of', of]))
+            fparams.append(aei.strJoin(['-of', of]))
     if ot:
         ot=read.ot(ot)
-        fparams.append(strJoin(['-ot', ot]))
+        fparams.append(aei.strJoin(['-ot', ot]))
     
     if s_srs:
         if type(s_srs) is not str:
@@ -186,7 +186,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar string')
             return -1
         else:
-            fparams.append(strJoin(['-s_srs', s_srs]))
+            fparams.append(aei.strJoin(['-s_srs', s_srs]))
     
     if t_srs:
         if type(t_srs) is not str:
@@ -194,7 +194,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be a scalar string')
             return -1
         else:
-            fparams.append(strJoin(['-t_srs', t_srs]))
+            fparams.append(aei.strJoin(['-t_srs', t_srs]))
     
     if te:
         if type(te) is not list and len(te) is not 4:
@@ -202,7 +202,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be a 4-element list')
             return -1
         else:
-            fparams.append(strJoin(['-te', strJoin(te)]))
+            fparams.append(aei.strJoin(['-te', aei.strJoin(te)]))
     
     if tr:
         if type(te) is not list and len (tr) is not 2:
@@ -210,7 +210,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be a 2-element list')
             return -1
         else:
-            fparams.append(strjoin(['-tr', strJoin(tr)]))
+            fparams.append(aei.strJoin(['-tr', aei.strJoin(tr)]))
 
     fparams.append(aei.read.etc(etc))
     fparams=aei.strJoin(fparams)
@@ -222,23 +222,250 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
     os.system(ocmd)
     
     return(ocmd)
+    
+# gdal_translate
+def gdal_translate(inputs='', output='', etc='', dstnodata=False, 
+        of=False, ot=False, srcnodata=False):
+    """
+    mosaics, reprojects or warps raster imagery
+    
+    syntax: gdal_translate(inputs, output, etc=etc, dstnodata=dstnodata, of=of, ot=ot, r=r, srcnodata=srcnodata)
+    
+    inputs [string] - the input raster file(s). accepts wild
+                      cards. enter multiple files as one string.
+    output [string] - the output raster file
+    etc    [string] - additional command line params. enter all
+                      as a scalar string. 
+    dstnodata [num] - output no data value
+    of     [string] - output format (e.g. 'ENVI')
+    ot      [multi] - output data type (idl or python style)
+    srcnodata [num] - input no data value
+    """
+    import os
+    import aei as aei
+    
+    # return the docstring if user does not set inputs correctly
+    if not (inputs or output):
+        print(gdal_translate.__doc__)
+        return -1
+        
+    # parse input params
+    fparams = []
+    
+    if dstnodata:
+        if not isinstance(dstnodata, (int, long, float, complex,)):
+            print('[ ERROR ]: Unable to parse -dstnodata option %s' % (dstnodata))
+            print('[ ERROR ]: Must be scalar int, long or float')
+            return -1
+        else:
+            fparams.append(aei.strJoin(['-dstnodata', dstnodata]))
+    
+    if srcnodata:
+        if not isinstance(srcnodata, (int, long, float, complex)):
+            print('[ ERROR ]: Unable to parse -srcnodata option %s' % (srcnodata))
+            print('[ ERROR ]: Must be scalar int, long or float')
+            return -1
+        else:
+            fparams.append(aei.strJoin(['-srcnodata', srcnodata]))
+    
+    if of:
+        if type(of) is not str:
+            print('[ ERROR ]: Unable to parse -of option %s' % (of))
+            print('[ ERROR ]: Must be scalar string')
+            return -1
+        else:
+            fparams.append(aei.strJoin(['-of', of]))
+    if ot:
+        ot=read.ot(ot)
+        fparams.append(aei.strJoin(['-ot', ot]))
+
+    if etc:
+        fparams.append(aei.read.etc(etc))
+    
+    fparams=aei.strJoin(fparams)
+    
+    # join and run the command
+    ocmd = aei.strJoin([raw.gdal_translate, fparams, inputs, output])
+    print("[ STATUS ]: Running gdal_translate")
+    print("[ STATUS ]: %s" % ocmd)
+    os.system(ocmd)
+    
+    return(ocmd)
+    
+# gdalbuildvrt
+def gdalbuildvrt(inputs='', output='', etc='', vrtnodata=False, 
+        of=False, ot=False, srcnodata=False, separate=False):
+    """
+    mosaics, reprojects or warps raster imagery
+    
+    syntax: gdaluildvrt(inputs, output, etc=etc, dstnodata=dstnodata, multi=multi, n_threads=n_threads, overwrite=overwrite, of=of, ot=ot, r=r, srcnodata=srcnodata, s_srs=s_srs, t_srs=t_srs, te=te, tr=tr)
+    
+    inputs [string] - the input raster file(s). accepts wild
+                      cards. enter multiple files as one string.
+    output [string] - the output raster file
+    etc    [string] - additional command line params. enter all
+                      as a scalar string. 
+    vrtnodata [num] - output no data value
+    of     [string] - output format (e.g. 'ENVI')
+    ot      [multi] - output data type (idl or python style)
+    srcnodata [num] - input no data value
+    separate [bool] - set inputs as separate bands
+    """
+    import os
+    import aei as aei
+    
+    # return the docstring if user does not set inputs correctly
+    if not (inputs or output):
+        print(gdal_translate.__doc__)
+        return -1
+        
+    # parse input params
+    fparams = []
+    
+    if vrtnodata:
+        if not isinstance(vrtnodata, (int, long, float, complex,)):
+            print('[ ERROR ]: Unable to parse -vrtnodata option %s' % (dstnodata))
+            print('[ ERROR ]: Must be scalar int, long or float')
+            return -1
+        else:
+            fparams.append(aei.strJoin(['-vrtnodata', dstnodata]))
+    
+    if srcnodata:
+        if not isinstance(srcnodata, (int, long, float, complex)):
+            print('[ ERROR ]: Unable to parse -srcnodata option %s' % (srcnodata))
+            print('[ ERROR ]: Must be scalar int, long or float')
+            return -1
+        else:
+            fparams.append(aei.strJoin(['-srcnodata', srcnodata]))
+    
+    if of:
+        if type(of) is not str:
+            print('[ ERROR ]: Unable to parse -of option %s' % (of))
+            print('[ ERROR ]: Must be scalar string')
+            return -1
+        else:
+            fparams.append(aei.strJoin(['-of', of]))
+    if ot:
+        ot=read.ot(ot)
+        fparams.append(aei.strJoin(['-ot', ot]))
+        
+    if separate:
+        fparams.append('-separate')
+
+    if etc:
+        fparams.append(aei.read.etc(etc))
+    
+    fparams=aei.strJoin(fparams)
+    
+    # join and run the command
+    ocmd = aei.strJoin([raw.gdalbuildvrt, fparams, output, inputs])
+    print("[ STATUS ]: Running gdalbuildvrt")
+    print("[ STATUS ]: %s" % ocmd)
+    os.system(ocmd)
+    
+    return(ocmd)
 
 ###
 # LAStools commands
 ###
 
 # las2dem
+def las2dem(inputs, output='', etc='', odir='', odix='',
+    step=2.0, nodata=-9999, ground=False, otif=True, 
+    use_tile_bb=False, cores=1):
+    """
+    interpolates, grids and rasterizes las files
+    
+    syntax: las2dem(inputs, output='', etc='', odir='', odix='',
+      step=2.0, fill=5, subcircle=0.4, nodata=-9999, elevation=True,
+      ground=False, lowest=False, highest=False, wgs84=True, 
+      utm='', otif=True, use_tile_bb=False, cores=1)
+    
+    inputs   [string] - the input las/laz file(s). accepts wild
+                        cards. enter multiple files as one string.
+    output   [string] - the output merged las/laz file. 
+    etc      [string] - additional command line params. enter all
+                        as a scalar string. 
+    odir     [string] - the output directory. superceded by using 'output' variable
+    odix     [string] - a string to append to each output. superceded by using 'output' variable
+    step      [float] - the raster grid size.
+    nodata    [float] - the value where no points are found
+    ground     [bool] - create ground model
+    otif       [bool] - output as tif format
+    use_tile_bb[bool] - set to output a grid only to the extent of the tile
+    cores     [float] - number of processors to use
+    """
+    import aei as aei
+    
+    # parse input params
+    fparams = []
+    
+    # determine if -o, -odir, or -odix should be set
+    #  if -o
+    if output:
+        fparams.append(aei.strJoin(['-o', output]))
+    
+    else:
+        # if -odir
+        if odir:
+            fparams.append(aei.strJoin(['-odir', odir]))
+        else:
+            fparams.append(aei.strJoin(['-odir', aei.params.outdir]))
+        
+        # if -odix
+        if odix:
+            fparams.append(aei.strJoin(['-odix', odix]))
+            
+    # set the step size
+    fparams.append(aei.strJoin(['-step', step]))
+    
+    # set the nodata value
+    fparams.append(aei.strJoin(['-nodata', nodata]))
+    
+    # set ground
+    if ground:
+        fparams.append(aei.strJoin(['-keep_class', 2]))
+        lowest = True
+        
+    # set tif as output format
+    if otif:
+        fparams.append('-otif')
+    
+    # set bounding box
+    if use_tile_bb:
+        fparams.append('-use_tile_bb')
+    
+    # set cores
+    fparams.append(aei.strJoin(['-cores', cores]))
+    
+    # add additional parameters passed through etc keyword
+    if etc:
+        fparams.append(aei.read.etc(etc))
+    
+    # concatenate params list to string
+    fparams = aei.strJoin(fparams)
+    
+    # join and run the command
+    ocmd = aei.strJoin([raw.las2dem, '-i', inputs, fparams])
+    
+    # report status
+    print("[ STATUS ]: Running las2dem")
+    print("[ STATUS ]: %s" % ocmd)
+    
+    aei.params.os.system(ocmd)
 
 # las2las
 
 # lasboundary
 def lasboundary(inputs, output='', etc='', odir='', odix='',
-    use_bb=False, disjoint=False, concavity=50, oshp=True):
+    use_bb=False, disjoint=False, concavity=50, oshp=True,
+    cores=1):
     """
     creates a boundary polygon for las files
     
     syntax: lasboundary(inputs, output='', etc='', odir='', odix='',
-      use_bb=False, disjoint=False, concavity=50, oshp=True)
+      use_bb=False, disjoint=False, concavity=50, oshp=True
+      cores=1)
     
     inputs   [string] - the input las/laz file(s). accepts wild
                         cards. enter multiple files as one string.
@@ -251,6 +478,7 @@ def lasboundary(inputs, output='', etc='', odir='', odix='',
     disjoint   [bool] - set to allow multiple hulls (i.e. islands of pts)
     concavity [float] - distance in meters of largest internal hole
     oshp       [bool] - ensures output format is shp
+    cores     [float] - number of processors to use
     """
     import aei as aei
     
@@ -288,6 +516,9 @@ def lasboundary(inputs, output='', etc='', odir='', odix='',
     if oshp:
         fparams.append('-oshp')
     
+    # set number of cores
+    fparams.append(aei.strJoin(['-cores', cores]))
+    
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
@@ -309,7 +540,8 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
     height_cutoff=1.37, step=20, file_are_plots=False,
     loc='', min=False, max=False, avg=False, std=False,
     ske=False, kur=False, cov=False, dns=False, gap=False,
-    cover_cutoff=5.0, count=[], density=[], fractions=False, otif=True):
+    cover_cutoff=5.0, count=[], density=[], fractions=False, 
+    use_tile_bb = False, otif=True, cores=1):
     """
     calculates and rasterizes forestry/canopy metrics using las files. 
       must be run using a height-normalized input file.
@@ -318,7 +550,8 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
       height_cutoff=1.37, step=20, file_are_plots=False,
       loc='', min=False, max=False, avg=False, std=False,
       ske=False, kur=False, cov=False, dns=False, gap=False,
-      cover_cutoff=5.0, count=[], density=[], fractions=False, otif=True)
+      cover_cutoff=5.0, count=[], density=[], fractions=False, 
+      use_tile_bb=False, otif=True, cores=1)
     
     inputs        [string] - the input las/laz file(s). accepts wild
                              cards. enter multiple files as one string.
@@ -346,7 +579,9 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
                              three rasters in intervals [2,4), [4, 6), [6, 8)
     density         [list] - similar to 'count' but reports as normalized density
     fractions       [bool] - report output in fractions (0-1) instead of percent (0-100)
+    use_tile_bb     [bool] - set to use the tile bounding box, not full file
     otif            [bool] - ensures output format is tif.
+    cores          [float] - set number of processors
     """
     import aei as aei
     
@@ -377,6 +612,9 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
         
     # set height cutoff
     fparams.append(aei.strJoin(['-height_cutoff', height_cutoff]))
+    
+    # set cover cutoff
+    fparams.append(aei.strJoin(['-cover_cutoff', cover_cutoff]))
     
     # determine if gridding, using full file, or using circles
     #  if using full file
@@ -433,6 +671,9 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
     if otif:
         fparams.append('-otif')
     
+    # set number of cores
+    fparams.append(aei.strJoin(['-cores', cores]))
+    
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
@@ -451,13 +692,13 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
 
 # lasclassify
 def lasclassify(inputs, output='', etc='', odir='', odix='',
-    planar=0.1, ground_offset=2.0, olaz=True):
+    planar=0.1, ground_offset=2.0, olaz=True, cores=1):
     """
     classifies building and vegetation in las files. requires ground
       points and heights calculated in input file.
     
     syntax: lasclassify(input[s], output='', etc='', odir='', odix='',
-      planar=0.1, ground_offset=2.0, olaz=True)
+      planar=0.1, ground_offset=2.0, olaz=True, cores=1)
     
     inputs       [string] - the input las/laz file(s). accepts wild
                             cards. enter multiple files as one string.
@@ -472,6 +713,7 @@ def lasclassify(inputs, output='', etc='', odir='', odix='',
     ground_offset [float] - sets the minimum height above which veg is
                             classified. default = 2.0
     olaz           [bool] - ensures output format is laz.
+    cores         [float] - number of processors to use
     """
     import aei as aei
     
@@ -493,8 +735,6 @@ def lasclassify(inputs, output='', etc='', odir='', odix='',
         # if -odix
         if odix:
             fparams.append(aei.strJoin(['-odix', odix]))
-        else:
-            fparams.append(aei.strJoin(['-odix', '_lascanopy']))
     
     # add planar parameter
     fparams.append(aei.strJoin(['-planar', planar]))
@@ -506,6 +746,9 @@ def lasclassify(inputs, output='', etc='', odir='', odix='',
     if olaz:
         fparams.append('-olaz')
     
+    # set number of cores
+    fparams.append(aei.strJoin(['-cores', cores]))
+    
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
@@ -514,8 +757,7 @@ def lasclassify(inputs, output='', etc='', odir='', odix='',
     fparams = aei.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lasclassify, '-i', inputs, '-o', output,
-            fparams])
+    ocmd = aei.strJoin([raw.lasclassify, '-i', inputs, fparams])
     
     # report status
     print("[ STATUS ]: Running lasclassify")
@@ -529,14 +771,14 @@ def lasclassify(inputs, output='', etc='', odir='', odix='',
 def lasgrid(inputs, output='', etc='', odir='', odix='',
     step=2.0, fill=5, subcircle=0.4, nodata=-9999, elevation=True,
     ground=False, lowest=False, highest=False, wgs84=True, 
-    utm='', otif=True):
+    utm='', otif=True, use_tile_bb=False, cores=1):
     """
     grids and rasterizes las files
     
     syntax: lasgrid(inputs, output='', etc='', odir='', odix='',
       step=2.0, fill=5, subcircle=0.4, nodata=-9999, elevation=True,
       ground=False, lowest=False, highest=False, wgs84=True, 
-      utm='', otif=True)
+      utm='', otif=True, use_tile_bb=False, cores=1)
     
     inputs   [string] - the input las/laz file(s). accepts wild
                         cards. enter multiple files as one string.
@@ -555,6 +797,8 @@ def lasgrid(inputs, output='', etc='', odir='', odix='',
     highest    [bool] - grid the highest points
     wgs84      [bool] - use the wgs84 ellipsoid
     otif       [bool] - output as tif format
+    use_tile_bb[bool] - set to output a grid only to the extent of the tile
+    cores     [float] - set number of processors to use
     """
     import aei as aei
     
@@ -576,8 +820,6 @@ def lasgrid(inputs, output='', etc='', odir='', odix='',
         # if -odix
         if odix:
             fparams.append(aei.strJoin(['-odix', odix]))
-        else:
-            fparams.append(aei.strJoin(['-odix', '_lascanopy']))
             
     # set the step size
     fparams.append(aei.strJoin(['-step', step]))
@@ -615,6 +857,13 @@ def lasgrid(inputs, output='', etc='', odir='', odix='',
     if otif:
         fparams.append('-otif')
     
+    # set bounding box
+    if use_tile_bb:
+        fparams.append('-use_tile_bb')
+    
+    # set number of cores to use
+    fparams.append(aei.strJoin(['-cores', cores]))
+    
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
@@ -636,7 +885,7 @@ def lasground(inputs, output='', etc='', odir='', odix='',
     olaz=True, not_airborne=False, city=False, town=False,
     compute_height=True, replace_z=False,
     fine=False, extra_fine=False,
-    coarse=False, extra_coarse=False,
+    coarse=False, extra_coarse=False, cores=1,
     non_ground_unchanged=True):
     """
     calculates ground points for las files
@@ -667,6 +916,7 @@ def lasground(inputs, output='', etc='', odir='', odix='',
                             need lasheight
     replace_z      [bool] - replaces the z value with the height above
                             ground. use in conjunction with compute_height
+    cores         [float] - set the number of processors to use
     non_ground_unchanged [bool] - set this to keep original classification
                                   in place and only re-classify ground.
     """
@@ -690,8 +940,6 @@ def lasground(inputs, output='', etc='', odir='', odix='',
         # if -odix
         if odix:
             fparams.append(aei.strJoin(['-odix', odix]))
-        else:
-            fparams.append(aei.strJoin(['-odix', '_lascanopy']))
     
     # add olaz parameter if set
     if olaz:
@@ -737,6 +985,9 @@ def lasground(inputs, output='', etc='', odir='', odix='',
     if extra_coarse:
         fparams.append('-extra_coarse')
         
+    # set number of processors to use
+    fparams.append(aei.strJoin(['-cores', cores]))
+    
     # keep default classification info
     if non_ground_unchanged:
         fparams.append('-non_ground_unchanged')
@@ -749,8 +1000,7 @@ def lasground(inputs, output='', etc='', odir='', odix='',
     fparams = aei.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lasground, '-i', inputs, '-o', output,
-            fparams])
+    ocmd = aei.strJoin([raw.lasground, '-i', inputs, fparams])
     
     # report status
     print("[ STATUS ]: Running lasground")
@@ -760,12 +1010,12 @@ def lasground(inputs, output='', etc='', odir='', odix='',
 
 # lasheight
 def lasheight(inputs, output='', etc='', odir='', odix='',
-    replace_z=False, olaz=True):
+    replace_z=False, olaz=True, cores=1):
     """
     calculates height of las files
     
     syntax: lasheight(input[s], output='', etc='', odir='',
-      odix='', replace_z=False, olaz=True)
+      odix='', replace_z=False, olaz=True, cores=1)
     
     inputs  [string] - the input las/laz file(s). accepts wild
                        cards. enter multiple files as one string.
@@ -777,6 +1027,7 @@ def lasheight(inputs, output='', etc='', odir='', odix='',
     replace_z [bool] - replaces the z value with the height above
                        ground. default = False
     olaz      [bool] - ensures output format is laz. default = True
+    cores    [float] - sets the number of processors to use
     """
     import aei as aei
     
@@ -798,8 +1049,6 @@ def lasheight(inputs, output='', etc='', odir='', odix='',
         # if -odix
         if odix:
             fparams.append(aei.strJoin(['-odix', odix]))
-        else:
-            fparams.append(aei.strJoin(['-odix', '_lascanopy']))
     
     # add replace_z to param list if set
     if replace_z:
@@ -809,6 +1058,9 @@ def lasheight(inputs, output='', etc='', odir='', odix='',
     if olaz:
         fparams.append('-olaz')
     
+    # set number of cores to use
+    fparams.append(aei.strJoin(['-cores', cores]))
+    
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
@@ -817,8 +1069,7 @@ def lasheight(inputs, output='', etc='', odir='', odix='',
     fparams = aei.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lasheight, '-i', inputs, '-o', output,
-            fparams])
+    ocmd = aei.strJoin([raw.lasheight, '-i', inputs, fparams])
     
     # report status
     print("[ STATUS ]: Running lasheight")
@@ -863,7 +1114,7 @@ def lasindex(inputs, etc=''):
 
 # lasmerge
 def lasmerge(inputs, output, etc='',
-    rescale=[0.01, 0.01, 0.01], olaz=True):
+    rescale=[0.01, 0.01, 0.001], olaz=True):
     """
     merges and rescales las files
     
@@ -876,7 +1127,7 @@ def lasmerge(inputs, output, etc='',
                       as a scalar string. 
     rescale  [list] - the rescale/precision parameters for the
                       output merged output file. default: 
-                      [0.01, 0.01, 0.01]. set to False to not
+                      [0.01, 0.01, 0.001]. set to False to not
                       rescale
     """
     import aei as aei
@@ -911,7 +1162,7 @@ def lasmerge(inputs, output, etc='',
     
 # lastile
 def lastile(inputs, odir, etc='', odix='', tile_size=1000, buffer=100,
-    olaz=True):
+    olaz=True, cores=1):
     """
     tiles las files
     
@@ -928,6 +1179,7 @@ def lastile(inputs, odir, etc='', odix='', tile_size=1000, buffer=100,
     tile_size [float] - the output tile size in units of the horizontal
                         projection. default = 1000
     buffer    [float] - the buffer surrounding each tile. default = 100
+    cores     [float] - the number of processors to use
     """
     import aei as aei
     
@@ -948,6 +1200,9 @@ def lastile(inputs, odir, etc='', odix='', tile_size=1000, buffer=100,
     if olaz:
         fparams.append('-olaz')
         
+    # add n cores
+    fparams.append(aei.strJoin(['-cores', cores]))
+    
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))

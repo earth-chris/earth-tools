@@ -43,8 +43,8 @@ try:
     scratchdir = environ['SCRATCH_DIR']
 except KeyError:
     scratchdir = './'
-    cores = multiprocessing.cpu_count()
-    
+
+cores = multiprocessing.cpu_count()
 mem = virtual_memory().total
 scratchdir = scratchdir
 

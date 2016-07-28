@@ -1,4 +1,4 @@
-#!/bin/env/python2.7
+#!/usr/bin/python
 ##
 ## full processing stream for las/laz files to raster data products
 ##
@@ -19,27 +19,39 @@ class default_params:
         self.res = 1 
         
         # slicer resolution (usually 5x raster res)
-        self.slicer_res = 5 
+        self.sres = 5 
         
         # tile size in units of output projection
         self.tile_size = 500 
         
         # buffer distance in units of output projection
-        self.buffer = 50 
+        self.buffer_size = 50 
         
         # max height above which to clip spurious (noise) points
         self.max_tch = 50
         
+        # set canopy cover height threshold
+        self.cover_cutoff = 4.0
+        
         # default to all cores but 1
         self.cores = aei.params.cores - 1
+        
+        # default no-data value
+        self.nodata = -9999
+        
+        # set up some processing keywords
+        self.city = False
+        self.town = False
+        self.fine = False
+        self.extra_fine = False
+        self.coarse = False
+        self.extra_coarse = False
         
         ### FILE FORMAT PARAMETERS
         
         # default format for output
-        self.lt = 'laz' 
-        
-        # raster output format
-        self.ot = 'Float32' 
+        self.lt = '.laz' 
+        self.olaz = True
         
         ### DEFAULT DATA PRODUCTS
         
@@ -61,7 +73,7 @@ class default_params:
         ### OUTPUT DIRECTORIES AN DEFAULT FILE NAMES
         
         # the input file list
-        self.input_files = []
+        self.input_files = ''
         
         # the site name that will have everything appended to it e.g. site_tch.tif, site_merged.laz
         self.sitename = 'aeilas'
@@ -91,13 +103,48 @@ class default_params:
         self.tiles_classified = self.scratchdir + aei.params.pathsep + self.dir_classified
         
         # scratch directory for height-normalized tiles
-        self.tiles_neight = self.scratchdir + aei.params.pathsep + self.dir_height
+        self.tiles_height = self.scratchdir + aei.params.pathsep + self.dir_height
         
         # default to overwrite any existing files
         self.overwrite = True 
         
         # default to clean up temp files
         self.cleanup = True
+        
+        ### ASSUME ALL DATA PRODUCTS ON
+        
+        # set the starting step
+        self.start_step = 1
+        
+        # and all steps are go
+        self.step_1 = True
+        self.step_2 = True
+        self.step_3 = True
+        self.step_4 = True
+        self.step_5 = True
+        self.step_6 = True
+        self.step_7 = True
+        self.step_8 = True
+        self.step_9 = True
+        self.step_10 = True
+        self.step_11 = True
+        self.step_12 = True
+        self.step_13 = True
+        
+        # and create parameters for each step
+        self.input_step_1 = self.input_files
+        self.input_step_2 = self.input_files
+        self.input_step_3 = self.input_files
+        self.input_step_4 = self.input_files
+        self.input_step_5 = self.input_files
+        self.input_step_6 = self.input_files
+        self.input_step_7 = self.input_files
+        self.input_step_8 = self.input_files
+        self.input_step_9 = self.input_files
+        self.input_step_10 = self.input_files
+        self.input_step_11 = self.input_files
+        self.input_step_12 = self.input_files
+        self.input_step_13 = self.input_files
 
 class parse_args:
     def __init__(self, arglist, params):
@@ -133,68 +180,588 @@ class parse_args:
                     split = arg.split()
                     for files in split:
                         if not aei.checkFile(files):
-                            sys.exit(1)
+                            aei.params.sys.exit(1)
                             
                     params.input_files = arg
-                
-                if type(arg) is str:
-                    self.infile = arg
-                    if not aei.checkFile(self.infile, quiet = True):
-                        usage()
-                        aei.checkFile(self.infile)
-                        sys.exit(1)
             
             # check output flag
-            if arg.lower() == '-odir':
+            elif arg.lower() == '-odir':
                 i += 1
                 arg = arglist[i]
                 
-                if type(arg) is str:
-                    self.outfile = arg
-                    outpath = os.path.dirname(self.outfile)
-                    if outpath == '':
-                        outpath = '.'
-                    if not os.access(outpath, os.W_OK):
-                        usage()
-                        print("[ ERROR ]: unable to write to output path: %s" % outpath)
-                        sys.exit(1)
+                if not aei.params.os.access(arg, aei.params.os.W_OK):
+                    usage()
+                    print("[ ERROR ]: unable to write to output path: %s" % outpath)
+                    aei.params.sys.exit(1)
+                    
+                else: 
+                    params.odir = arg
             
-            if arg.lower() == '-scratchdir':
+            # check scratchdir flag
+            elif arg.lower() == '-scratchdir':
+                i += 1
+                arg = arglist[i]
+                
+                if not aei.params.os.access(arg, aei.params.os.W_OK):
+                    usage()
+                    print("[ ERROR ]: unable to write to output path: %s" % outpath)
+                    aei.params.sys.exit(1)
+                    
+                else: 
+                    params.scratchdir = arg
             
-            if arg.lower() == '-name':
+            # check -name flag
+            elif arg.lower() == '-name':
+                i += 1
+                arg = arglist[i]
+                
+                params.name = str(arg)
             
-            if arg.lower() == '-keep_temp_files':
+            # check if we keep temp files    
+            elif arg.lower() == '-keep_temp_files':
+                params.cleanup = False
+            
+            # check the resolution set    
+            elif arg.lower() == '-res':
+                i += 1
+                arg = arglist[i]
                 
-            if arg.lower() == '-res':
+                try:
+                    params.res = float(arg)
+                except ValueError:
+                    print("[ ERROR ]: unable to set res using arg: %s" % arg)
+                    aei.params.sys.exit(1)
+            
+            # check the slicer resolution set    
+            elif arg.lower() == '-sres':
+                i += 1
+                arg = arglist[i]
                 
-            if arg.lower() == '-sres':
+                try:
+                    params.sres = float(arg)
+                except ValueError:
+                    print("[ ERROR ]: unable to set sres using arg: %s" % arg)
+                    aei.params.sys.exit(1)
                 
-            if arg.lower() == '-max_tch':
+            # check the max tch value set
+            elif arg.lower() == '-max_tch':
+                i += 1
+                arg = arglist[i]
                 
-            if arg.lower() == '-tile_size':
+                try:
+                    params.max_tch = float(arg)
+                except ValueError:
+                    print("[ ERROR ]: unable to set max_tch using arg: %s" % arg)
+                    aei.params.sys.exit(1)
                 
-            if arg.lower() == '-buffer_size':
+            # check the tile size set
+            elif arg.lower() == '-tile_size':
+                i += 1
+                arg = arglist[i]
                 
-            if arg.lower() == '-start_step':
+                try:
+                    params.tile_size = float(arg)
+                except ValueError:
+                    print("[ ERROR ]: unable to set tile_size using arg: %s" % arg)
+                    aei.params.sys.exit(1)
                 
-            if arg.lower() == '-no_ground':
+            # check the buffer size set
+            elif arg.lower() == '-buffer_size':
+                i += 1
+                arg = arglist[i]
                 
-            if arg.lower() == '-no_surface':
+                try:
+                    params.buffer_size = float(arg)
+                except ValueError:
+                    print("[ ERROR ]: unable to set buffer_size using arg: %s" % arg)
+                    aei.params.sys.exit(1)
                 
-            if arg.lower() == '-no_tch':
+            # check the starting step
+            elif arg.lower() == '-start_step':
+                i += 1
+                arg = arglist[i]
                 
-            if arg.lower() == '-no_merged':
+                try:
+                    params.start_step = int(arg)
+                except ValueError:
+                    print("[ ERROR ]: unable to set start_step using arg: %s" % arg)
+                    aei.params.sys.exit(1)
+                    
+                # turn off all steps before the start step
+                for i in range(1, params.start_step):
+                    params.__dict__["step_" + str(i)] = False
                 
-            if arg.lower() == '-no_shape':
+            # check if any outputs are turned off
+            elif arg.lower() == '-no_ground':
+                params.step_7 = False
                 
-            if arg.lower() == '-no_slicer':
+            elif arg.lower() == '-no_surface':
+                params.step_8 = False
                 
-            if arg.lower() == '-no_density':
+            elif arg.lower() == '-no_tch':
+                params.step_9 = False
                 
+            elif arg.lower() == '-no_density':
+                params.step_10 = False
+        
+            elif arg.lower() == '-no_slicer':
+                params.step_11 = False
+            
+            elif arg.lower() == '-no_merged':
+                params.step_12 = False
+                
+            elif arg.lower() == '-no_shape':
+                params.step_13 = False
+                
+            elif arg.lower() == '-city':
+                params.city = False
+            elif arg.lower() == '-town':
+                params.town = False
+            elif arg.lower() == '-fine':
+                params.fine = False
+            elif arg.lower() == '-extra_fine':
+                params.extra_fine = False
+            elif arg.lower() == '-coarse':
+                params.coarse = True
+            elif arg.lower() == '-extra_coarse':
+                params.extra_coarse = False
+                
+            else:
+                usage()
+                print("[ ERROR ]: Unrecognized argument: %s" % arg)
+                aei.params.sys.exit(1)
             
             i += 1
+        
+def update_params(params):
+    """
+    this procedure takes the input parameters as set and updates
+      which files should be processed in which step. these will be
+      updated later by various steps
+    """
+    
+    # assume input for each step will be the input files listed. 
+    #  these will be updated by the various steps below
+    params.input_step_1 = params.input_files
+    params.input_step_2 = params.input_files
+    params.input_step_3 = params.input_files
+    params.input_step_4 = params.input_files
+    params.input_step_5 = params.input_files
+    params.input_step_6 = params.input_files
+    params.input_step_7 = params.input_files
+    params.input_step_8 = params.input_files
+    params.input_step_9 = params.input_files
+    params.input_step_10 = params.input_files
+    params.input_step_11 = params.input_files
+    params.input_step_12 = params.input_files
+    params.input_step_13 = params.input_files
+    
+    # strip the path separater if there
+    if params.outdir[-1] == aei.params.pathsep:
+        params.outdir = params.outdir[:-1]
+        
+    if params.scratchdir[-1] == aei.params.pathsep:
+        params.scratchdir = params.scratchdir[:-1]
+    
+    # update the scratch directory for unclassified tiles
+    params.tiles_unclassified = params.scratchdir + aei.params.pathsep + params.dir_unclassified
+    
+    # update the scratch directory for ground classification
+    params.tiles_ground = params.scratchdir + aei.params.pathsep + params.dir_ground
+    
+    # update the scratch directory for classified tiles
+    params.tiles_classified = params.scratchdir + aei.params.pathsep + params.dir_classified
+    
+    # update the scratch directory for height-normalized tiles
+    params.tiles_height = params.scratchdir + aei.params.pathsep + params.dir_height
+    
+def create_directories(params):
+    """
+    creates the directories necessary for processing if not already there
+    """
+    
+    # check output directory
+    if not aei.params.os.path.exists(params.odir):
+        try:
+            aei.params.os.makedirs(params.odir)
+        except:
+            print("[ ERROR ]: Unable to create output directory %s" % params.odir)
+            aei.params.sys.exit(1)
             
-        return params
+    # check scratch directory
+    if not aei.params.os.path.exists(params.scratchdir):
+        try:
+            aei.params.os.makedirs(params.scratchdir)
+        except:
+            print("[ ERROR ]: Unable to create scratch directory %s" % params.scratchdirdir)
+            aei.params.sys.exit(1)
+            
+    # check unclassified
+    if not aei.params.os.path.exists(params.tiles_unclassified):
+        try:
+            aei.params.os.makedirs(params.tiles_unclassified)
+        except:
+            print("[ ERROR ]: Unable to create unclassified directory %s" % params.tiles_unclassified)
+            aei.params.sys.exit(1)
+    
+    # check ground
+    if not aei.params.os.path.exists(params.tiles_ground):
+        try:
+            aei.params.os.makedirs(params.tiles_ground)
+        except:
+            print("[ ERROR ]: Unable to create output directory %s" % params.tiles_ground)
+            aei.params.sys.exit(1)
+    
+    # check classified
+    if not aei.params.os.path.exists(params.tiles_classified):
+        try:
+            aei.params.os.makedirs(params.tiles_classified)
+        except:
+            print("[ ERROR ]: Unable to create output directory %s" % params.tiles_classified)
+            aei.params.sys.exit(1)
+        
+    # check height
+    if not aei.params.os.path.exists(params.tiles_height):
+        try:
+            aei.params.os.makedirs(params.tiles_height)
+        except:
+            print("[ ERROR ]: Unable to create output directory %s" % params.tiles_height)
+            aei.params.sys.exit(1)
+
+def step_1(params):
+    """
+    merges the input data files
+    """
+    # report starting
+    print("[ STATUS ]: Starting step 1")
+    
+    # set up the output file
+    output_file = params.scratchdir + aei.params.pathsep + \
+      params.name + "_merged.laz"
+      
+    # run the command  
+    aei.cmd.lasmerge(params.input_step_1, output_file)
+    
+    # update the inputs for next steps
+    params.input_step_2 = output_file
+    
+def step_2(params):
+    """
+    tiles the data
+    """
+    # report starting
+    print("[ STATUS ]: Starting step 2")
+    
+    # set up the output directory
+    output_directory = params.tiles_unclassified
+    
+    # run the command
+    aei.cmd.lastile(params.input_step_2, odir = output_directory,
+      tile_size = params.tile_size, buffer = params.buffer_size,
+      olaz = params.olaz, cores = params.cores)
+      
+    # update the inputs for next steps
+    params.input_step_3 = output_directory + aei.params.pathsep + "*" + params.lt
+    
+def step_3(params):
+    """
+    classifies ground points
+    """
+    # report starting
+    print("[ STATUS ]: Starting step 3")
+    
+    # set up output directory
+    output_directory = params.tiles_ground
+    
+    # check if step 4 is to be run - if so, we can perform both
+    #  in a single command and skip step 4 below
+    compute_height = False
+    
+    if params.step_4:
+        compute_height = True
+        params.step_4 = False
+        print("[ STATUS ]: Starting step 4")
+        
+    # run the command
+    aei.cmd.lasground(params.input_step_3, odir = output_directory,
+      olaz = params.olaz, city = params.city, town = params.town,
+      compute_height = compute_height, fine = params.fine,
+      extra_fine = params.extra_fine, coarse = params.coarse,
+      extra_coarse = params.extra_coarse, cores = params.cores)
+      
+    # update inputs for next steps
+    params.input_step_4 = output_directory + aei.params.pathsep + "*" + params.lt
+    params.input_step_5 = output_directory + aei.params.pathsep + "*" + params.lt
+    
+def step_4(params):
+    """
+    calculates height agl
+    """
+    # report starting
+    print("[ STATUS ]: Starting step 4")
+    
+    # no need to set up output directory, calculates height in place
+    
+    # run the command
+    aei.cmd.lasheight(params.input_step_4, cores=params.cores)
+    
+    # update inputs for next steps
+    params.input_step_5 = params.input_step_4
+    
+def step_5(params):
+    """
+    classifies veg & buildings
+    """
+    # report starting
+    print("[ STATUS ]: Starting step 5")
+    
+    # set up output directory
+    output_directory = params.tiles_classified
+    
+    # run the command
+    aei.cmd.lasclassify(params.input_step_5, odir = output_directory,
+      olaz = params.olaz, cores = params.cores)
+      
+    # update inputs for next steps
+    params.input_step_6 = output_directory + aei.params.pathsep + "*" + params.lt
+    params.input_step_7 = output_directory + aei.params.pathsep + "*" + params.lt
+    params.input_step_8 = output_directory + aei.params.pathsep + "*" + params.lt
+    params.input_step_12 = output_directory + aei.params.pathsep + "*" + params.lt
+    
+def step_6(params):
+    """
+    height-normalizes the data
+    """
+    # report starting
+    print("[ STATUS ]: Starting step 6")
+    
+    # set up output directory
+    output_directory = params.tiles_height
+    
+    # run the command
+    aei.cmd.lasheight(params.input_step_6, odir = output_directory,
+      replace_z = True, olaz = params.olaz, cores=params.cores)
+      
+    # update inputs for next steps
+    params.input_step_9 = output_directory + aei.params.pathsep + "*" + params.lt
+    params.input_step_10 = output_directory + aei.params.pathsep + "*" + params.lt
+    params.input_step_11 = output_directory + aei.params.pathsep + "*" + params.lt
+    
+def step_7(params):
+    """
+    creates ground models and mosaics
+    """
+    # report starting
+    print("[ STATUS ]: Starting step 7")
+    
+    # set up output directory
+    output_directory = params.tiles_classified
+    
+    # run the command
+    aei.cmd.las2dem(params.input_step_7, odir = output_directory,
+      step = params.res, nodata = params.nodata, ground = True,
+      otif = True, use_tile_bb = True, odix = "_ground",
+      cores = params.cores)
+      
+    # mosaic the individual tiles into an output file
+    tiles = output_directory + aei.params.pathsep + "*_ground*.tif"
+    mosaic_file = params.odir + aei.params.pathsep + \
+      params.name + "_ground.tif"
+    
+    # run the command  
+    aei.cmd.gdalwarp(tiles, mosaic_file, dstnodata=params.nodata,
+      n_threads = params.cores, overwrite = params.overwrite)
+      
+    # no need to update inputs
+    
+def step_8(params):
+    """
+    creates surface models and mosaics
+    """
+    # report starting
+    print("[ STATUS ]: Starting step 8")
+    
+    # set up the output directory
+    output_directory = params.tiles_classified
+    
+    # run the command
+    aei.cmd.las2dem(params.input_step_8, odir = output_directory,
+      odix = "_surface", step = params.res, nodata = params.nodata,
+      ground = False, otif = True, use_tile_bb = True,
+      cores = params.cores)
+      
+    # mosaic the tiles to an output file
+    tiles = output_directory + aei.params.pathsep + "*_surface*.tif"
+    mosaic_file = params.odir + aei.params.pathsep + \
+      params.name + "_surface.tif"
+    
+    # run the command  
+    aei.cmd.gdalwarp(tiles, mosaic_file, dstnodata = params.nodata,
+      n_threads = params.cores, overwrite = params.overwrite,
+      srcnodata = params.nodata)
+      
+    # no need to update inputs
+    
+def step_9(params):
+    """
+    creates tree-height models and mosaics
+    """
+    # report starting
+    print("[ STATUS ]: Starting step 9")
+    
+    # set up the output directory
+    output_directory = params.tiles_height
+    
+    # run the command 
+    aei.cmd.lascanopy(params.input_step_9, odir = output_directory,
+      height_cutoff = 0, step = params.res, max = True, otif = True,
+      use_tile_bb = True, cores = params.cores)
+      
+    # mosaic the tiles to an output file
+    tiles = output_directory + aei.params.pathsep + "*_max.tif"
+    mosaic_file = params.odir + aei.params.pathsep + \
+      params.name + "_tch.tif"
+    
+    # run the command  
+    aei.cmd.gdalwarp(tiles, mosaic_file, dstnodata=params.nodata,
+      n_threads = params.cores, overwrite = params.overwrite)
+      
+    # no need to update inputs
+    
+def step_10(params):
+    """
+    creates canopy density models and mosaics
+    """
+    # report starting
+    print("[ STATUS ]: Starting step 10")
+    
+    # set up the output directory
+    output_directory = params.tiles_height
+    
+    # run the command 
+    aei.cmd.lascanopy(params.input_step_9, odir = output_directory,
+      height_cutoff = 0, step = params.res, dns = True, 
+      otif = True, cover_cutoff = params.cover_cutoff,
+      use_tile_bb = True, cores = params.cores)
+      
+    # mosaic the tiles to an output file
+    tiles = output_directory + aei.params.pathsep + "*_dns.tif"
+    mosaic_file = params.odir + aei.params.pathsep + \
+      params.name + "_dns.tif"
+    
+    # run the command  
+    aei.cmd.gdalwarp(tiles, mosaic_file, dstnodata=params.nodata,
+      n_threads = params.cores, overwrite = params.overwrite)
+      
+    # no need to update inputs
+    
+def step_11(params):
+    """
+    creates slicer models and mosaics
+    """
+    import glob
+    
+    # report starting
+    print("[ STATUS ]: Starting step 11")
+    
+    # set up the output directory
+    output_directory = params.tiles_height
+    
+    # run the command 
+    aei.cmd.lascanopy(params.input_step_9, odir = output_directory,
+      height_cutoff = 0, step = params.res, 
+      density = range(0,int(params.max_tch+1)), 
+      use_tile_bb = True, otif = True, cores = params.cores)
+      
+    # mosaic the tiles to output files
+    for i in range(0, int(params.max_tch+1)):    
+        tiles = str(output_directory + aei.params.pathsep + \
+          "*_d%02d.tif" % i)
+        mosaic_file = str(params.odir + aei.params.pathsep + \
+          params.name + "_slicer_%02d.tif" % i)
+    
+        # run the command  
+        aei.cmd.gdalwarp(tiles, mosaic_file, dstnodata=params.nodata,
+          n_threads = params.cores, overwrite = params.overwrite)
+    
+    # stack the slicer bands into a single output file
+    individual_files = params.odir + aei.params.pathsep + \
+      params.name + "_slicer*.tif"
+    file_list = glob.glob(individual_files)
+    
+    vrt_file = params.odir + aei.params.pathsep + \
+      params.name + "_slicer.vrt"
+    output_stack = params.odir + aei.params.pathsep + \
+      params.name + "_slicer.tif"
+    
+    # build a vrt
+    aei.cmd.gdalbuildvrt(individual_files, vrt_file, separate=True)
+    
+    # translate to a stacked tif
+    aei.cmd.gdal_translate(vrt_file, output_stack)
+    
+    # clean up individual files
+    aei.params.os.remove(vrt_file)
+    for file in file_list:
+        aei.params.os.remove(file)
+      
+    # no need to update inputs
+    
+def step_12(params):
+    """
+    creats a final classified las file
+    """
+    # report starting
+    print("[ STATUS ]: Starting step 12")
+    
+    # set up output file
+    output_file = params.odir + aei.params.pathsep + \
+      params.name + "_merged" + params.lt
+      
+    # run the command
+    aei.cmd.lasmerge(params.input_step_12, output_file,
+      rescale = False, olaz = params.olaz)
+      
+    # index the files
+    aei.cmd.lasindex(output_file)
+      
+    # update inputs
+    params.input_step_13 = output_file
+    
+def step_13(params):
+    """
+    creates a bounding shape file
+    """
+    # report starting
+    print("[ STATUS ]: Starting step 13")
+    
+    # set up output file
+    output_file = params.odir + aei.params.pathsep + \
+    params.name + "_boundary.shp"
+    
+    # run the command
+    aei.cmd.lasboundary(params.input_step_13, output = output_file,
+      disjoint = True, cores=params.cores)
+      
+    # no need to update inputs
+    
+def cleanup_files(params):
+    """
+    cleans up temp files and directories
+    """
+    import shutil
+    
+    # delete unclassified
+    shutil.rmtree(params.tiles_unclassified)
+    
+    # update the scratch directory for ground classification
+    shutil.rmtree(params.tiles_ground)
+    
+    # update the scratch directory for classified tiles
+    shutil.rmtree(params.tiles_classified)
+    
+    # update the scratch directory for height-normalized tiles
+    shutil.rmtree(params.tiles_height)
     
 def usage(exit=False):
     """
@@ -205,16 +772,18 @@ def usage(exit=False):
 
     print(
         """
-        $ aeilas.py -i input_files [-odir output_directory]
-          [-scratchdir scratch_directory] [-name output_basename]
-          [-cores cores] [-max_tch max_tch] 
-          [-res resolution] [-sres slicer_resolution] [-tile_size tile_size] 
-          []
+$ aeilas.py -i input_files [-odir output_directory]
+  [-scratchdir scratch_directory] [-name output_basename]
+  [-keep_temp_files] [-res resolution] [-sres slicer_resolution] 
+  [-max_tch max_tch] [-tile_size tile_size] [-buffer_size buffer_size]
+  [-start_step step] [-no_ground] [-no_surface] [-no_tch]
+  [-no_merged] [-no_shape] [-no_slicer] [-no_density]
+  [-city] [-town] [-fine] [-extra_fine] [-coarse] [-extra_coarse]
         """
         )
     
     if exit:    
-        sys.exit(1)
+        aei.params.sys.exit(1)
         
 def main ():
     """
@@ -232,21 +801,29 @@ def main ():
     09. create tree-height models and mosaic
     10. create canopy density models
     11. create slicer models
+    12. create a merged laz file
+    13. create shape file
     
     syntax: main()
     """
     
     # first, read the default parameters to get the processing object
-    default_params = default_params()
+    params = default_params()
     
     # then parse the arguments passed via command line
-    args = sys.argv
-    params = parse_args(args, default_params)
+    args = aei.params.sys.argv
+    parse_args(args, params)
     
     # check that input files were specified
     if not params.input_files:
         print("[ ERROR ]: No input files specified")
-        sys.exit(1)
+        aei.params.sys.exit(1)
+    
+    # update the params class for any dependencies set at runtime
+    update_params(params)
+    
+    # create the output directories necessary 
+    create_directories(params)
     
     # report that we're starting, and the parameters used
     print("[ STATUS ]: Beginning aeilas.py")
@@ -254,7 +831,7 @@ def main ():
     print("[ STATUS ]: Site name        : %s" % params.name)
     print("[ STATUS ]: Output directory : %s" % params.odir)
     
-    # based on these params, proces through each step
+    # based on these params, process each step
     if params.step_1:
         step_1(params)
         
@@ -287,119 +864,21 @@ def main ():
     
     if params.step_11:
         step_11(params)
-
-#################################
-::
-:: aei_merge_las
-::
-:: windows batch script for converting to UTM coordinates, setting xyz precision, 
-::  then merging all las files into a single laz file
-::
-
-:: if you are resuming this batch from a failed point, uncomment the goto option you would like
-::
-::goto change_projection
-::goto merge_to_unclassified
-::goto remove_noise
-::goto tile_unclassified
-::goto classify_ground
-::goto classify_tiles
-::goto normalize_height
-::goto remove_buffers
-::goto create_ground_model
-::goto create_surface_model
-::goto create_tch
-::goto create_slicer
-
-:: set your working path, number of cores
-set PATH=%PATH%;C:\software\lastools\bin;
-set N_CORES=1
-
-:: specify UTM zone (eg: 10S for CA, 18M for northern Peru, auto for auto-determination), 
-::  resolution (m), buffer distance (m), tile size (m), max height (m)
-set ZONE=auto
-set RES=1
-set SLICER_RES=10
-set BUFFER=20
-set TILE_SIZE=500
-set MAX_HEIGHT=60
-
-:: specify your processing, temp, and output directories (can be relative or absolute). Site should
-::  change for each batch to ensure no overlap of files
-set SITE=big_basin
-set FORMAT=laz
-set INPUT_DIR=G:\AEI\Data\raw\lidar\california\big_basin
-set OUTPUT_DIR=G:\AEI\Data\processed\%SITE%
-set PROCESSING_DIR=G:\AEI\Data\scratch\%SITE%
-
-:: make your directories
-mkdir %PROCESSING_DIR%
-mkdir %PROCESSING_DIR%\tmp_reprojected
-mkdir %PROCESSING_DIR%\tiles_raw
-mkdir %PROCESSING_DIR%\tiles_ground
-mkdir %PROCESSING_DIR%\tiles_classified
-mkdir %PROCESSING_DIR%\tiles_normalized 
-mkdir %PROCESSING_DIR%\tiles_final
-
-:change_projection
-:: change the projection of your las files
-las2las -i %INPUT_DIR%\*.%FORMAT% -olaz -odir %PROCESSING_DIR%\tmp_reprojected -target_utm %ZONE% -set_classification 0
-
-:merge_to_unclassified
-:: merge to single unclassified laz file
-lasmerge -i %PROCESSING_DIR%\tmp_reprojected\*.laz -o %PROCESSING_DIR%\%SITE%_unclassified.laz -rescale 0.01 0.01 0.001
-
-:: delete your temp reclassification products
-::rmdir %PROCESSING_DIR%\%SITE%\tmp_reprojected /s /q
-
-:remove_noise
-:: automatically remove noise from unclassified laz file
-lasnoise -i %PROCESSING_DIR%\%SITE%_unclassified.laz -o %PROCESSING_DIR%\%SITE%_unclassified_denoised.laz -step 3 -isolated 2
-
-:tile_unclassified
-:: tile out your unclassified laz file
-lastile -i %PROCESSING_DIR%\%SITE%_unclassified_denoised.laz -olaz -odir %PROCESSING_DIR%\tiles_raw -buffer %BUFFER% -tile_size %TILE_SIZE% -reversible -extra_pass
-
-:classify_ground
-:: classify the ground points in each of the tiles. compute height AGL on the fly so we don't need lasheight
-lasground -i %PROCESSING_DIR%\tiles_raw\*.laz -olaz -odir %PROCESSING_DIR%\tiles_ground -town -fine -cores %N_CORES% -compute_height
-
-:classify_tiles
-:: classify your height normalized tiles
-lasclassify -i %PROCESSING_DIR%\tiles_ground\*.laz -olaz -odir %PROCESSING_DIR%\tiles_classified -cores %N_CORES%
-
-:normalize_height
-:: normalize height to m AGL for lascanopy inputs
-lasheight -i %PROCESSING_DIR%\tiles_classified\*.laz -olaz -odir %PROCESSING_DIR%\tiles_normalized -replace_z -cores %N_CORES%
-
-:remove_buffers
-:: remove buffers from your tiles
-lastile -i %PROCESSING_DIR%\tiles_classsified\*.laz -olaz -odir %PROCESSING_DIR%\tiles_final -remove_buffer
-
-::
-:: begin generating raster products
-::
-
-:create_ground_model
-:: create ground models
-las2dem -i %PROCESSING_DIR%\tiles_final\*.laz -obil -odir %PROCESSING_DIR%\tiles_final -odix _ground -keep_class 2 -step %RES% -use_tile_bb -extra_pass
-gdalwarp -of GTiff %PROCESSING_DIR%\tiles_final\*_ground.bil %OUTPUT_DIR%\%SITE%_ground.tif -co "COMPRESS=LZW" -multi -dstnodata -9999 -s_srs "+proj=utm +zone=10 +north +datum=nad83" -t_srs "+proj=utm +zone=10 +north +datum=wgs84"
-
-:create_surface_model
-:: create surface model
-las2dem -i %PROCESSING_DIR%\tiles_final\*.laz -obil -odir %PROCESSING_DIR%\tiles_final -odix _surface -first_only -step %RES% -use_tile_bb -extra_pass
-gdalwarp -of GTiff %PROCESSING_DIR%\tiles_final\*_surface.bil %OUTPUT_DIR%\%SITE%_surface.tif -co "COMPRESS=LZW" -multi -dstnodata -9999 -s_srs "+proj=utm +zone=10 +north +datum=nad83" -t_srs "+proj=utm +zone=10 +north +datum=wgs84"
-
-:create_tch
-:: create tch model
-lascanopy -i %PROCESSING_DIR%\tiles_normalized\*.laz -obil -odir %PROCESSING_DIR%\tiles_final -odix _tch -step %RES% -max
-gdalwarp -of GTiff %PROCESSING_DIR%\tiles_final\*_tch.bil %OUTPUT_DIR%\%SITE%_tch.tif -co "COMPRESS=LZW" -multi -dstnodata -9999 -s_srs "+proj=utm +zone=10 +north +datum=nad83" -t_srs "+proj=utm +zone=10 +north +datum=wgs84"
-
-:create_slicer
-:: create the slice layers
-lascanopy -i %PROCESSING_DIR%\tiles_normalized\*.laz -obil -odir %PROCESSING_DIR%\tiles_final -odix _slice -step %SLICER_RES% -d 0.5 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32 34 36 38 40
-
-#################################
+    
+    if params.step_12:
+        step_12(params)
         
+    if params.step_13:
+        step_13(params)
+        
+    # clean up, if set
+    if params.cleanup:
+        cleanup_files(params)
+        
+    # report finished up    
+    print("[ STATUS ]: aeilas.py processing complete")
+    print("[ STATUS ]: Output project  : %s" % params.name)
+    print("[ STATUS ]: Output directory: %s" % params.odir)
+
 if __name__ == "__main__":
     main()
