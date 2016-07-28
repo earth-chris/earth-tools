@@ -28,6 +28,8 @@ Thumbs.db
 *.shx
 *.prj
 *.cpg
+*.las
+*.laz
 
 # scratch files
 ######################
