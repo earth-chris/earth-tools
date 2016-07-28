@@ -13,7 +13,7 @@ def readMTL(mtlFile):
     import aei
     
     # check that file exists
-    if not aei.checkFile(mtlFile):
+    if not aei.fn.checkFile(mtlFile):
         return -1
         
     # set up dictionary

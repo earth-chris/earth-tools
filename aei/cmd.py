@@ -144,7 +144,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar int, long or float')
             return -1
         else:
-            fparams.append(aei.strJoin(['-dstnodata', dstnodata]))
+            fparams.append(aei.fn.strJoin(['-dstnodata', dstnodata]))
     
     if srcnodata:
         if not isinstance(srcnodata, (int, long, float, complex)):
@@ -152,7 +152,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar int, long or float')
             return -1
         else:
-            fparams.append(aei.strJoin(['-srcnodata', srcnodata]))
+            fparams.append(aei.fn.strJoin(['-srcnodata', srcnodata]))
     
     if n_threads:
         if not isinstance(n_threads, (int, long, float)):
@@ -160,7 +160,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar int, long or float')
             return -1
         else:
-            fparams.append(aei.strJoin(['-multi -wo NUM_THREADS',n_threads], join='='))
+            fparams.append(aei.fn.strJoin(['-multi -wo NUM_THREADS',n_threads], join='='))
         multi = False
     
     if multi:
@@ -175,10 +175,10 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar string')
             return -1
         else:
-            fparams.append(aei.strJoin(['-of', of]))
+            fparams.append(aei.fn.strJoin(['-of', of]))
     if ot:
         ot=read.ot(ot)
-        fparams.append(aei.strJoin(['-ot', ot]))
+        fparams.append(aei.fn.strJoin(['-ot', ot]))
     
     if s_srs:
         if type(s_srs) is not str:
@@ -186,7 +186,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar string')
             return -1
         else:
-            fparams.append(aei.strJoin(['-s_srs', s_srs]))
+            fparams.append(aei.fn.strJoin(['-s_srs', s_srs]))
     
     if t_srs:
         if type(t_srs) is not str:
@@ -194,7 +194,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be a scalar string')
             return -1
         else:
-            fparams.append(aei.strJoin(['-t_srs', t_srs]))
+            fparams.append(aei.fn.strJoin(['-t_srs', t_srs]))
     
     if te:
         if type(te) is not list and len(te) is not 4:
@@ -202,7 +202,7 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be a 4-element list')
             return -1
         else:
-            fparams.append(aei.strJoin(['-te', aei.strJoin(te)]))
+            fparams.append(aei.fn.strJoin(['-te', aei.fn.strJoin(te)]))
     
     if tr:
         if type(te) is not list and len (tr) is not 2:
@@ -210,13 +210,13 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be a 2-element list')
             return -1
         else:
-            fparams.append(aei.strJoin(['-tr', aei.strJoin(tr)]))
+            fparams.append(aei.fn.strJoin(['-tr', aei.fn.strJoin(tr)]))
 
     fparams.append(aei.read.etc(etc))
-    fparams=aei.strJoin(fparams)
+    fparams=aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.gdalwarp, fparams, inputs, output])
+    ocmd = aei.fn.strJoin([raw.gdalwarp, fparams, inputs, output])
     print("[ STATUS ]: Running gdalwarp")
     print("[ STATUS ]: %s" % ocmd)
     os.system(ocmd)
@@ -258,7 +258,7 @@ def gdal_translate(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar int, long or float')
             return -1
         else:
-            fparams.append(aei.strJoin(['-dstnodata', dstnodata]))
+            fparams.append(aei.fn.strJoin(['-dstnodata', dstnodata]))
     
     if srcnodata:
         if not isinstance(srcnodata, (int, long, float, complex)):
@@ -266,7 +266,7 @@ def gdal_translate(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar int, long or float')
             return -1
         else:
-            fparams.append(aei.strJoin(['-srcnodata', srcnodata]))
+            fparams.append(aei.fn.strJoin(['-srcnodata', srcnodata]))
     
     if of:
         if type(of) is not str:
@@ -274,18 +274,18 @@ def gdal_translate(inputs='', output='', etc='', dstnodata=False,
             print('[ ERROR ]: Must be scalar string')
             return -1
         else:
-            fparams.append(aei.strJoin(['-of', of]))
+            fparams.append(aei.fn.strJoin(['-of', of]))
     if ot:
         ot=read.ot(ot)
-        fparams.append(aei.strJoin(['-ot', ot]))
+        fparams.append(aei.fn.strJoin(['-ot', ot]))
 
     if etc:
         fparams.append(aei.read.etc(etc))
     
-    fparams=aei.strJoin(fparams)
+    fparams=aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.gdal_translate, fparams, inputs, output])
+    ocmd = aei.fn.strJoin([raw.gdal_translate, fparams, inputs, output])
     print("[ STATUS ]: Running gdal_translate")
     print("[ STATUS ]: %s" % ocmd)
     os.system(ocmd)
@@ -328,7 +328,7 @@ def gdalbuildvrt(inputs='', output='', etc='', vrtnodata=False,
             print('[ ERROR ]: Must be scalar int, long or float')
             return -1
         else:
-            fparams.append(aei.strJoin(['-vrtnodata', dstnodata]))
+            fparams.append(aei.fn.strJoin(['-vrtnodata', dstnodata]))
     
     if srcnodata:
         if not isinstance(srcnodata, (int, long, float, complex)):
@@ -336,7 +336,7 @@ def gdalbuildvrt(inputs='', output='', etc='', vrtnodata=False,
             print('[ ERROR ]: Must be scalar int, long or float')
             return -1
         else:
-            fparams.append(aei.strJoin(['-srcnodata', srcnodata]))
+            fparams.append(aei.fn.strJoin(['-srcnodata', srcnodata]))
     
     if of:
         if type(of) is not str:
@@ -344,10 +344,10 @@ def gdalbuildvrt(inputs='', output='', etc='', vrtnodata=False,
             print('[ ERROR ]: Must be scalar string')
             return -1
         else:
-            fparams.append(aei.strJoin(['-of', of]))
+            fparams.append(aei.fn.strJoin(['-of', of]))
     if ot:
         ot=read.ot(ot)
-        fparams.append(aei.strJoin(['-ot', ot]))
+        fparams.append(aei.fn.strJoin(['-ot', ot]))
         
     if separate:
         fparams.append('-separate')
@@ -355,10 +355,10 @@ def gdalbuildvrt(inputs='', output='', etc='', vrtnodata=False,
     if etc:
         fparams.append(aei.read.etc(etc))
     
-    fparams=aei.strJoin(fparams)
+    fparams=aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.gdalbuildvrt, fparams, output, inputs])
+    ocmd = aei.fn.strJoin([raw.gdalbuildvrt, fparams, output, inputs])
     print("[ STATUS ]: Running gdalbuildvrt")
     print("[ STATUS ]: %s" % ocmd)
     os.system(ocmd)
@@ -403,28 +403,28 @@ def las2dem(inputs, output='', etc='', odir='', odix='',
     # determine if -o, -odir, or -odix should be set
     #  if -o
     if output:
-        fparams.append(aei.strJoin(['-o', output]))
+        fparams.append(aei.fn.strJoin(['-o', output]))
     
     else:
         # if -odir
         if odir:
-            fparams.append(aei.strJoin(['-odir', odir]))
+            fparams.append(aei.fn.strJoin(['-odir', odir]))
         else:
-            fparams.append(aei.strJoin(['-odir', aei.params.outdir]))
+            fparams.append(aei.fn.strJoin(['-odir', aei.params.outdir]))
         
         # if -odix
         if odix:
-            fparams.append(aei.strJoin(['-odix', odix]))
+            fparams.append(aei.fn.strJoin(['-odix', odix]))
             
     # set the step size
-    fparams.append(aei.strJoin(['-step', step]))
+    fparams.append(aei.fn.strJoin(['-step', step]))
     
     # set the nodata value
-    fparams.append(aei.strJoin(['-nodata', nodata]))
+    fparams.append(aei.fn.strJoin(['-nodata', nodata]))
     
     # set ground
     if ground:
-        fparams.append(aei.strJoin(['-keep_class', 2]))
+        fparams.append(aei.fn.strJoin(['-keep_class', 2]))
         lowest = True
         
     # set tif as output format
@@ -436,17 +436,17 @@ def las2dem(inputs, output='', etc='', odir='', odix='',
         fparams.append('-use_tile_bb')
     
     # set cores
-    fparams.append(aei.strJoin(['-cores', cores]))
+    fparams.append(aei.fn.strJoin(['-cores', cores]))
     
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
     
     # concatenate params list to string
-    fparams = aei.strJoin(fparams)
+    fparams = aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.las2dem, '-i', inputs, fparams])
+    ocmd = aei.fn.strJoin([raw.las2dem, '-i', inputs, fparams])
     
     # report status
     print("[ STATUS ]: Running las2dem")
@@ -488,18 +488,18 @@ def lasboundary(inputs, output='', etc='', odir='', odix='',
     # determine if -o, -odir, or -odix should be set
     #  if -o
     if output:
-        fparams.append(aei.strJoin(['-o', output]))
+        fparams.append(aei.fn.strJoin(['-o', output]))
     
     else:
         # if -odir
         if odir:
-            fparams.append(aei.strJoin(['-odir', odir]))
+            fparams.append(aei.fn.strJoin(['-odir', odir]))
         else:
-            fparams.append(aei.strJoin(['-odir', aei.params.outdir]))
+            fparams.append(aei.fn.strJoin(['-odir', aei.params.outdir]))
         
         # if -odix
         if odix:
-            fparams.append(aei.strJoin(['-odix', odix]))
+            fparams.append(aei.fn.strJoin(['-odix', odix]))
             
     # check if only bounding box is to be used
     if use_bb:
@@ -510,24 +510,24 @@ def lasboundary(inputs, output='', etc='', odir='', odix='',
         fparams.append('-disjoint')
         
     # set concavity parameter
-    fparams.append(aei.strJoin(['-concavity', concavity]))
+    fparams.append(aei.fn.strJoin(['-concavity', concavity]))
     
     # check output format
     if oshp:
         fparams.append('-oshp')
     
     # set number of cores
-    fparams.append(aei.strJoin(['-cores', cores]))
+    fparams.append(aei.fn.strJoin(['-cores', cores]))
     
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
     
     # concatenate params list to string
-    fparams = aei.strJoin(fparams)
+    fparams = aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lasboundary, '-i', inputs, fparams])
+    ocmd = aei.fn.strJoin([raw.lasboundary, '-i', inputs, fparams])
     
     # report status
     print("[ STATUS ]: Running lasboundary")
@@ -591,30 +591,30 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
     # determine if -o, -odir, or -odix should be set
     #  if -o
     if output:
-        fparams.append(aei.strJoin(['-o', output]))
+        fparams.append(aei.fn.strJoin(['-o', output]))
     
     else:
         # if -odir
         if odir:
-            fparams.append(aei.strJoin(['-odir', odir]))
+            fparams.append(aei.fn.strJoin(['-odir', odir]))
         else:
-            fparams.append(aei.strJoin(['-odir', aei.params.outdir]))
+            fparams.append(aei.fn.strJoin(['-odir', aei.params.outdir]))
         
         # if -odix
         if odix:
-            fparams.append(aei.strJoin(['-odix', odix]))
+            fparams.append(aei.fn.strJoin(['-odix', odix]))
         else:
-            fparams.append(aei.strJoin(['-odix', '_lascanopy']))
+            fparams.append(aei.fn.strJoin(['-odix', '_lascanopy']))
     
     # set  merging option
     if merged:
         fparams.append('-merged')
         
     # set height cutoff
-    fparams.append(aei.strJoin(['-height_cutoff', height_cutoff]))
+    fparams.append(aei.fn.strJoin(['-height_cutoff', height_cutoff]))
     
     # set cover cutoff
-    fparams.append(aei.strJoin(['-cover_cutoff', cover_cutoff]))
+    fparams.append(aei.fn.strJoin(['-cover_cutoff', cover_cutoff]))
     
     # determine if gridding, using full file, or using circles
     #  if using full file
@@ -624,11 +624,11 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
     else:
         # if using cirles with radii
         if loc:
-            fparams.append(aei.strJoin(['-loc', loc]))
+            fparams.append(aei.fn.strJoin(['-loc', loc]))
         
         # if gridding
         else:
-            fparams.append(aei.strJoin(['-step', step]))
+            fparams.append(aei.fn.strJoin(['-step', step]))
             
     # set metrics min/max/avg/std/ske/kur/cov/dns/gap
     if min:
@@ -657,11 +657,11 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
             
     # set count parameters
     if count:
-        fparams.append(aei.strJoin(['-c', aei.strJoin(count)]))
+        fparams.append(aei.fn.strJoin(['-c', aei.fn.strJoin(count)]))
     
     # set density parameters    
     if density:
-        fparams.append(aei.strJoin(['-d', aei.strJoin(density)]))
+        fparams.append(aei.fn.strJoin(['-d', aei.fn.strJoin(density)]))
     
     # set if returning as fraction
     if fractions:
@@ -672,17 +672,17 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
         fparams.append('-otif')
     
     # set number of cores
-    fparams.append(aei.strJoin(['-cores', cores]))
+    fparams.append(aei.fn.strJoin(['-cores', cores]))
     
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
     
     # concatenate params list to string
-    fparams = aei.strJoin(fparams)
+    fparams = aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lascanopy, '-i', inputs, fparams])
+    ocmd = aei.fn.strJoin([raw.lascanopy, '-i', inputs, fparams])
     
     # report status
     print("[ STATUS ]: Running lascanopy")
@@ -723,41 +723,41 @@ def lasclassify(inputs, output='', etc='', odir='', odix='',
     # determine if -o, -odir, or -odix should be set
     #  if -o
     if output:
-        fparams.append(aei.strJoin(['-o', output]))
+        fparams.append(aei.fn.strJoin(['-o', output]))
     
     else:
         # if -odir
         if odir:
-            fparams.append(aei.strJoin(['-odir', odir]))
+            fparams.append(aei.fn.strJoin(['-odir', odir]))
         else:
-            fparams.append(aei.strJoin(['-odir', aei.params.outdir]))
+            fparams.append(aei.fn.strJoin(['-odir', aei.params.outdir]))
         
         # if -odix
         if odix:
-            fparams.append(aei.strJoin(['-odix', odix]))
+            fparams.append(aei.fn.strJoin(['-odix', odix]))
     
     # add planar parameter
-    fparams.append(aei.strJoin(['-planar', planar]))
+    fparams.append(aei.fn.strJoin(['-planar', planar]))
     
     # add ground_offset parameter
-    fparams.append(aei.strJoin(['-ground_offset', ground_offset]))
+    fparams.append(aei.fn.strJoin(['-ground_offset', ground_offset]))
     
     # add olaz parameter if set
     if olaz:
         fparams.append('-olaz')
     
     # set number of cores
-    fparams.append(aei.strJoin(['-cores', cores]))
+    fparams.append(aei.fn.strJoin(['-cores', cores]))
     
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
     
     # concatenate params list to string
-    fparams = aei.strJoin(fparams)
+    fparams = aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lasclassify, '-i', inputs, fparams])
+    ocmd = aei.fn.strJoin([raw.lasclassify, '-i', inputs, fparams])
     
     # report status
     print("[ STATUS ]: Running lasclassify")
@@ -808,30 +808,30 @@ def lasgrid(inputs, output='', etc='', odir='', odix='',
     # determine if -o, -odir, or -odix should be set
     #  if -o
     if output:
-        fparams.append(aei.strJoin(['-o', output]))
+        fparams.append(aei.fn.strJoin(['-o', output]))
     
     else:
         # if -odir
         if odir:
-            fparams.append(aei.strJoin(['-odir', odir]))
+            fparams.append(aei.fn.strJoin(['-odir', odir]))
         else:
-            fparams.append(aei.strJoin(['-odir', aei.params.outdir]))
+            fparams.append(aei.fn.strJoin(['-odir', aei.params.outdir]))
         
         # if -odix
         if odix:
-            fparams.append(aei.strJoin(['-odix', odix]))
+            fparams.append(aei.fn.strJoin(['-odix', odix]))
             
     # set the step size
-    fparams.append(aei.strJoin(['-step', step]))
+    fparams.append(aei.fn.strJoin(['-step', step]))
     
     # set the fill size
-    fparams.append(aei.strJoin(['-fill', fill]))
+    fparams.append(aei.fn.strJoin(['-fill', fill]))
     
     # set the subcircle size
-    fparams.append(aei.strJoin(['-subcircle', subcircle]))
+    fparams.append(aei.fn.strJoin(['-subcircle', subcircle]))
     
     # set the nodata value
-    fparams.append(aei.strJoin(['-nodata', nodata]))
+    fparams.append(aei.fn.strJoin(['-nodata', nodata]))
     
     # set elevation as target value
     if elevation:
@@ -839,7 +839,7 @@ def lasgrid(inputs, output='', etc='', odir='', odix='',
     
     # set ground
     if ground:
-        fparams.append(aei.strJoin(['-keep_class', 2]))
+        fparams.append(aei.fn.strJoin(['-keep_class', 2]))
         lowest = True
     
     # set if highest or lowest values are returned
@@ -862,17 +862,17 @@ def lasgrid(inputs, output='', etc='', odir='', odix='',
         fparams.append('-use_tile_bb')
     
     # set number of cores to use
-    fparams.append(aei.strJoin(['-cores', cores]))
+    fparams.append(aei.fn.strJoin(['-cores', cores]))
     
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
     
     # concatenate params list to string
-    fparams = aei.strJoin(fparams)
+    fparams = aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lasgrid, '-i', inputs, fparams])
+    ocmd = aei.fn.strJoin([raw.lasgrid, '-i', inputs, fparams])
     
     # report status
     print("[ STATUS ]: Running lasgrid")
@@ -928,18 +928,18 @@ def lasground(inputs, output='', etc='', odir='', odix='',
     # determine if -o, -odir, or -odix should be set
     #  if -o
     if output:
-        fparams.append(aei.strJoin(['-o', output]))
+        fparams.append(aei.fn.strJoin(['-o', output]))
     
     else:
         # if -odir
         if odir:
-            fparams.append(aei.strJoin(['-odir', odir]))
+            fparams.append(aei.fn.strJoin(['-odir', odir]))
         else:
-            fparams.append(aei.strJoin(['-odir', aei.params.outdir]))
+            fparams.append(aei.fn.strJoin(['-odir', aei.params.outdir]))
         
         # if -odix
         if odix:
-            fparams.append(aei.strJoin(['-odix', odix]))
+            fparams.append(aei.fn.strJoin(['-odix', odix]))
     
     # add olaz parameter if set
     if olaz:
@@ -986,7 +986,7 @@ def lasground(inputs, output='', etc='', odir='', odix='',
         fparams.append('-extra_coarse')
         
     # set number of processors to use
-    fparams.append(aei.strJoin(['-cores', cores]))
+    fparams.append(aei.fn.strJoin(['-cores', cores]))
     
     # keep default classification info
     if non_ground_unchanged:
@@ -997,10 +997,10 @@ def lasground(inputs, output='', etc='', odir='', odix='',
         fparams.append(aei.read.etc(etc))
     
     # concatenate params list to string
-    fparams = aei.strJoin(fparams)
+    fparams = aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lasground, '-i', inputs, fparams])
+    ocmd = aei.fn.strJoin([raw.lasground, '-i', inputs, fparams])
     
     # report status
     print("[ STATUS ]: Running lasground")
@@ -1037,18 +1037,18 @@ def lasheight(inputs, output='', etc='', odir='', odix='',
     # determine if -o, -odir, or -odix should be set
     #  if -o
     if output:
-        fparams.append(aei.strJoin(['-o', output]))
+        fparams.append(aei.fn.strJoin(['-o', output]))
     
     else:
         # if -odir
         if odir:
-            fparams.append(aei.strJoin(['-odir', odir]))
+            fparams.append(aei.fn.strJoin(['-odir', odir]))
         else:
-            fparams.append(aei.strJoin(['-odir', aei.params.outdir]))
+            fparams.append(aei.fn.strJoin(['-odir', aei.params.outdir]))
         
         # if -odix
         if odix:
-            fparams.append(aei.strJoin(['-odix', odix]))
+            fparams.append(aei.fn.strJoin(['-odix', odix]))
     
     # add replace_z to param list if set
     if replace_z:
@@ -1059,17 +1059,17 @@ def lasheight(inputs, output='', etc='', odir='', odix='',
         fparams.append('-olaz')
     
     # set number of cores to use
-    fparams.append(aei.strJoin(['-cores', cores]))
+    fparams.append(aei.fn.strJoin(['-cores', cores]))
     
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
     
     # concatenate params list to string
-    fparams = aei.strJoin(fparams)
+    fparams = aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lasheight, '-i', inputs, fparams])
+    ocmd = aei.fn.strJoin([raw.lasheight, '-i', inputs, fparams])
     
     # report status
     print("[ STATUS ]: Running lasheight")
@@ -1099,10 +1099,10 @@ def lasindex(inputs, etc=''):
         fparams.append(aei.read.etc(etc))
     
     # concatenate params list to string
-    fparams = aei.strJoin(fparams)
+    fparams = aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lasindex, '-i', inputs, fparams])
+    ocmd = aei.fn.strJoin([raw.lasindex, '-i', inputs, fparams])
     
     # report status
     print("[ STATUS ]: Running lasindex")
@@ -1137,7 +1137,7 @@ def lasmerge(inputs, output, etc='',
     
     # add rescaling to param list if set
     if rescale:
-        fparams.append(aei.strJoin(['-rescale', aei.strJoin(rescale)]))
+        fparams.append(aei.fn.strJoin(['-rescale', aei.fn.strJoin(rescale)]))
     
     # add olaz parameter if set
     if olaz:
@@ -1148,10 +1148,10 @@ def lasmerge(inputs, output, etc='',
         fparams.append(aei.read.etc(etc))
     
     # concatenate params list to string
-    fparams = aei.strJoin(fparams)
+    fparams = aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lasmerge, '-i', inputs, '-o', output,
+    ocmd = aei.fn.strJoin([raw.lasmerge, '-i', inputs, '-o', output,
             fparams])
     
     # report status
@@ -1188,30 +1188,30 @@ def lastile(inputs, odir, etc='', odix='', tile_size=1000, buffer=100,
     
     # if -odix
     if odix:
-        fparams.append(aei.strJoin(['-odix', odix]))
+        fparams.append(aei.fn.strJoin(['-odix', odix]))
 
     # add tile_size to parameters list
-    fparams.append(aei.strJoin(['-tile_size', tile_size]))
+    fparams.append(aei.fn.strJoin(['-tile_size', tile_size]))
     
     # add buffer distance to parameters list
-    fparams.append(aei.strJoin(['-buffer', buffer]))
+    fparams.append(aei.fn.strJoin(['-buffer', buffer]))
     
     # add olaz parameter if set
     if olaz:
         fparams.append('-olaz')
         
     # add n cores
-    fparams.append(aei.strJoin(['-cores', cores]))
+    fparams.append(aei.fn.strJoin(['-cores', cores]))
     
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
     
     # concatenate params list to string
-    fparams = aei.strJoin(fparams)
+    fparams = aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.strJoin([raw.lastile, '-i', inputs, '-odir', odir,
+    ocmd = aei.fn.strJoin([raw.lastile, '-i', inputs, '-odir', odir,
             fparams])
     
     # report status
@@ -1221,3 +1221,83 @@ def lastile(inputs, odir, etc='', odix='', tile_size=1000, buffer=100,
     aei.params.os.system(ocmd)
 
 # laszip
+
+### 
+# SAGA commands
+###
+
+class saga:
+    def __init__(self):
+        pass
+    
+    @staticmethod
+    def grid_calculs(module, parameters, etc=''):
+        """
+        """
+        
+        # add additional parameters passed through etc keyword
+        if etc:
+            fparams.append(aei.read.etc(etc))
+        
+    @staticmethod
+    def grid_filter(module, parameters, etc=''):
+        """
+        """
+        
+        # add additional parameters passed through etc keyword
+        if etc:
+            fparams.append(aei.read.etc(etc))
+        
+    @staticmethod
+    def imagery_segmentation(module, parameters, etc=''):
+        """
+        """
+        
+        # add additional parameters passed through etc keyword
+        if etc:
+            fparams.append(aei.read.etc(etc))
+        
+    @staticmethod
+    def io_gdal(module, parameters, etc=''):
+        """
+        """
+        
+        # add additional parameters passed through etc keyword
+        if etc:
+            fparams.append(aei.read.etc(etc))
+        
+    @staticmethod
+    def shapes_grid(module, parameters, etc=''):
+        """
+        """
+        
+        # add additional parameters passed through etc keyword
+        if etc:
+            fparams.append(aei.read.etc(etc))
+        
+    @staticmethod
+    def shapes_polygons(module, parameters, etc=''):
+        """
+        """
+        
+        # add additional parameters passed through etc keyword
+        if etc:
+            fparams.append(aei.read.etc(etc))
+    
+    @staticmethod
+    def shapes_tools(module, parameters, etc=''):
+        """
+        """
+        
+        # add additional parameters passed through etc keyword
+        if etc:
+            fparams.append(aei.read.etc(etc))
+        
+    @staticmethod
+    def ta_lighting(module, parameters, etc=''):
+        """
+        """
+        
+        # add additional parameters passed through etc keyword
+        if etc:
+            fparams.append(aei.read.etc(etc))

@@ -162,6 +162,8 @@ class parse_args:
 
         # read arguments from command line
         i = 1
+        print(arglist)
+        
         while i < len(arglist):
             arg = arglist[i]
         
@@ -189,26 +191,26 @@ class parse_args:
                 i += 1
                 arg = arglist[i]
                 
-                if not aei.params.os.access(arg, aei.params.os.W_OK):
-                    usage()
-                    print("[ ERROR ]: unable to write to output path: %s" % outpath)
-                    aei.params.sys.exit(1)
-                    
-                else: 
-                    params.odir = arg
+                #if not aei.params.os.access(arg, aei.params.os.W_OK):
+                #    usage()
+                #    print("[ ERROR ]: unable to write to output path: %s" % arg)
+                #    aei.params.sys.exit(1)
+                #    
+                #else: 
+                params.odir = arg
             
             # check scratchdir flag
             elif arg.lower() == '-scratchdir':
                 i += 1
                 arg = arglist[i]
                 
-                if not aei.params.os.access(arg, aei.params.os.W_OK):
-                    usage()
-                    print("[ ERROR ]: unable to write to output path: %s" % outpath)
-                    aei.params.sys.exit(1)
-                    
-                else: 
-                    params.scratchdir = arg
+                #if not aei.params.os.access(arg, aei.params.os.W_OK):
+                #    usage()
+                #    print("[ ERROR ]: unable to write to output path: %s" % arg)
+                #    aei.params.sys.exit(1)
+                #    
+                #else: 
+                params.scratchdir = arg
             
             # check -name flag
             elif arg.lower() == '-name':
@@ -288,8 +290,8 @@ class parse_args:
                     aei.params.sys.exit(1)
                     
                 # turn off all steps before the start step
-                for i in range(1, params.start_step):
-                    params.__dict__["step_" + str(i)] = False
+                for j in range(1, params.start_step):
+                    params.__dict__["step_" + str(j)] = False
                 
             # check if any outputs are turned off
             elif arg.lower() == '-no_ground':
@@ -303,10 +305,10 @@ class parse_args:
                 
             elif arg.lower() == '-no_density':
                 params.step_10 = False
-        
+                
             elif arg.lower() == '-no_slicer':
                 params.step_11 = False
-            
+                
             elif arg.lower() == '-no_merged':
                 params.step_12 = False
                 
@@ -315,22 +317,33 @@ class parse_args:
                 
             elif arg.lower() == '-city':
                 params.city = False
+                
             elif arg.lower() == '-town':
                 params.town = False
+                
             elif arg.lower() == '-fine':
                 params.fine = False
+                
             elif arg.lower() == '-extra_fine':
                 params.extra_fine = False
+                
             elif arg.lower() == '-coarse':
                 params.coarse = True
+                
             elif arg.lower() == '-extra_coarse':
                 params.extra_coarse = False
+                
+            elif arg.lower() == '-cores':
+                i += 1
+                arg = arglist[i]
+                params.cores = int(arg)
                 
             else:
                 usage()
                 print("[ ERROR ]: Unrecognized argument: %s" % arg)
+                print("%s" % i)
                 aei.params.sys.exit(1)
-            
+                
             i += 1
         
 def update_params(params):
@@ -777,7 +790,7 @@ $ aeilas.py -i input_files [-odir output_directory]
   [-keep_temp_files] [-res resolution] [-sres slicer_resolution] 
   [-max_tch max_tch] [-tile_size tile_size] [-buffer_size buffer_size]
   [-start_step step] [-no_ground] [-no_surface] [-no_tch]
-  [-no_merged] [-no_shape] [-no_slicer] [-no_density]
+  [-no_merged] [-no_shape] [-no_slicer] [-no_density] [-cores cores]
   [-city] [-town] [-fine] [-extra_fine] [-coarse] [-extra_coarse]
         """
         )

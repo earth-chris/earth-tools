@@ -83,7 +83,7 @@ def ot(arg):
 def etc(etcList): 
     import aei
     if type(etcList) is list:
-        etcStr=aei.strJoin(etcList)
+        etcStr=aei.fn.strJoin(etcList)
     if type(etc) is not str:
         print('[ ERROR ]: Unable to parse the etc argument. Must be of type: list')
         print('[ ERROR ]: ' + str(type(etcList)))
@@ -104,7 +104,7 @@ def jfsc(infile):
     import numpy as np
     
     # check input file
-    if not aei.checkFile(infile):
+    if not aei.fn.checkFile(infile):
         return -1
     
     # create the spectral object
@@ -138,7 +138,7 @@ def usgs(infile):
     import aei as aei
     import numpy as np
     
-    if not aei.checkFile(infile):
+    if not aei.fn.checkFile(infile):
         return -1
     
     # open the file and read header info
@@ -214,14 +214,14 @@ def spectralLib(infile):
     import numpy as np
     import spectral as spectral
     
-    if not aei.checkFile(infile):
+    if not aei.fn.checkFile(infile):
         return -1
         
     # check for header file
-    if aei.checkFile(infile[:-4] + '.hdr', quiet=True):
+    if aei.fn.checkFile(infile[:-4] + '.hdr', quiet=True):
         hdr = infile[:-4] + '.hdr'
     else:
-        if aei.checkFile(infile + '.hdr'):
+        if aei.fn.checkFile(infile + '.hdr'):
             hdr = infile + '.hdr'
         else:
             return -1
