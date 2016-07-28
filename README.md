@@ -14,15 +14,15 @@ In development - no pip/easy_install/etc. method currently available.
 - Wine - from [WineHQ](https://www.winehq.org/download)
 
 ### Environment variables
-Check 'aei/params.py' for the environment variables to set. If all of the executables for the above binary packages are accessible from the command line, no additional changes are necessary.
-- **LTBASE**      - path to the LAStools executables (e.g. ~/src/lastools/bin)
-- **GDALBASE**    - path to GDAL executables
-- **OUTPUT_DIR**  - the default output directory for scripts
-- **SCRATCH_DIR** - the output directory for temp files
+Check `aei/params.py` for the environment variables to set. If all of the executables for the above binary packages are accessible from the command line, no additional changes are necessary.
+- **$LTBASE**      - path to the LAStools executables (e.g. ~/src/lastools/bin)
+- **$GDALBASE**    - path to GDAL executables
+- **$OUTPUT_DIR**  - the default output directory for scripts
+- **$SCRATCH_DIR** - the output directory for temp files
 
 ## Contact info:
 
-- Christopher B. Anderson
+**Christopher Anderson**
 - cbanders@stanford.edu
 - [Twitter](http://twitter.com/@hypersketch)
 - [Google Scholar](https://scholar.google.com/citations?user=LoGxS40AAAAJ&hl=encba@anderson-ubuntu:)
