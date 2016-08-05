@@ -82,8 +82,11 @@ def bn(array, axis = 1, inds = []):
         print("[ ERROR ]: array provided has [%s] dimensions" % array.ndim)
         return -1
     
+#####
+# Raster functions
+#####
 
-def tileRaster(infile, outfile, tiling=2, buff=0, of='GTiff'):
+def rasterTile(infile, outfile, tiling=2, buff=0, of='GTiff'):
     """
     tiles a raster file into a set number of tiles based on
     a tiling parameter.
@@ -215,3 +218,78 @@ def tileRaster(infile, outfile, tiling=2, buff=0, of='GTiff'):
             cmd.gdalwarp(infile, outtmp, etc, multi=True, of=of,
                 te=[xmin[i,j], ymin[j,i], xmax[i,j], ymax[j,i]],
                 overwrite=True)
+
+def rasterBoundingBox(infile, outfile=''):
+    """
+    creates a shape file from the bounding box of a raster file
+    """
+    import ogr as ogr
+    import osr as osr
+    import gdal as gdal
+    
+    # check that an output file is set, otherwise append .shp to the file
+    if not outfile:
+        
+        # check for a '.' in the file name and add .shp to output
+        if infile.find('.') == -1:
+            outfile = infile + ".shp"
+            
+        else:
+            outfile = infile[:infile.find('.')] + ".shp"
+    
+    # get metadata from input file
+    inf = gdal.Open(infile)
+    srs = osr.SpatialReference()
+    
+    # get projection info
+    wkt = inf.GetProjection()
+    srs.ImportFromWkt(wkt)
+    prj = srs.ExportToProj4()
+    
+    # get info on x/y sizes
+    nx = inf.RasterXSize
+    ny = inf.RasterYSize
+    ulx, sx, ox, uly, oy, sy = inf.GetGeoTransform()
+    
+    # calculate minx, miny
+    lrx = ulx + (sx * nx)
+    lry = uly + (sy * ny)
+    
+    # close the raster file
+    inf = None
+    
+    # open up the output file with shapefile driver
+    driver = ogr.GetDriverByName("ESRI Shapefile")
+    dataSource = driver.CreateDataSource(outfile)
+    
+    # create the output layer
+    layer = dataSource.CreateLayer("BoundingBox", srs, ogr.wkbPolygon)
+    
+    # add field with file name
+    fn = ogr.FieldDefn("File name", ogr.OFTString)
+    fn.SetWidth(len(infile))
+    layer.CreateField(fn)
+    
+    # create a feature to add info to
+    feature = ogr.Feature(layer.GetLayerDefn())
+    feature.SetField("File name", infile)
+    
+    # create a polygon from points
+    box = ogr.Geometry(ogr.wkbLinearRing)
+    box.AddPoint(ulx,uly)
+    box.AddPoint(lrx,uly)
+    box.AddPoint(lrx,lry)
+    box.AddPoint(ulx,lry)
+    box.AddPoint(ulx,uly)
+    
+    # set the geometry
+    poly = ogr.Geometry(ogr.wkbPolygon)
+    poly.AddGeometry(box)
+    feature.SetGeometry(poly)
+    
+    # create the feature
+    layer.CreateFeature(feature)
+    
+    # destroy the feature, then destroy the shape file reference
+    feature.Destroy()
+    dataSource.Destroy()
