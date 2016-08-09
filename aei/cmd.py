@@ -212,7 +212,9 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
         else:
             fparams.append(aei.fn.strJoin(['-tr', aei.fn.strJoin(tr)]))
 
-    fparams.append(aei.read.etc(etc))
+    if etc:
+        fparams.append(aei.read.etc(etc))
+    
     fparams=aei.fn.strJoin(fparams)
     
     # join and run the command
@@ -541,7 +543,7 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
     loc='', min=False, max=False, avg=False, std=False,
     ske=False, kur=False, cov=False, dns=False, gap=False,
     cover_cutoff=5.0, count=[], density=[], fractions=False, 
-    use_tile_bb = False, otif=True, cores=1):
+    use_tile_bb = False, otif=True, cores=1, veg=True):
     """
     calculates and rasterizes forestry/canopy metrics using las files. 
       must be run using a height-normalized input file.
@@ -551,7 +553,7 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
       loc='', min=False, max=False, avg=False, std=False,
       ske=False, kur=False, cov=False, dns=False, gap=False,
       cover_cutoff=5.0, count=[], density=[], fractions=False, 
-      use_tile_bb=False, otif=True, cores=1)
+      use_tile_bb=False, otif=True, cores=1, veg=True)
     
     inputs        [string] - the input las/laz file(s). accepts wild
                              cards. enter multiple files as one string.
@@ -582,6 +584,7 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
     use_tile_bb     [bool] - set to use the tile bounding box, not full file
     otif            [bool] - ensures output format is tif.
     cores          [float] - set number of processors
+    veg             [bool] - ensure only running on veg data.
     """
     import aei as aei
     
@@ -598,13 +601,11 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
         if odir:
             fparams.append(aei.fn.strJoin(['-odir', odir]))
         else:
-            fparams.append(aei.fn.strJoin(['-odir', aei.params.outdir]))
+            fparams.append(aei.fn.strJoin(['-odir', aei.params.scratchdir]))
         
         # if -odix
         if odix:
             fparams.append(aei.fn.strJoin(['-odix', odix]))
-        else:
-            fparams.append(aei.fn.strJoin(['-odix', '_lascanopy']))
     
     # set  merging option
     if merged:
@@ -674,6 +675,10 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
     # set number of cores
     fparams.append(aei.fn.strJoin(['-cores', cores]))
     
+    # set params to run on veg only
+    if veg:
+        fparams.append(aei.fn.strJoin(['-keep_class', '2 3 4 5']))
+    
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
@@ -692,13 +697,13 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
 
 # lasclassify
 def lasclassify(inputs, output='', etc='', odir='', odix='',
-    planar=0.1, ground_offset=2.0, olaz=True, cores=1):
+    planar=0.1, ground_offset=2.0, olaz=True, cores=1, step = 4):
     """
     classifies building and vegetation in las files. requires ground
       points and heights calculated in input file.
     
     syntax: lasclassify(input[s], output='', etc='', odir='', odix='',
-      planar=0.1, ground_offset=2.0, olaz=True, cores=1)
+      planar=0.1, ground_offset=2.0, olaz=True, cores=1, res = 4)
     
     inputs       [string] - the input las/laz file(s). accepts wild
                             cards. enter multiple files as one string.
@@ -714,6 +719,7 @@ def lasclassify(inputs, output='', etc='', odir='', odix='',
                             classified. default = 2.0
     olaz           [bool] - ensures output format is laz.
     cores         [float] - number of processors to use
+    res           [float] - the search radius to find similar points
     """
     import aei as aei
     
@@ -1161,12 +1167,13 @@ def lasmerge(inputs, output, etc='',
     aei.params.os.system(ocmd)
     
 # lastile
-def lastile(inputs, odir, etc='', odix='', tile_size=1000, buffer=100,
-    olaz=True, cores=1):
+def lastile(inputs, output='', odir='', etc='', odix='', tile_size=1000, 
+    buffer=100, olaz=True, cores=1, reversible=True, reverse_tiling=False):
     """
     tiles las files
     
-    syntax: lastile(inputs, odir, etc=etc, odix=odix, tile_size=tile_size)
+    syntax: lastile(inputs, odir, etc=etc, odix=odix, tile_size=1000
+      buffer=100, olaz=True, cores=1, reversible=True, reverse_tiling=False)
     
     inputs   [string] - the input las/laz file(s). accepts wild
                         cards. enter multiple files as one string.
@@ -1180,21 +1187,38 @@ def lastile(inputs, odir, etc='', odix='', tile_size=1000, buffer=100,
                         projection. default = 1000
     buffer    [float] - the buffer surrounding each tile. default = 100
     cores     [float] - the number of processors to use
+    reversible [bool] - set this if you want to be able to re-assemble the
+                        original file after tiling
+    reverse_tiling [bool] - use this to re-assemble the original file from
+                        tiles using the -reversible option
     """
     import aei as aei
     
     # parse input params
     fparams = []
     
-    # if -odix
-    if odix:
-        fparams.append(aei.fn.strJoin(['-odix', odix]))
+    # check if output, odir or odix are set
+    if output:
+        fparams.append(aei.fn.strJoin(['-o', output]))
+    
+    else:
+        # if -odir
+        if odir:
+            fparams.append(aei.fn.strJoin(['-odir', odir]))
+        else:
+            fparams.append(aei.fn.strJoin(['-odir', aei.params.outdir]))
+        
+        # if -odix
+        if odix:
+            fparams.append(aei.fn.strJoin(['-odix', odix]))
 
     # add tile_size to parameters list
-    fparams.append(aei.fn.strJoin(['-tile_size', tile_size]))
+    if tile_size:
+        fparams.append(aei.fn.strJoin(['-tile_size', tile_size]))
     
     # add buffer distance to parameters list
-    fparams.append(aei.fn.strJoin(['-buffer', buffer]))
+    if buffer:
+        fparams.append(aei.fn.strJoin(['-buffer', buffer]))
     
     # add olaz parameter if set
     if olaz:
@@ -1202,6 +1226,14 @@ def lastile(inputs, odir, etc='', odix='', tile_size=1000, buffer=100,
         
     # add n cores
     fparams.append(aei.fn.strJoin(['-cores', cores]))
+    
+    # check if reversible
+    if reversible:
+        fparams.append('-reversible')
+        
+    # check if re-assembling tiles
+    if reverse_tiling:
+        fparams.append('-reverse_tiling')
     
     # add additional parameters passed through etc keyword
     if etc:
@@ -1211,8 +1243,7 @@ def lastile(inputs, odir, etc='', odix='', tile_size=1000, buffer=100,
     fparams = aei.fn.strJoin(fparams)
     
     # join and run the command
-    ocmd = aei.fn.strJoin([raw.lastile, '-i', inputs, '-odir', odir,
-            fparams])
+    ocmd = aei.fn.strJoin([raw.lastile, '-i', inputs, fparams])
     
     # report status
     print("[ STATUS ]: Running lastile")

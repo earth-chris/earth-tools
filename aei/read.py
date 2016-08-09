@@ -81,14 +81,36 @@ def ot(arg):
    
 # set function to join miscellaneous arguments
 def etc(etcList): 
-    import aei
-    if type(etcList) is list:
-        etcStr=aei.fn.strJoin(etcList)
-    if type(etc) is not str:
+    import aei as aei
+    
+    etcStr=aei.fn.strJoin(etcList)
+    if type(etcStr) is not str:
         print('[ ERROR ]: Unable to parse the etc argument. Must be of type: list')
         print('[ ERROR ]: ' + str(type(etcList)))
         etcStr=''
     return etcStr
+
+def ascii(infile):
+    import aei as aei
+    
+    # check input file
+    if not aei.fn.checkFile(infile):
+        return -1
+    
+    # create the output list
+    contents = [] 
+    
+    # open the file
+    with open(infile, "r") as f:
+        
+        # read line by line
+        for line in f.readlines():
+            
+            # and remove the \n or whitespace
+            contents.append(line.strip())
+            
+    # return the list
+    return contents
 
 # set function to read the ascii spectra from the joint fire science
 #  program (https://www.frames.gov/partner-sites/assessing-burn-severity/spectral/spectral-library-southern-california/)

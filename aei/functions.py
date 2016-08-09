@@ -18,6 +18,24 @@ def checkFile(infile, quiet=False):
 def strJoin(list, join=' '):
     outStr = join.join(map(str,list))
     return outStr
+
+# set function to replace a file extension
+def replaceExt(inputFile, ext, fullPath = False):
+    import params
+    
+    if inputFile.find('.') == -1:
+        if fullPath:
+            outputFile = inputFile + ext
+        else:
+            outputFile = params.os.path.basename(inputFile) + ext
+        
+    else:
+        if fullPath:
+            outputFile = inputFile[:inputFile.find('.')] + ext
+        else:
+            outputFile = params.os.path.basename(inputFile[:inputFile.find('.')]) + ext
+    
+    return outputFile
     
 # set function to return an array of random floats based on a min/max
 def randomFloats(nIterations, minVal, maxVal):
@@ -219,23 +237,13 @@ def rasterTile(infile, outfile, tiling=2, buff=0, of='GTiff'):
                 te=[xmin[i,j], ymin[j,i], xmax[i,j], ymax[j,i]],
                 overwrite=True)
 
-def rasterBoundingBox(infile, outfile=''):
+def rasterBoundingBox(infile):
     """
     creates a shape file from the bounding box of a raster file
     """
     import ogr as ogr
     import osr as osr
     import gdal as gdal
-    
-    # check that an output file is set, otherwise append .shp to the file
-    if not outfile:
-        
-        # check for a '.' in the file name and add .shp to output
-        if infile.find('.') == -1:
-            outfile = infile + ".shp"
-            
-        else:
-            outfile = infile[:infile.find('.')] + ".shp"
     
     # get metadata from input file
     inf = gdal.Open(infile)
@@ -258,38 +266,5 @@ def rasterBoundingBox(infile, outfile=''):
     # close the raster file
     inf = None
     
-    # open up the output file with shapefile driver
-    driver = ogr.GetDriverByName("ESRI Shapefile")
-    dataSource = driver.CreateDataSource(outfile)
-    
-    # create the output layer
-    layer = dataSource.CreateLayer("BoundingBox", srs, ogr.wkbPolygon)
-    
-    # add field with file name
-    fn = ogr.FieldDefn("File name", ogr.OFTString)
-    fn.SetWidth(len(infile))
-    layer.CreateField(fn)
-    
-    # create a feature to add info to
-    feature = ogr.Feature(layer.GetLayerDefn())
-    feature.SetField("File name", infile)
-    
-    # create a polygon from points
-    box = ogr.Geometry(ogr.wkbLinearRing)
-    box.AddPoint(ulx,uly)
-    box.AddPoint(lrx,uly)
-    box.AddPoint(lrx,lry)
-    box.AddPoint(ulx,lry)
-    box.AddPoint(ulx,uly)
-    
-    # set the geometry
-    poly = ogr.Geometry(ogr.wkbPolygon)
-    poly.AddGeometry(box)
-    feature.SetGeometry(poly)
-    
-    # create the feature
-    layer.CreateFeature(feature)
-    
-    # destroy the feature, then destroy the shape file reference
-    feature.Destroy()
-    dataSource.Destroy()
+    # return in order of minx, miny, maxx, maxy
+    return [ulx, lry, lrx, uly]
