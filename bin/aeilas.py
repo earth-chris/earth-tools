@@ -129,7 +129,7 @@ class default_params:
         self.step_10 = True
         self.step_11 = True
         self.step_12 = True
-        self.step_13 = True
+        self.step_13 = False # don't run lasboundary for now
         
         # and create parameters for each step
         self.input_step_1 = self.input_files
@@ -316,22 +316,22 @@ class parse_args:
                 params.step_13 = False
                 
             elif arg.lower() == '-city':
-                params.city = False
+                params.city = True
                 
             elif arg.lower() == '-town':
-                params.town = False
+                params.town = True
                 
             elif arg.lower() == '-fine':
-                params.fine = False
+                params.fine = True
                 
             elif arg.lower() == '-extra_fine':
-                params.extra_fine = False
+                params.extra_fine = True
                 
             elif arg.lower() == '-coarse':
                 params.coarse = True
                 
             elif arg.lower() == '-extra_coarse':
-                params.extra_coarse = False
+                params.extra_coarse = True
                 
             elif arg.lower() == '-cores':
                 i += 1
@@ -471,7 +471,7 @@ def step_2(params):
     # run the command
     aei.cmd.lastile(params.input_step_2, odir = output_directory,
       tile_size = params.tile_size, buffer = params.buffer_size,
-      olaz = params.olaz, cores = params.cores)
+      olaz = params.olaz, cores = params.cores, reversible=False)
       
     # update the inputs for next steps
     params.input_step_3 = output_directory + aei.params.pathsep + "*" + params.lt
@@ -533,7 +533,8 @@ def step_5(params):
     
     # run the command
     aei.cmd.lasclassify(params.input_step_5, odir = output_directory,
-      olaz = params.olaz, cores = params.cores)
+      olaz = params.olaz, cores = params.cores, planar=0.1, 
+      step = 4 * params.res)
       
     # update inputs for next steps
     params.input_step_6 = output_directory + aei.params.pathsep + "*" + params.lt
@@ -629,6 +630,10 @@ def step_9(params):
     aei.cmd.lascanopy(params.input_step_9, odir = output_directory,
       height_cutoff = 0, step = params.res, max = True, otif = True,
       use_tile_bb = True, cores = params.cores)
+    #aei.cmd.las2dem(params.input_step_9, odir = output_directory, 
+    #  step = params.res, nodata = params.nodata, otif = True,
+    #  use_tile_bb = True, cores = params.cores, odix = "_max",
+    #  etc = ["-drop_class", "6" "-kill", 3 * params.res])
       
     # mosaic the tiles to an output file
     tiles = output_directory + aei.params.pathsep + "*_max.tif"
@@ -682,12 +687,12 @@ def step_11(params):
     
     # run the command 
     aei.cmd.lascanopy(params.input_step_9, odir = output_directory,
-      height_cutoff = 0, step = params.res, 
+      height_cutoff = 0, step = params.sres, 
       density = range(0,int(params.max_tch+1)), 
       use_tile_bb = True, otif = True, cores = params.cores)
       
     # mosaic the tiles to output files
-    for i in range(0, int(params.max_tch+1)):    
+    for i in range(0, int(params.max_tch)):    
         tiles = str(output_directory + aei.params.pathsep + \
           "*_d%02d.tif" % i)
         mosaic_file = str(params.odir + aei.params.pathsep + \
@@ -699,7 +704,7 @@ def step_11(params):
     
     # stack the slicer bands into a single output file
     individual_files = params.odir + aei.params.pathsep + \
-      params.name + "_slicer*.tif"
+      params.name + "_slicer_*.tif"
     file_list = glob.glob(individual_files)
     
     vrt_file = params.odir + aei.params.pathsep + \
@@ -722,7 +727,7 @@ def step_11(params):
     
 def step_12(params):
     """
-    creats a final classified las file
+    creates a final classified las file
     """
     # report starting
     print("[ STATUS ]: Starting step 12")
@@ -733,7 +738,7 @@ def step_12(params):
       
     # run the command
     aei.cmd.lasmerge(params.input_step_12, output_file,
-      rescale = False, olaz = params.olaz)
+        rescale = False, olaz = params.olaz)
       
     # index the files
     aei.cmd.lasindex(output_file)
@@ -815,7 +820,7 @@ def main ():
     10. create canopy density models
     11. create slicer models
     12. create a merged laz file
-    13. create shape file
+    13. create shape file - currenly disabled by default
     
     syntax: main()
     """
