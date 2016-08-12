@@ -534,7 +534,7 @@ def step_5(params):
     # run the command
     aei.cmd.lasclassify(params.input_step_5, odir = output_directory,
       olaz = params.olaz, cores = params.cores, planar=0.1, 
-      step = 4 * params.res)
+      step = 5 * params.res)
       
     # update inputs for next steps
     params.input_step_6 = output_directory + aei.params.pathsep + "*" + params.lt
@@ -629,7 +629,7 @@ def step_9(params):
     # run the command 
     aei.cmd.lascanopy(params.input_step_9, odir = output_directory,
       height_cutoff = 0, step = params.res, max = True, otif = True,
-      use_tile_bb = True, cores = params.cores)
+      use_tile_bb = True, cores = params.cores, veg=False)
     #aei.cmd.las2dem(params.input_step_9, odir = output_directory, 
     #  step = params.res, nodata = params.nodata, otif = True,
     #  use_tile_bb = True, cores = params.cores, odix = "_max",

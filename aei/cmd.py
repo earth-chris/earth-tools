@@ -543,7 +543,7 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
     loc='', min=False, max=False, avg=False, std=False,
     ske=False, kur=False, cov=False, dns=False, gap=False,
     cover_cutoff=5.0, count=[], density=[], fractions=False, 
-    use_tile_bb = False, otif=True, cores=1, veg=True):
+    use_tile_bb = False, otif=True, cores=1, veg=False):
     """
     calculates and rasterizes forestry/canopy metrics using las files. 
       must be run using a height-normalized input file.
@@ -584,7 +584,7 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
     use_tile_bb     [bool] - set to use the tile bounding box, not full file
     otif            [bool] - ensures output format is tif.
     cores          [float] - set number of processors
-    veg             [bool] - ensure only running on veg data.
+    veg             [bool] - masks non-veg data.
     """
     import aei as aei
     

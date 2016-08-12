@@ -1,0 +1,17 @@
+style
+-establish styles and color tables for figures and plots
+
+functions
+-unmix function for spectral objects
+-write spectral object as spectral library
+-image object
+ -plot band histogram
+ -etc. other cool functions
+-las object
+-count_objects, and assign size to each object
+-spatial coords to raster indices
+-spectral heterogeneity
+
+scripts
+-tile raster 
+-bb2shp
