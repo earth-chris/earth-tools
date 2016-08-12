@@ -14,4 +14,3 @@ functions
 
 scripts
 -tile raster 
--bb2shp
