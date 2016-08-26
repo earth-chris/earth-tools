@@ -39,6 +39,9 @@ class default_params:
         # default no-data value
         self.nodata = -9999
         
+        # set to drop data above a certain height
+        self.drop_above = None
+        
         # set up some processing keywords
         self.city = False
         self.town = False
@@ -162,7 +165,6 @@ class parse_args:
 
         # read arguments from command line
         i = 1
-        print(arglist)
         
         while i < len(arglist):
             arg = arglist[i]
@@ -181,7 +183,7 @@ class parse_args:
                 else:
                     split = arg.split()
                     for files in split:
-                        if not aei.checkFile(files):
+                        if not aei.fn.checkFile(files):
                             aei.params.sys.exit(1)
                             
                     params.input_files = arg
@@ -338,6 +340,11 @@ class parse_args:
                 arg = arglist[i]
                 params.cores = int(arg)
                 
+            elif arg.lower() == '-drop_above':
+                i += 1
+                arg = arglist[i]
+                params.drop_above = arg
+                
             else:
                 usage()
                 print("[ ERROR ]: Unrecognized argument: %s" % arg)
@@ -369,7 +376,7 @@ def update_params(params):
     params.input_step_12 = params.input_files
     params.input_step_13 = params.input_files
     
-    # strip the path separater if there
+    # strip the path separator if there
     if params.outdir[-1] == aei.params.pathsep:
         params.outdir = params.outdir[:-1]
         
@@ -446,7 +453,7 @@ def step_1(params):
     merges the input data files
     """
     # report starting
-    print("[ STATUS ]: Starting step 1")
+    print("[ STATUS ]: Starting step 1 - merging")
     
     # set up the output file
     output_file = params.scratchdir + aei.params.pathsep + \
@@ -463,7 +470,7 @@ def step_2(params):
     tiles the data
     """
     # report starting
-    print("[ STATUS ]: Starting step 2")
+    print("[ STATUS ]: Starting step 2 - tiling")
     
     # set up the output directory
     output_directory = params.tiles_unclassified
@@ -481,7 +488,7 @@ def step_3(params):
     classifies ground points
     """
     # report starting
-    print("[ STATUS ]: Starting step 3")
+    print("[ STATUS ]: Starting step 3 - classifying ground points")
     
     # set up output directory
     output_directory = params.tiles_ground
@@ -489,18 +496,22 @@ def step_3(params):
     # check if step 4 is to be run - if so, we can perform both
     #  in a single command and skip step 4 below
     compute_height = False
-    
     if params.step_4:
-        compute_height = True
-        params.step_4 = False
-        print("[ STATUS ]: Starting step 4")
+        
+        # don't do this if -drop_above is set, as it needs to run separate
+        #  from the lasground height calculation
+        if not params.drop_above:
+            compute_height = True
+            params.step_4 = False
+            print("[ STATUS ]: Starting step 4 - calculating height")
         
     # run the command
     aei.cmd.lasground(params.input_step_3, odir = output_directory,
       olaz = params.olaz, city = params.city, town = params.town,
       compute_height = compute_height, fine = params.fine,
       extra_fine = params.extra_fine, coarse = params.coarse,
-      extra_coarse = params.extra_coarse, cores = params.cores)
+      extra_coarse = params.extra_coarse, cores = params.cores,
+      non_ground_unchanged=True)
       
     # update inputs for next steps
     params.input_step_4 = output_directory + aei.params.pathsep + "*" + params.lt
@@ -511,12 +522,13 @@ def step_4(params):
     calculates height agl
     """
     # report starting
-    print("[ STATUS ]: Starting step 4")
+    print("[ STATUS ]: Starting step 4 - calculating height")
     
     # no need to set up output directory, calculates height in place
     
     # run the command
-    aei.cmd.lasheight(params.input_step_4, cores=params.cores)
+    aei.cmd.lasheight(params.input_step_4, cores=params.cores, 
+      drop_above=params.drop_above)
     
     # update inputs for next steps
     params.input_step_5 = params.input_step_4
@@ -526,7 +538,7 @@ def step_5(params):
     classifies veg & buildings
     """
     # report starting
-    print("[ STATUS ]: Starting step 5")
+    print("[ STATUS ]: Starting step 5 - classification")
     
     # set up output directory
     output_directory = params.tiles_classified
@@ -547,14 +559,15 @@ def step_6(params):
     height-normalizes the data
     """
     # report starting
-    print("[ STATUS ]: Starting step 6")
+    print("[ STATUS ]: Starting step 6 - height normalizing")
     
     # set up output directory
     output_directory = params.tiles_height
     
     # run the command
     aei.cmd.lasheight(params.input_step_6, odir = output_directory,
-      replace_z = True, olaz = params.olaz, cores=params.cores)
+      replace_z = True, olaz = params.olaz, cores=params.cores,
+      drop_above = params.max_tch)
       
     # update inputs for next steps
     params.input_step_9 = output_directory + aei.params.pathsep + "*" + params.lt
@@ -566,7 +579,7 @@ def step_7(params):
     creates ground models and mosaics
     """
     # report starting
-    print("[ STATUS ]: Starting step 7")
+    print("[ STATUS ]: Starting step 7 - creating ground models")
     
     # set up output directory
     output_directory = params.tiles_classified
@@ -593,7 +606,7 @@ def step_8(params):
     creates surface models and mosaics
     """
     # report starting
-    print("[ STATUS ]: Starting step 8")
+    print("[ STATUS ]: Starting step 8 - creating surface models")
     
     # set up the output directory
     output_directory = params.tiles_classified
@@ -621,7 +634,7 @@ def step_9(params):
     creates tree-height models and mosaics
     """
     # report starting
-    print("[ STATUS ]: Starting step 9")
+    print("[ STATUS ]: Starting step 9 - creating tree height models")
     
     # set up the output directory
     output_directory = params.tiles_height
@@ -651,7 +664,7 @@ def step_10(params):
     creates canopy density models and mosaics
     """
     # report starting
-    print("[ STATUS ]: Starting step 10")
+    print("[ STATUS ]: Starting step 10 - creating canopy density models")
     
     # set up the output directory
     output_directory = params.tiles_height
@@ -680,15 +693,18 @@ def step_11(params):
     import glob
     
     # report starting
-    print("[ STATUS ]: Starting step 11")
+    print("[ STATUS ]: Starting step 11 - creating slicer data")
     
     # set up the output directory
     output_directory = params.tiles_height
     
+    # set the range of heights to use, and set the min height at 0.5 m
+    rng = range(0,int(params.max_tch+1))
+    rng[0] = 0.5
+    
     # run the command 
     aei.cmd.lascanopy(params.input_step_9, odir = output_directory,
-      height_cutoff = 0, step = params.sres, 
-      density = range(0,int(params.max_tch+1)), 
+      height_cutoff = 0, step = params.sres, density = rng, 
       use_tile_bb = True, otif = True, cores = params.cores)
       
     # mosaic the tiles to output files
@@ -730,7 +746,7 @@ def step_12(params):
     creates a final classified las file
     """
     # report starting
-    print("[ STATUS ]: Starting step 12")
+    print("[ STATUS ]: Starting step 12 - merging the final laz file")
     
     # set up output file
     output_file = params.odir + aei.params.pathsep + \
@@ -751,7 +767,7 @@ def step_13(params):
     creates a bounding shape file
     """
     # report starting
-    print("[ STATUS ]: Starting step 13")
+    print("[ STATUS ]: Starting step 13 - creating a bounding box")
     
     # set up output file
     output_file = params.odir + aei.params.pathsep + \
@@ -770,16 +786,32 @@ def cleanup_files(params):
     import shutil
     
     # delete unclassified
-    shutil.rmtree(params.tiles_unclassified)
+    try:
+        shutil.rmtree(params.tiles_unclassified)
+    except:
+        print("[ ERROR ]: Unable to delete scratch directory %s" 
+          % params.tiles_unclassified)
     
-    # update the scratch directory for ground classification
-    shutil.rmtree(params.tiles_ground)
+    # delete ground classification
+    try:
+        shutil.rmtree(params.tiles_ground)
+    except:
+        print("[ ERROR ]: Unable to delete scratch directory %s" 
+          % params.tiles_ground)
     
-    # update the scratch directory for classified tiles
-    shutil.rmtree(params.tiles_classified)
+    # delete classified tiles
+    try:
+        shutil.rmtree(params.tiles_classified)
+    except:
+        print("[ ERROR ]: Unable to delete scratch directory %s" 
+          % params.tiles_classified)
     
-    # update the scratch directory for height-normalized tiles
-    shutil.rmtree(params.tiles_height)
+    # delete height-normalized tiles
+    try:
+        shutil.rmtree(params.tiles_height)
+    except:
+        print("[ ERROR ]: Unable to delete scratch directory %s" 
+          % params.tiles_classified)
     
 def usage(exit=False):
     """

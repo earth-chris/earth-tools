@@ -3,6 +3,28 @@
 # c. 2016 Christopher Anderson
 #####
 
+# set up a function to run commands and return stdout/stderr
+def run(cmd, stderr=True):
+    from aei import params
+    
+    # set whether or not stderr is included in return or just stdout
+    if stderr:
+        se = params.subprocess.STDOUT
+    else:
+        se = None
+    
+    # run the command, and return stdout as a list
+    try:
+        proc = params.subprocess.check_output(cmd, shell = True,
+          stderr = se)
+        return proc.split("\n")
+        
+    except params.subprocess.CalledProcessError, e:
+        output = e.output.strip()
+        sp = output.find(":") + 2
+        print("[ ERROR ]: %s" % output[sp:])
+        return e.output.strip().split("\n")
+
 # set up commands to call binaries
 class getPaths:
     def __init__(self):
@@ -221,9 +243,9 @@ def gdalwarp(inputs='', output='', etc='', dstnodata=False,
     ocmd = aei.fn.strJoin([raw.gdalwarp, fparams, inputs, output])
     print("[ STATUS ]: Running gdalwarp")
     print("[ STATUS ]: %s" % ocmd)
-    os.system(ocmd)
     
-    return(ocmd)
+    # run the command
+    run(ocmd)
     
 # gdal_translate
 def gdal_translate(inputs='', output='', etc='', dstnodata=False, 
@@ -286,13 +308,13 @@ def gdal_translate(inputs='', output='', etc='', dstnodata=False,
     
     fparams=aei.fn.strJoin(fparams)
     
-    # join and run the command
+    # join the command
     ocmd = aei.fn.strJoin([raw.gdal_translate, fparams, inputs, output])
     print("[ STATUS ]: Running gdal_translate")
     print("[ STATUS ]: %s" % ocmd)
-    os.system(ocmd)
     
-    return(ocmd)
+    # run the command
+    run(ocmd)
     
 # gdalbuildvrt
 def gdalbuildvrt(inputs='', output='', etc='', vrtnodata=False, 
@@ -359,13 +381,13 @@ def gdalbuildvrt(inputs='', output='', etc='', vrtnodata=False,
     
     fparams=aei.fn.strJoin(fparams)
     
-    # join and run the command
+    # join the command
     ocmd = aei.fn.strJoin([raw.gdalbuildvrt, fparams, output, inputs])
     print("[ STATUS ]: Running gdalbuildvrt")
     print("[ STATUS ]: %s" % ocmd)
-    os.system(ocmd)
     
-    return(ocmd)
+    # run the command
+    run(ocmd)
 
 ###
 # LAStools commands
@@ -374,28 +396,29 @@ def gdalbuildvrt(inputs='', output='', etc='', vrtnodata=False,
 # las2dem
 def las2dem(inputs, output='', etc='', odir='', odix='',
     step=2.0, nodata=-9999, ground=False, otif=True, 
-    use_tile_bb=False, cores=1):
+    use_tile_bb=False, cores=1, drop_above=None):
     """
     interpolates, grids and rasterizes las files
     
     syntax: las2dem(inputs, output='', etc='', odir='', odix='',
       step=2.0, fill=5, subcircle=0.4, nodata=-9999, elevation=True,
       ground=False, lowest=False, highest=False, wgs84=True, 
-      utm='', otif=True, use_tile_bb=False, cores=1)
+      utm='', otif=True, use_tile_bb=False, cores=1, drop_above=None)
     
-    inputs   [string] - the input las/laz file(s). accepts wild
-                        cards. enter multiple files as one string.
-    output   [string] - the output merged las/laz file. 
-    etc      [string] - additional command line params. enter all
-                        as a scalar string. 
-    odir     [string] - the output directory. superceded by using 'output' variable
-    odix     [string] - a string to append to each output. superceded by using 'output' variable
-    step      [float] - the raster grid size.
-    nodata    [float] - the value where no points are found
-    ground     [bool] - create ground model
-    otif       [bool] - output as tif format
-    use_tile_bb[bool] - set to output a grid only to the extent of the tile
-    cores     [float] - number of processors to use
+    inputs    [string] - the input las/laz file(s). accepts wild
+                         cards. enter multiple files as one string.
+    output    [string] - the output merged las/laz file. 
+    etc       [string] - additional command line params. enter all
+                         as a scalar string. 
+    odir      [string] - the output directory. superceded by using 'output' variable
+    odix      [string] - a string to append to each output. superceded by using 'output' variable
+    step       [float] - the raster grid size.
+    nodata     [float] - the value where no points are found
+    ground      [bool] - create ground model
+    otif        [bool] - output as tif format
+    use_tile_bb [bool] - set to output a grid only to the extent of the tile
+    drop_above [float] - set this to drop points above a certain height
+    cores      [float] - number of processors to use
     """
     import aei as aei
     
@@ -440,6 +463,10 @@ def las2dem(inputs, output='', etc='', odir='', odix='',
     # set cores
     fparams.append(aei.fn.strJoin(['-cores', cores]))
     
+    # set drop_above
+    if drop_above:
+        fparams.append(aei.fn.strJoin(['-drop_above', drop_above]))
+    
     # add additional parameters passed through etc keyword
     if etc:
         fparams.append(aei.read.etc(etc))
@@ -454,9 +481,8 @@ def las2dem(inputs, output='', etc='', odir='', odix='',
     print("[ STATUS ]: Running las2dem")
     print("[ STATUS ]: %s" % ocmd)
     
-    aei.params.os.system(ocmd)
-
-# las2las
+    # run the command
+    run(ocmd)
 
 # lasboundary
 def lasboundary(inputs, output='', etc='', odir='', odix='',
@@ -535,7 +561,8 @@ def lasboundary(inputs, output='', etc='', odir='', odix='',
     print("[ STATUS ]: Running lasboundary")
     print("[ STATUS ]: %s" % ocmd)
     
-    aei.params.os.system(ocmd)
+    # run the command
+    run(ocmd)
 
 # lascanopy
 def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
@@ -693,7 +720,8 @@ def lascanopy(inputs, output='', etc='', odir='', odix='', merged=False,
     print("[ STATUS ]: Running lascanopy")
     print("[ STATUS ]: %s" % ocmd)
     
-    aei.params.os.system(ocmd)
+    # run the command
+    run(ocmd)
 
 # lasclassify
 def lasclassify(inputs, output='', etc='', odir='', odix='',
@@ -769,7 +797,8 @@ def lasclassify(inputs, output='', etc='', odir='', odix='',
     print("[ STATUS ]: Running lasclassify")
     print("[ STATUS ]: %s" % ocmd)
     
-    aei.params.os.system(ocmd)
+    # run the command
+    run(ocmd)
 
 # lasclip
 
@@ -884,15 +913,16 @@ def lasgrid(inputs, output='', etc='', odir='', odix='',
     print("[ STATUS ]: Running lasgrid")
     print("[ STATUS ]: %s" % ocmd)
     
-    aei.params.os.system(ocmd)
+    # run the command
+    run(ocmd)
 
 # lasground
 def lasground(inputs, output='', etc='', odir='', odix='',
     olaz=True, not_airborne=False, city=False, town=False,
-    compute_height=True, replace_z=False,
+    metro=False, compute_height=True, replace_z=False,
     fine=False, extra_fine=False,
     coarse=False, extra_coarse=False, cores=1,
-    non_ground_unchanged=True):
+    non_ground_unchanged=False):
     """
     calculates ground points for las files
     
@@ -912,8 +942,9 @@ def lasground(inputs, output='', etc='', odir='', odix='',
                             superceded by using 'output' variable
     olaz           [bool] - ensures output format is laz. default = True
     not_airborne   [bool] - set this flag if using ground LiDAR data.
-    city           [bool] - uses widest radius to find ground
+    city           [bool] - uses very wide radius to find ground
     town           [bool] - uses wide radius to find ground
+    metro          [bool] - uses widest radius to find ground
     fine           [bool] - use in steep terrain
     extra_fine     [bool] - use in extra steep terrain
     coarse         [bool] - use in flat terrain
@@ -1012,28 +1043,30 @@ def lasground(inputs, output='', etc='', odir='', odix='',
     print("[ STATUS ]: Running lasground")
     print("[ STATUS ]: %s" % ocmd)
     
-    aei.params.os.system(ocmd)
+    # run the command
+    run(ocmd)
 
 # lasheight
 def lasheight(inputs, output='', etc='', odir='', odix='',
-    replace_z=False, olaz=True, cores=1):
+    replace_z=False, olaz=True, cores=1, drop_above=None):
     """
     calculates height of las files
     
     syntax: lasheight(input[s], output='', etc='', odir='',
       odix='', replace_z=False, olaz=True, cores=1)
     
-    inputs  [string] - the input las/laz file(s). accepts wild
-                       cards. enter multiple files as one string.
-    output  [string] - the output merged las/laz file. 
-    etc     [string] - additional command line params. enter all
-                       as a scalar string. 
-    odir    [string] - the output directory. superceded by using 'output' variable
-    odix    [string] - a string to append to each output. superceded by using 'output' variable
-    replace_z [bool] - replaces the z value with the height above
-                       ground. default = False
-    olaz      [bool] - ensures output format is laz. default = True
-    cores    [float] - sets the number of processors to use
+    inputs    [string] - the input las/laz file(s). accepts wild
+                         cards. enter multiple files as one string.
+    output    [string] - the output merged las/laz file. 
+    etc       [string] - additional command line params. enter all
+                         as a scalar string. 
+    odir      [string] - the output directory. superceded by using 'output' variable
+    odix      [string] - a string to append to each output. superceded by using 'output' variable
+    replace_z   [bool] - replaces the z value with the height above
+                         ground. default = False
+    olaz        [bool] - ensures output format is laz. default = True
+    cores      [float] - sets the number of processors to use
+    drop_above [float] - set this to drop points above a certain height
     """
     import aei as aei
     
@@ -1064,6 +1097,10 @@ def lasheight(inputs, output='', etc='', odir='', odix='',
     if olaz:
         fparams.append('-olaz')
     
+    # set to drop certain points
+    if drop_above:
+        fparams.append(aei.fn.strJoin(['-drop_above', drop_above]))
+    
     # set number of cores to use
     fparams.append(aei.fn.strJoin(['-cores', cores]))
     
@@ -1081,7 +1118,8 @@ def lasheight(inputs, output='', etc='', odir='', odix='',
     print("[ STATUS ]: Running lasheight")
     print("[ STATUS ]: %s" % ocmd)
     
-    aei.params.os.system(ocmd)
+    # run the command
+    run(ocmd)
     
 # lasindex
 def lasindex(inputs, etc=''):
@@ -1114,13 +1152,14 @@ def lasindex(inputs, etc=''):
     print("[ STATUS ]: Running lasindex")
     print("[ STATUS ]: %s" % ocmd)
     
-    aei.params.os.system(ocmd)
+    # run the command
+    run(ocmd)
 
 # lasinfo
 
 # lasmerge
 def lasmerge(inputs, output, etc='',
-    rescale=[0.01, 0.01, 0.001], olaz=True):
+    rescale=[0.01, 0.01, 0.01], olaz=True):
     """
     merges and rescales las files
     
@@ -1164,7 +1203,8 @@ def lasmerge(inputs, output, etc='',
     print("[ STATUS ]: Running lasmerge")
     print("[ STATUS ]: %s" % ocmd)
     
-    aei.params.os.system(ocmd)
+    # run the command
+    run(ocmd)
     
 # lastile
 def lastile(inputs, output='', odir='', etc='', odix='', tile_size=1000, 
@@ -1249,7 +1289,8 @@ def lastile(inputs, output='', odir='', etc='', odix='', tile_size=1000,
     print("[ STATUS ]: Running lastile")
     print("[ STATUS ]: %s" % ocmd)
     
-    aei.params.os.system(ocmd)
+    # run the command
+    run(ocmd)
 
 # laszip
 

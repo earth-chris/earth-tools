@@ -109,7 +109,7 @@ def rasterTile(infile, outfile, tiling=2, buff=0, of='GTiff'):
     tiles a raster file into a set number of tiles based on
     a tiling parameter.
     
-    syntax: tileRaster(infile, tiling=2, buff=0, of='GTiff')
+    syntax: tileRaster(infile, outfile, tiling=2, buff=0, of='GTiff')
     
     infile   [string] - the input raster file to tile
     outfile  [string] - the output base name to append each file ID to
@@ -125,6 +125,8 @@ def rasterTile(infile, outfile, tiling=2, buff=0, of='GTiff'):
     import gdal as gdal
     import osr as osr
     import cmd as cmd
+    import numpy as np
+    import math
     
     # set defaults for ensuring i/o is smooth
     if not checkFile(infile):
@@ -135,7 +137,7 @@ def rasterTile(infile, outfile, tiling=2, buff=0, of='GTiff'):
         return -1
         
     if of == "GTiff":
-        etc = "-co COMPRESS=LZW"
+        etc = ["-co COMPRESS=LZW"]
         append = ".tif"
     else:
         append = ""
@@ -201,8 +203,8 @@ def rasterTile(infile, outfile, tiling=2, buff=0, of='GTiff'):
             ymin = np.row_stack((ymin, ymin))
             ymax = np.row_stack((ymax, ymax))
             
-        ymin = ymin.transpose()
-        ymax = ymax.transpose()
+        #ymin = ymin.transpose()
+        #ymax = ymax.transpose()
         
     else:
         print("[ ERROR ]: tiling parameter %s is not a 2-element list or int" % tiling)

@@ -7,6 +7,7 @@ import os
 import sys
 import platform
 import threading
+import subprocess
 import multiprocessing
 from psutil import virtual_memory
 

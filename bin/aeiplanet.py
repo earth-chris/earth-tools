@@ -44,7 +44,6 @@ class parse_args:
     
         # read arguments from command line
         i = 1
-        print(arglist)
         
         while i < len(arglist):
             arg = arglist[i]
