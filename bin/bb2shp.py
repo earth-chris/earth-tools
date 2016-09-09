@@ -125,6 +125,7 @@ def update_params(params):
     this procedure takes the input parameters as set at 
       command line and updates within script
     """
+    import os
     # go through logic of input and output files and update parameters
     #  check how many input files are specified. If more than one...
     if len(params.inputFiles) > 1:

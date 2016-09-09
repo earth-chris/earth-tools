@@ -43,11 +43,11 @@ def randomFloats(nIterations, minVal, maxVal):
     return np.random.ranf(nIterations) * (maxVal - minVal) + minVal
     
 # set function to brightness normalize an array
-def bn(array, axis = 1, inds = [], returnScalar = False):
+def bn(array, axis = None, inds = [], returnScalar = False):
     """
     performs a brightness normalization on a numpy array
     
-    usage: output = aei.bn(array, axis = 1, inds = [])
+    usage: output = aei.bn(array, axis = None, inds = [])
       where: array = the input array to normalize
              axis  = the axis on which to normalize. default is the last dimension
              inds  = the indices 
@@ -56,7 +56,7 @@ def bn(array, axis = 1, inds = [], returnScalar = False):
     import numpy as np
     
     # if axis isn't set, default to last axis in array
-    if not axis:
+    if axis == None:
         axis = array.ndim - 1
     
     # correct axis if invalid
@@ -75,9 +75,6 @@ def bn(array, axis = 1, inds = [], returnScalar = False):
             print("[ ERROR ]: invalid range set. using all spectra")
     else:
         inds = range(0, array.shape[axis])
-        
-    # include only non-zero data
-    gd = np.where(array.sum(axis) == 0)
     
     # set up bn based on shape of array
     if array.ndim == 1:
@@ -86,24 +83,24 @@ def bn(array, axis = 1, inds = [], returnScalar = False):
             
     elif array.ndim == 2:
         if axis == 0:
-            scalar = np.expand_dims(np.sqrt((array[inds,gd[0]] ** 2).sum(axis)), axis)
+            scalar = np.expand_dims(np.sqrt((array[inds,:] ** 2).sum(axis)), axis)
             bn = array[inds,:] / scalar
             
         elif axis == 1:
-            scalar = np.expand_dims(np.sqrt((array[gd[0],inds] ** 2).sum(axis)), axis)
+            scalar = np.expand_dims(np.sqrt((array[:,inds] ** 2).sum(axis)), axis)
             bn = array[:,inds] / scalar
         
     elif array.ndim == 3:
         if axis == 0:
-            scalar = np.expand_dims(np.sqrt((array[inds,gd[0],gd[1]] ** 2).sum(axis)),axis)
+            scalar = np.expand_dims(np.sqrt((array[inds,:,:] ** 2).sum(axis)),axis)
             bn = array[inds,:,:] / scalar
             
         elif axis == 1:
-            scalar = np.expand_dims(np.sqrt((array[gd[0],inds,gd[1]] ** 2).sum(axis)),axis)
+            scalar = np.expand_dims(np.sqrt((array[:,inds,:] ** 2).sum(axis)),axis)
             bn = array[:,inds,:] / scalar
             
         elif axis == 2:
-            scalar = np.expand_dims(np.sqrt((array[gd[0],gd[1],inds] ** 2).sum(axis)),axis)
+            scalar = np.expand_dims(np.sqrt((array[:,:,inds] ** 2).sum(axis)),axis)
             bn = array[:,:,inds] / scalar
     
     else:

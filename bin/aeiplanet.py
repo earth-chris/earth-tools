@@ -12,6 +12,7 @@ import shutil
 import json
 import glob
 import cv2
+import sys
 
 # define global parameters
 class default_params:
@@ -23,6 +24,8 @@ class default_params:
         self.geoinfoFile = None
         self.inputPath = None
         self.basename = None
+        self.outputFile = None
+        self.append = "_derived.tif"
         
         # set some metadata parameters
         self.snr = None
@@ -94,54 +97,76 @@ class parse_args:
                     else:
                         params.metadataFile = arg[:loc] + "_metadata.json"
                         params.geoinfoFile = arg[:loc] + "_geoinfo.json"
+        
+            # check if output is set                
+            elif arg.lower() == '-o':
+                i += 1
+                arg = arglist[i]
+                
+                try:
+                    params.outputFile = arg
+                except:
+                    print("[ ERROR ]: Unable to set output file: %s" % arg)
+                    sys.exit(1)
+                    
+            else:
+                print("[ ERROR ]: Unrecognized argument: %s" % arg)
+                usage()
+                sys.exit(1)
+                
+            i += 1
 
 # read the metadata json file        
 def readMetadata(params):
     
     # read the json metadata info into memory
-    jdict = json.load(params.metadataFile)
+    with open(params.metadataFile, 'r') as jsonf:
+        jdict = json.load(jsonf)
     j = jdict[u'properties']
     
     # extract useful metadata info
-    self.exposureTime = j[u'camera'][u'exposure_time']
-    self.cloudCover = j[u'cloud_cover'][u'estimated']
-    self.snr = j[u'snr']
-    self.altitude = j[u'sat'][u'alt']
-    self.offNadir = j[u'sat'][u'off_nadir']
-    self.solarZenith = 90-j[u'sun'][u'altitude']
-    self.solarAzimuth = j[u'sun'][u'azimuth']
-    self.localTime = j[u'sun'][u'local_time_of_day']
+    params.exposureTime = j[u'camera'][u'exposure_time']
+    params.cloudCover = j[u'cloud_cover'][u'estimated']
+    params.snr = j[u'image_statistics'][u'snr']
+    params.altitude = j[u'sat'][u'alt']
+    params.offNadir = j[u'sat'][u'off_nadir']
+    params.solarZenith = 90-j[u'sun'][u'altitude']
+    params.solarAzimuth = j[u'sun'][u'azimuth']
+    params.localTime = j[u'sun'][u'local_time_of_day']
 
 # make sure files exist    
 def checkInputs(params):
-    if not aei.fn.checkFile(params.imageFile):
+    if not aei.fn.checkFile(params.imageFile, True):
         usage()
         aei.fn.checkFile(params.imageFile, False)
         sys.exit(1)
         
-    if not aei.fn.checkFile(params.metadataFile):
+    if not aei.fn.checkFile(params.metadataFile, True):
         usage()
         aei.fn.checkFile(params.metadataFile, False)
         sys.exit(1)
            
-    if not aei.fn.checkFile(params.geoinfoFile):
+    if not aei.fn.checkFile(params.geoinfoFile, True):
         usage()
         aei.fn.checkFile(params.geoinfoFile, False)
         sys.exit(1)
         
+    # set up default output file based on the input basename
+    if not params.outputFile:
+        loc = params.imageFile.find("_analytic.tif")
+        pathlen = len(params.inputPath)
+        params.basename = params.imageFile[pathlen:loc]
+        params.outputFile = params.inputPath + params.basename + params.append
+        
 # set up function to calculate simple ratios
 def simpleRatio(band1, band2):
-    one = np.ones(1, dtype=np.float32)[0]
-    gd = np.where(band2 == 0)
-    return (band1[gd[0],gd[1]] * one) / (band2[gd[0],gd[1]] * one)
+    return (band1.astype(np.float32)) / (band2.astype(np.float32))
 
 # set up function to calculate normalized ratios    
 def normalizedRatio(band1, band2):
-    one = np.ones(1, dtype=np.float32)[0]
-    band1 *= one
-    band2 *= one
-    gd = np.where((band1 + band2) == 0)
-    return (band1[gd[0],gd[1]] - band2[gd[0],gd[1]]) / (band1[gd[0],gd[1]] + band2[gd[0],gd[1]])
+    band1 = band1.astype(np.float32)
+    band2 = band2.astype(np.float32)
+    return (band1 - band2) / (band1 + band2)
 
 # set up function to calculate distance from the edge of good data
 def distanceFromEdge(array, gdalRef):
@@ -220,12 +245,14 @@ $ aeiplanet.py -i input_files
     
     output band list is:
     1. Red  2. Green  3. Blue  4. Alpha  5. Brightness normalized (BN) Red
-    6. BN Green 7. BN Blue 8. Brightness scalar 9. Distance from edge (geographic units)
+    6. BN Green 7. BN Blue 8. Brightness scalar 9. Distance from edge
     10. Simple Ratio (SR) red-green, 11. SR green-blue 12. SR red-blue
     13. Normalized difference (ND) red-green 14. ND green-blue 15. ND red-blue
     Exposure Time, Off-Nadir, SNR, Solar Zenith, Solar Azimuth, Sensor Altitude
         """)
-        
+    
+    if exit:
+        sys.exit(1)
 
 def main ():
     """
@@ -273,31 +300,34 @@ def main ():
     
     # run the simple ratios
     print('[ STATUS ]: Caculating simple ratios')
-    sr_rg = simpleRatio(rgb[0], rgb[1])
-    sr_gb = simpleRatio(rgb[1], rgb[2])
-    sr_rb = simpleRatio(rgb[0], rgb[2])
+    sr_rg = simpleRatio(rgba[0], rgba[1])
+    sr_gb = simpleRatio(rgba[1], rgba[2])
+    sr_rb = simpleRatio(rgba[0], rgba[2])
     
     # run the normalized ratios
     print('[ STATUS ]: Calculating normalized ratios')
-    nd_rg = normalized_ratio(rgb[0], rgb[1])
-    nd_gb = normalized_ratio(rgb[1], rgb[2])
-    nd_rb = normalized_ratio(rgb[0], rgb[2])
+    nd_rg = normalizedRatio(rgba[0], rgba[1])
+    nd_gb = normalizedRatio(rgba[1], rgba[2])
+    nd_rb = normalizedRatio(rgba[0], rgba[2])
     
     # add bands from the metadata
-    print('[ STATUS ]: Adding metadata bands')
-    md_exposure = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.exposureTime
-    md_offNadir = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.offNadir
-    md_solarZen = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.solarZenith
-    md_solarAzi = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.solarAzimuth
-    md_altitude = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.altitude
-    md_snr = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.snr
+    #print('[ STATUS ]: Adding metadata bands')
+    #md_exposure = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.exposureTime
+    #md_offNadir = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.offNadir
+    #md_solarZen = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.solarZenith
+    #md_solarAzi = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.solarAzimuth
+    #md_altitude = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.altitude
+    #md_snr = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.snr
     
     # create the final band stack
     print('[ STATUS ]: Creating the output stack')
-    outputArray = nump.concatenate([rgba, bn, bnScalar, dfe, sr_rg, sr_gb, sr_rb,
-        nd_rg, nd_gb, nd_rb, md_exposure, md_offNadir, md_solarZen, md_solarAzi, 
-        md_altitude, md_snr])
+    outputArray = np.stack([rgba[0], rgba[1], rgba[2], bn[0], bn[1], bn[2], 
+        bnScalar[0], dfe, sr_rg, sr_gb, sr_rb, nd_rg, nd_gb, nd_rb], axis=0)#, md_exposure, 
+        #md_offNadir, md_solarZen, md_solarAzi, md_altitude, md_snr], axis=0)
         
+    print(outputArray.shape)
+    print(outputArray.dtype)
+    
     # set nodata for all bands
     nd = -9999.
     bad = np.where(alpha != alpha.max())
@@ -306,7 +336,8 @@ def main ():
     # create the output file
     print('[ STATUS ]: Writing the output file: %s' % params.outputFile)
     outRef = gdal.GetDriverByName("GTiff").Create(params.outputFile, gdalRef.RasterXSize, 
-        gdalRef.RasterYSize, outputArray.shape[0], options=["COMPRESS=LZW"])
+        gdalRef.RasterYSize, outputArray.shape[0], gdal.GDT_Float32, 
+        options=["COMPRESS=LZW", "BIGTIFF=YES"])
       
     # add georeferencing info
     outRef.SetGeoTransform(gdalRef.GetGeoTransform())
@@ -316,12 +347,21 @@ def main ():
     for i in range(outputArray.shape[0]):
         band = outRef.GetRasterBand(i + 1)
         band.SetNoDataValue(nd)
+        
+        # add color interp info for specific bands
+        if i == 0:
+            band.SetColorInterpretation(gdal.GCI_RedBand)
+        elif i == 1:
+            band.SetColorInterpretation(gdal.GCI_GreenBand)
+        elif i == 2: 
+            band.SetColorInterpretation(gdal.GCI_BlueBand)
+        
         band.WriteArray(outputArray[i])
         band.FlushCache()
     
     # add overviews
     print('[ STATUS ]: Building overviews')
-    outRef.BuildOverviews("NEAREST", [2, 4, 8, 16, 32, 64])
+    outRef.BuildOverviews("NEAREST", [2, 4, 8, 16])
         
     # kill your references and clean up
     outRef = None
@@ -332,3 +372,6 @@ def main ():
     print('[ STATUS ]: Please see output file: %s' % params.outputFile)
     
     # high fives
+    
+if __name__ == "__main__":
+    main()

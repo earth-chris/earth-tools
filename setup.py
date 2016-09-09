@@ -10,7 +10,7 @@ config = {
     'download_url': 'https://github.com/christobal54/aei-py.git',
     'author_email': 'cbanders@stanford.edu',
     'version': '0.1',
-    'install_requires': ['gdal', 'ogr', 'osr', 'numpy', 'spectral'],
+    'install_requires': ['gdal', 'ogr', 'osr', 'numpy', 'spectral', psutil],
     'packages': ['aei','bin', 'test'],
     'scripts': [],
     'name': 'aei-py'
