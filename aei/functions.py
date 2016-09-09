@@ -43,7 +43,7 @@ def randomFloats(nIterations, minVal, maxVal):
     return np.random.ranf(nIterations) * (maxVal - minVal) + minVal
     
 # set function to brightness normalize an array
-def bn(array, axis = 1, inds = []):
+def bn(array, axis = 1, inds = [], returnScalar = False):
     """
     performs a brightness normalization on a numpy array
     
@@ -51,10 +51,15 @@ def bn(array, axis = 1, inds = []):
       where: array = the input array to normalize
              axis  = the axis on which to normalize. default is the last dimension
              inds  = the indices 
+             returnScalar = set to True to return a second array with the brighness scalar
     """
     import numpy as np
     
-    # set the proper axis to use
+    # if axis isn't set, default to last axis in array
+    if not axis:
+        axis = array.ndim - 1
+    
+    # correct axis if invalid
     if axis > (array.ndim - 1):
         print("[ ERROR ]: invalid axis set: %s" % axis)
         print("[ ERROR ]: using dimenssion: %s" % (array.ndim-1))
@@ -70,35 +75,47 @@ def bn(array, axis = 1, inds = []):
             print("[ ERROR ]: invalid range set. using all spectra")
     else:
         inds = range(0, array.shape[axis])
+        
+    # include only non-zero data
+    gd = np.where(array.sum(axis) == 0)
     
     # set up bn based on shape of array
     if array.ndim == 1:
-        return array[inds] / np.sqrt((array[inds] ** 2).sum())
-        
+        scalar = np.sqrt((array[inds] ** 2).sum())
+        bn = array[inds] / scalar
+            
     elif array.ndim == 2:
         if axis == 0:
-            return array[inds,:] / np.expand_dims(
-                np.sqrt((array[inds,:] ** 2).sum(axis)), axis)
+            scalar = np.expand_dims(np.sqrt((array[inds,gd[0]] ** 2).sum(axis)), axis)
+            bn = array[inds,:] / scalar
+            
         elif axis == 1:
-            return array[:,inds] / np.expand_dims(
-                np.sqrt((array[:,inds] ** 2).sum(axis)), axis)
+            scalar = np.expand_dims(np.sqrt((array[gd[0],inds] ** 2).sum(axis)), axis)
+            bn = array[:,inds] / scalar
         
     elif array.ndim == 3:
         if axis == 0:
-            return array[inds,:,:] / np.expand_dims(
-                    np.sqrt((array[inds,:,:] ** 2).sum(axis)),axis)
+            scalar = np.expand_dims(np.sqrt((array[inds,gd[0],gd[1]] ** 2).sum(axis)),axis)
+            bn = array[inds,:,:] / scalar
+            
         elif axis == 1:
-            return array[:,inds,:] / np.expand_dims(
-                np.sqrt((array[:,inds,:] ** 2).sum(axis)),axis)
+            scalar = np.expand_dims(np.sqrt((array[gd[0],inds,gd[1]] ** 2).sum(axis)),axis)
+            bn = array[:,inds,:] / scalar
+            
         elif axis == 2:
-            return array[:,:,inds] / np.expand_dims(
-                np.sqrt((array[:,:,inds] ** 2).sum(axis)),axis)
+            scalar = np.expand_dims(np.sqrt((array[gd[0],gd[1],inds] ** 2).sum(axis)),axis)
+            bn = array[:,:,inds] / scalar
     
     else:
         print("[ ERROR ]: unable to brightness normalize")
         print("[ ERROR ]: array must be 3 dimensions or smaller")
         print("[ ERROR ]: array provided has [%s] dimensions" % array.ndim)
         return -1
+        
+    if returnScalar:
+        return bn, scalar
+    else:
+        return bn
     
 #####
 # Raster functions
