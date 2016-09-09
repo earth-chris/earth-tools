@@ -113,6 +113,10 @@ class getPaths:
             'Windows' : [params.pathcat(params.gdalbase, 'gdal_rasterize.exe')],
             'Linux'   : [params.pathcat(params.gdalbase, 'gdal_rasterize')]
             }[params.system])
+        self.gdal_proximity = ' '.join({
+            'Windows' : [params.pathcat(params.gdalbase, 'gdal_proximity.py')],
+            'Linux'   : [params.pathcat(params.gdalbase, 'gdal_proximity.py')]
+            }[params.system])
 
 raw = getPaths()
 
@@ -340,7 +344,7 @@ def gdalbuildvrt(inputs='', output='', etc='', vrtnodata=False,
     
     # return the docstring if user does not set inputs correctly
     if not (inputs or output):
-        print(gdal_translate.__doc__)
+        print(gdalbuildvrt.__doc__)
         return -1
         
     # parse input params
@@ -384,6 +388,86 @@ def gdalbuildvrt(inputs='', output='', etc='', vrtnodata=False,
     # join the command
     ocmd = aei.fn.strJoin([raw.gdalbuildvrt, fparams, output, inputs])
     print("[ STATUS ]: Running gdalbuildvrt")
+    print("[ STATUS ]: %s" % ocmd)
+    
+    # run the command
+    run(ocmd)
+    
+# gdal_proximity
+def gdal_proximity(inputs='', output='', etc='', srcband=None, 
+        dstband=None, of="GTiff", ot=False, co=None, distunits="GEO", 
+        maxdist=None, nodata=None, use_input_nodata=True):
+    """
+    generates a raster proximity map
+    
+    syntax: gdal_proximity(inputs, output, etc=etc, dstnodata=dstnodata, multi=multi, n_threads=n_threads, overwrite=overwrite, of=of, ot=ot, r=r, srcnodata=srcnodata, s_srs=s_srs, t_srs=t_srs, te=te, tr=tr)
+    
+    inputs [string] - the input raster file(s). accepts wild
+                      cards. enter multiple files as one string.
+    output [string] - the output raster file
+    etc    [string] - additional command line params. enter all
+                      as a scalar string. 
+    of     [string] - output format (e.g. 'ENVI')
+    ot      [multi] - output data type (idl or python style)
+    nodata    [num] - output no data value
+    """
+    import os
+    import aei as aei
+    
+    # return the docstring if user does not set inputs correctly
+    if not (inputs or output):
+        print(gdal_proximity.__doc__)
+        return -1
+        
+    # parse input params
+    fparams = []
+    
+    if srcband:
+        fparams.append(aei.fn.strJoin(['-srcband', srcband]))
+        
+    if dstband:
+        fparams.append(aei.fn.strJoin(['-dstband', dstband]))
+        
+    if of:
+        if type(of) is not str:
+            print('[ ERROR ]: Unable to parse -of option %s' % (of))
+            print('[ ERROR ]: Must be scalar string')
+            return -1
+        else:
+            
+            # set default compression if using geotiff format
+            if of == "GTiff":
+                co = "COMPRESS=LZW"
+                
+            fparams.append(aei.fn.strJoin(['-of', of]))
+    if ot:
+        ot=read.ot(ot)
+        fparams.append(aei.fn.strJoin(['-ot', ot]))
+        
+    if co:
+        fparams.append(aei.fn.strJoin(['-co', co]))
+        
+    if distunits:
+        if not distunits.upper() in ["PIXEL", "GEO"]:
+            print('[ ERROR ]: Unrecognized distance units: %s' % dstunits)
+            print('[ ERROR ]: Using GEO as default')
+            distunits = "GEO"
+        fparams.append(aei.fn.strJoin(['-distunits', distunits]))
+        
+    if maxdist:
+        fparams.append(aei.fn.strJoin(['-maxdist', maxdist]))
+        
+    if use_input_nodata:
+        fparams.append(aei.fn.strJoin(['-use_input_nodata', 'YES']))
+    
+    if etc:
+        fparams.append(aei.read.etc(etc))
+    
+    fparams=aei.fn.strJoin(fparams)
+    
+    # join the command
+    ocmd = aei.fn.strJoin([raw.gdal_proximity, fparams, inputs, output])
+    print("[ STATUS ]: Running gdal_proximity")
     print("[ STATUS ]: %s" % ocmd)
     
     # run the command
