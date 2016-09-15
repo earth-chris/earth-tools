@@ -117,6 +117,16 @@ class getPaths:
             'Windows' : [params.pathcat(params.gdalbase, 'gdal_proximity.py')],
             'Linux'   : [params.pathcat(params.gdalbase, 'gdal_proximity.py')]
             }[params.system])
+            
+        # orfeo toolbox commands
+        self.otbHyperspectralUnmixing = ''.join({
+            'Windows' : [params.pathcat(params.otbbase, 'otbcli_HyperspectralUnmixing')],
+            'Linux'   : [params.pathcat(params.otbbase, 'otbcli_HyperspectralUnmixing')]
+            }[params.system])
+        self.otbBandMath = ''.join({
+           'Windows' : [params.pathcat(params.otbbase, 'otbcli_BandMath')],
+           'Linux'   : [params.pathcat(params.otbbase, 'otbcli_BandMath')]
+           }[params.system])
 
 raw = getPaths()
 
@@ -1377,6 +1387,106 @@ def lastile(inputs, output='', odir='', etc='', odix='', tile_size=1000,
     run(ocmd)
 
 # laszip
+
+###
+# Orfeo Toolbox (OTB) commands
+###
+
+class otb:
+    from aei import params
+    
+    def __init__(self):
+        pass
+    
+    # BandMath
+    @staticmethod
+    def BandMath(inputs, output, endmembers, etc='',
+        exp = None, ram = (params.mem / 2.0), inxml = None):
+        """
+        performs spectral unmixing on an image file
+        
+        syntax: otb.HyperspectralUnmixing(inputs, output, 
+          endmembers, ua = 'ucls', inxml = None, etc=etc)
+        
+        inputs     [string] - the input raster file
+        output     [string] - the output unmixed file 
+        endmembers [string] - the endmember image file
+        exp        [string] - the expression to use
+        inxml      [string] - an optional xml application file
+        etc        [string] - additional command line params. enter all
+                              as a scalar string. 
+        """
+        import aei as aei
+        
+        # parse input params
+        fparams = []
+        
+        # add olaz parameter if set
+        if inxml:
+            fparams.append(aei.strJoin(['-inxml', inxml]))
+        
+        # add additional parameters passed through etc keyword
+        if etc:
+            fparams.append(aei.read.etc(etc))
+        
+        # concatenate params list to string
+        fparams = aei.fn.strJoin(fparams)
+        
+        # join and run the command
+        ocmd = aei.fn.strJoin([raw.otbHyperspectralUnmixing, '-in', inputs, '-out', 
+                output, '-ie', endmembers, '-ua', ua, fparams])
+        
+        # report status
+        print("[ STATUS ]: Running OTB Band Math")
+        print("[ STATUS ]: %s" % ocmd)
+        
+        # run the command
+        run(ocmd)
+        
+    # HyperspectralUnmixing
+    @staticmethod
+    def HyperspectralUnmixing(inputs, output, endmembers, etc='',
+        ua='ucls', inxml = None):
+        """
+        performs spectral unmixing on an image file
+        
+        syntax: otb.HyperspectralUnmixing(inputs, output, 
+          endmembers, ua = 'ucls', inxml = None, etc=etc)
+        
+        inputs     [string] - the input raster file
+        output     [string] - the output unmixed file 
+        endmembers [string] - the endmember image file
+        ua         [string] - the unmixing algorithm (ucls/nnls/isra/mdmdnmf)
+        inxml      [string] - an optional xml application file
+        etc        [string] - additional command line params. enter all
+                              as a scalar string. 
+        """
+        import aei as aei
+        
+        # parse input params
+        fparams = []
+        
+        # add olaz parameter if set
+        if inxml:
+            fparams.append(aei.strJoin(['-inxml', inxml]))
+        
+        # add additional parameters passed through etc keyword
+        if etc:
+            fparams.append(aei.read.etc(etc))
+        
+        # concatenate params list to string
+        fparams = aei.fn.strJoin(fparams)
+        
+        # join and run the command
+        ocmd = aei.fn.strJoin([raw.otbHyperspectralUnmixing, '-in', inputs, '-out', 
+                output, '-ie', endmembers, '-ua', ua, fparams])
+        
+        # report status
+        print("[ STATUS ]: Running OTB Spectral Unmixing")
+        print("[ STATUS ]: %s" % ocmd)
+        
+        # run the command
+        run(ocmd)
 
 ### 
 # SAGA commands
