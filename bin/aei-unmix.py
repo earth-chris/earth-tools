@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #####
 # aei_unmix.py performs unconstrained least-squares 
 #  spectral ummixing on an image file using the 

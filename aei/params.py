@@ -30,6 +30,13 @@ try:
     gdalbase = environ['GDALBASE']
 except KeyError:
     gdalbase = ''
+    
+# check if GDALBASE environment variable set
+#  points to custom install of gdal binaries
+try:
+    otbbase = environ['OTB_BASE']
+except KeyError:
+    otbbase = ''
 
 # check OUTPUT_DIR environment variable
 #  points to where default outputs go if not set
@@ -47,7 +54,6 @@ except KeyError:
 
 cores = multiprocessing.cpu_count()
 mem = virtual_memory().total
-scratchdir = scratchdir
 
 # list of gdal data types
 gdalTypes = ["AAIGrid",
