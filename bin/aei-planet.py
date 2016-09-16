@@ -243,7 +243,7 @@ def usage(exit=False):
 
     print(
         """
-$ aeiplanet.py -i input_files
+$ aei-planet.py -i input_files
     
     output band list is:
     1. Red  2. Green  3. Blue  4. Brightness normalized (BN) Red
@@ -258,7 +258,7 @@ $ aeiplanet.py -i input_files
 
 def main ():
     """
-    the main program for aeiplanet.py
+    the main program for aei-planet.py
 
     syntax: main()
     """
@@ -280,7 +280,7 @@ def main ():
     readMetadata(params)
     
     # report starting
-    print('[ STATUS ]: Running aeiplanet.py')
+    print('[ STATUS ]: Running aei-planet.py')
     print('[ STATUS ]: Input file: %s' % params.imageFile)
     
     # read the rgb image
@@ -372,7 +372,7 @@ def main ():
     aei.params.os.remove(params.tempFile)
     
     # final report
-    print('[ STATUS ]: aeiplanet.py complete!')
+    print('[ STATUS ]: aei-planet.py complete!')
     print('[ STATUS ]: Please see output file: %s' % params.outputFile)
     
     # high fives

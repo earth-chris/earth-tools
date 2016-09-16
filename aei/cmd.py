@@ -120,12 +120,12 @@ class getPaths:
             
         # orfeo toolbox commands
         self.otbHyperspectralUnmixing = ''.join({
-            'Windows' : [params.pathcat(params.otbbase, 'otbcli_HyperspectralUnmixing')],
-            'Linux'   : [params.pathcat(params.otbbase, 'otbcli_HyperspectralUnmixing')]
+            'Windows' : ['otbcli_HyperspectralUnmixing'],
+            'Linux'   : ['otbcli_HyperspectralUnmixing']
             }[params.system])
         self.otbBandMath = ''.join({
-           'Windows' : [params.pathcat(params.otbbase, 'otbcli_BandMath')],
-           'Linux'   : [params.pathcat(params.otbbase, 'otbcli_BandMath')]
+           'Windows' : ['otbcli_BandMath'],
+           'Linux'   : ['otbcli_BandMath']
            }[params.system])
 
 raw = getPaths()
@@ -1400,30 +1400,40 @@ class otb:
     
     # BandMath
     @staticmethod
-    def BandMath(inputs, output, endmembers, etc='',
-        exp = None, ram = (params.mem / 2.0), inxml = None):
+    def BandMath(inputs, output, exp, etc = '',
+        ram = 4096, inxml = None):
         """
-        performs spectral unmixing on an image file
+        performs band math on an image file
         
-        syntax: otb.HyperspectralUnmixing(inputs, output, 
+        syntax: otb.BandMath(inputs, output, 
           endmembers, ua = 'ucls', inxml = None, etc=etc)
         
-        inputs     [string] - the input raster file
-        output     [string] - the output unmixed file 
-        endmembers [string] - the endmember image file
-        exp        [string] - the expression to use
-        inxml      [string] - an optional xml application file
-        etc        [string] - additional command line params. enter all
-                              as a scalar string. 
+        inputs [list/string] - the input raster file
+        output      [string] - the output unmixed file 
+        exp         [string] - the expression to use
+        ram         [number] - the amount of ram to use. default is half system ram
+        inxml       [string] - an optional xml application file
+        etc         [string] - additional command line params. enter all
+                               as a scalar string.
+                            
+        full doc: http://www.orfeo-toolbox.org/Applications/BandMath.html
         """
         import aei as aei
         
         # parse input params
         fparams = []
         
-        # add olaz parameter if set
+        # concatenate input list to string if not already done
+        if type(inputs) is list:
+            inputs = aei.fn.strJoin(inputs)
+            
+        # specify how much memory to use
+        if ram:
+            fparams.append(aei.fn.strJoin(['-ram', '%s' % ram]))
+        
+        # add xml app if set
         if inxml:
-            fparams.append(aei.strJoin(['-inxml', inxml]))
+            fparams.append(aei.fn.strJoin(['-inxml', inxml]))
         
         # add additional parameters passed through etc keyword
         if etc:
@@ -1433,8 +1443,8 @@ class otb:
         fparams = aei.fn.strJoin(fparams)
         
         # join and run the command
-        ocmd = aei.fn.strJoin([raw.otbHyperspectralUnmixing, '-in', inputs, '-out', 
-                output, '-ie', endmembers, '-ua', ua, fparams])
+        ocmd = aei.fn.strJoin([raw.otbBandMath, '-il', inputs, '-out', 
+                output, '-exp', exp, fparams])
         
         # report status
         print("[ STATUS ]: Running OTB Band Math")
@@ -1460,15 +1470,17 @@ class otb:
         inxml      [string] - an optional xml application file
         etc        [string] - additional command line params. enter all
                               as a scalar string. 
+        
+        full doc: http://www.orfeo-toolbox.org/Applications/HyperspectralUnmixing.html
         """
         import aei as aei
         
         # parse input params
         fparams = []
         
-        # add olaz parameter if set
+        # add xml app parameter if set
         if inxml:
-            fparams.append(aei.strJoin(['-inxml', inxml]))
+            fparams.append(aei.fn.strJoin(['-inxml', inxml]))
         
         # add additional parameters passed through etc keyword
         if etc:
