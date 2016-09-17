@@ -1,0 +1,23 @@
+ENVI
+description = {
+  File Resize Result, x resize factor: 1.000000, y resize factor: 1.000000.
+  [Fri Sep 16 16:48:17 2016]}
+samples = 6
+lines   = 19
+bands   = 1
+header offset = 0
+file type = ENVI Spectral Library
+data type = 4
+interleave = bsq
+sensor type = Unknown
+byte order = 0
+x start = 2
+wavelength units = Micrometers
+band names = {
+ Resize (Resampled (Band 1:jfsp_char_spectral_lib.sli):jfsp_char_spectral_lib_l8.sli)}
+spectra names = {
+ ash, charduff, chartree, burncham, charbark, charlogs, charrock, charsoil, 
+ graysoil, ash_litter, ash, barkchar, black_charwood, charbark, charrock, 
+ charsoil, charwood, cooney_charwood, light_charsoil}
+wavelength = {
+ 0.482764, 0.560859, 0.654205, 0.863971, 1.609077, 2.201533}

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #####
-# aei_unmix.py performs unconstrained least-squares 
+# aei_unmix.py performs least-squares 
 #  spectral ummixing on an image file using the 
 #  HyperspectralUnmixing module from the Orfeo Toolbox
 #
@@ -325,7 +325,7 @@ def main():
         
         # define the output files
         temp_avgfile = args.outpath + aei.params.pathsep + str('temp_average_%02d.tif' % (i+1))
-        temp_sdvfile = args.outpath + aei.params.pathsep + str('temp_stdev_%02d.tif' % i)
+        temp_sdvfile = args.outpath + aei.params.pathsep + str('temp_stdev_%02d.tif' % (i+1))
         
         args.temp_averages.append(temp_avgfile)
         args.temp_stdevs.append(temp_sdvfile)
@@ -337,8 +337,8 @@ def main():
         # its a little more complicated for stdev since stdev isn't supported
         sdvsub = []
         for j in range(args.n):
-            sdvsub.append(bm_args['b%s' % i][j] + '-' + avg_otb)
-        sdvexp = '"sqrt(avg(' + aei.fn.strJoin(sdvsub, ', ') + '))"'
+            sdvsub.append('(' + bm_args['b%s' % i][j] + '-' + avg_otb + ')^2')
+        sdvexp = '"sqrt(avg(' + aei.fn.strJoin(sdvsub, ', ') + '2))"'
         
         # run the commands
         aei.cmd.otb.BandMath(args.temp_mixtures, args.temp_averages[i], avgexp)
@@ -351,25 +351,27 @@ def main():
     
     temp_vrtfile = args.outpath + aei.params.pathsep + args.temp_vrt
     
+    vrt_input = [aei.fn.strJoin(args.temp_averages), aei.fn.strJoin(args.temp_stdevs)]
+    
     # use gdalbuildvrt and gdal_translate to build stack
-    aei.cmd.gdalbuildvrt(aei.fn.strJoin(args.temp_averages), temp_vrtfile, separate=True)
+    aei.cmd.gdalbuildvrt(aei.fn.strJoin(vrt_input), temp_vrtfile, separate=True)
     aei.cmd.gdal_translate(temp_vrtfile, args.outfile, etc=['-co', 'COMPRESS=LZW'])
     
     # clean up temporary files
     print("[ STATUS ]: Removing temporary files")
     
     # remove the spectra libraries and intermediate mixtures
-    for i in range(args.n):
-        os.remove(args.temp_libs[i])
-        os.remove(args.temp_mixtures[i])
+    #for i in range(args.n):
+    #    os.remove(args.temp_libs[i])
+    #    os.remove(args.temp_mixtures[i])
     
     # remove the averaged files
-    for i in range(n_libs):
-        os.remove(args.temp_averages[i])
-        os.remove(args.temp_stdevs)
+    #for i in range(n_libs):
+    #    os.remove(args.temp_averages[i])
+    #    os.remove(args.temp_stdevs[i])
     
     # remove the vrt file
-    os.remove(temp_vrtfile)
+    #os.remove(temp_vrtfile)
     
     # report finished
     print("[ STATUS ]: Completed aei-unmix.py!")

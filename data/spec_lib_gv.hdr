@@ -1,0 +1,28 @@
+ENVI
+description = {
+  New spectral library file [Mon Sep 12 14:02:28 2016]}
+samples = 6
+lines   = 20
+bands   = 1
+header offset = 0
+file type = ENVI Spectral Library
+data type = 5
+interleave = bsq
+sensor type = Unknown
+byte order = 0
+wavelength units = Micrometers
+reflectance scale factor = 1.000000
+z plot titles = {Wavelength, Value}
+band names = {
+ Spectral Library}
+spectra names = {
+ Aspen YNP-AS-1 [W1R1Ab RTGC], Cattail YNP-CT-1 [W1R1Ab RTGC], 
+ Grass-Fescue-Wheatg YNP-FW-1 [W1R1Ab RTGC], Sedge YNP-SE-1 [W1R1Ab RTGC], 
+ Wetland YNP-WT-1 [W1R1Ab RTGC], Wetland YNP-WT-2 [W1R1Ab RTGC], 
+ Willow YNP-WI-1 [W1R1Ab RTGC], Willow-Sedge-Mix YNP-WS-1 [W1R1Ab RTGC], 
+ Douglas-Fir YNP-DF-3 [W1R1Ab RTGC], ARVI_1_X780_Y1568, CECU_1_X583_Y1516, 
+ CECU_2_X582_Y1506, g_grass_3_X607_Y2577, g_grass_3_X602_Y2574, 
+ PISA_2_X571_Y1514, PISA_1_X592_Y1546, QUDO_2_X748_Y1552, QUWI_6_X769_Y1571, 
+ QUWI_3_X676_Y2643, RHIL_2_X572_Y1534}
+wavelength = {
+ 0.482764, 0.560859, 0.654205, 0.863971, 1.609077, 2.201533}
