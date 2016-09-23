@@ -1401,7 +1401,7 @@ class otb:
     # BandMath
     @staticmethod
     def BandMath(inputs, output, exp, etc = '',
-        ram = 4096, inxml = None):
+        ram = 2048, inxml = None):
         """
         performs band math on an image file
         

@@ -27,8 +27,12 @@ class parse_args:
         self.ua = 'ucls'
         self.bands = []
         self.subset_bands = False
+        self.numpy_dtype = np.float32
+        self.gdal_dtype = gdal.GDT_Float32
         self.of = 'GTiff'
         self.normalize = False
+        self.rescale = False
+        self.rescale_val = 1.0
         self.temp_libs = []
         self.temp_mixtures = []
         self.temp_averages = []
@@ -148,6 +152,14 @@ class parse_args:
             elif arg.lower() == '-include_shade':
                 self.include_shade = True
                 
+            # check if rescaling parameter is set to scale spec libs to image
+            elif arg.lower() == '-rescale':
+                i += 1
+                arg = arglist[i]
+                
+                self.rescale = True
+                self.rescale_val = arglist[i]
+                
             # check the unmixing algorithm to use
             elif arg.lower() == '-ua':
                 i += 1
@@ -170,6 +182,25 @@ class parse_args:
                 aei.params.sys.exit(1)
             
             i += 1
+
+# set up function to convert between gdal and numpy data types for file reading
+def get_numpy_data_type(args):
+    if args.gdal_dtype == 1:
+        args.numpy_dtype = np.byte
+    elif args.gdal_dtype == 2:
+        args.numpy_dtype = np.uint16
+    elif args.gdal_dtype == 3:
+        args.numpy_dtype = np.int16
+    elif args.gdal_dtype == 4:
+        args.numpy_dtype = np.uint32
+    elif args.gdal_dtype == 5:
+        args.numpy_dtype = np.int32
+    elif args.gdal_dtype == 6:
+        args.numpy_dtype = np.float32
+    elif args.gdal_dtype == 7:
+        args.numpy_dtype = np.float64
+    else:
+        print("[ ERROR ]: Unrecognized gdal data type: %s" % args.gdal_dtype)
 
 # set up function to write the temporary endmember libraries for otbcli
 def write_temp_libraries(args,lib,n_libs,lnb):
@@ -194,14 +225,18 @@ def write_temp_libraries(args,lib,n_libs,lnb):
         for j in range(n_libs):
             bundles[j,:] = lib['lib_%s' % j].spectra[lib['rnd_%s' % j][i]]
             
+        # rescale the spectral libraries if set
+        if args.rescale:
+            bundles *= float(args.rescale_val)
+        
         # open the temp file
         file_ref = gdal.GetDriverByName("GTiff").Create(temp_file, 1, nl, \
-          int(lnb[0]), gdal.GDT_Int16)
+          int(lnb[0]), args.gdal_dtype)
         
         # write the arrays band by band  
         for j in range(int(lnb[0])):
             band = file_ref.GetRasterBand(j + 1)
-            band.WriteArray(np.expand_dims(bundles[:,j], 1))
+            band.WriteArray(np.expand_dims(bundles[:,j], 1).astype(args.numpy_dtype))
             band.FlushCache()
             
         # and clear references from memory
@@ -239,6 +274,26 @@ def main():
     n_libs = len(args.spectral_libs)
     lnb = np.zeros(n_libs, dtype=np.int16)
     
+    # load the input image and get parameters
+    inf = gdal.Open(args.infile)
+    ns = inf.RasterXSize
+    nl = inf.RasterYSize
+    nb = inf.RasterCount
+    geo = inf.GetGeoTransform()
+    prj = inf.GetProjection()
+    n_bundles = lnb.shape[0]
+    b1 = inf.GetRasterBand(1)
+    
+    # get raster data type
+    args.gdal_dtype = b1.DataType
+    
+    # determine data types for gdal and numpy
+    get_numpy_data_type(args)
+    
+    # destroy the input file reference
+    inf = None
+    b1 = None
+    
     # get info from each library
     for i in range(n_libs):
         
@@ -256,19 +311,6 @@ def main():
             
     # write randomly sampled libraries to new files for otbcli input
     write_temp_libraries(args,lib,n_libs,lnb)
-    
-    # load the input image and get parameters
-    inf = gdal.Open(args.infile)
-    ns = inf.RasterXSize
-    nl = inf.RasterYSize
-    nb = inf.RasterCount
-    geo = inf.GetGeoTransform()
-    prj = inf.GetProjection()
-    n_bundles = lnb.shape[0]
-    b1 = inf.GetRasterBand(1)
-    
-    # destroy the input file reference
-    inf = None
     
     # if bands were not set in command line, use all bands
     if not args.subset_bands:
