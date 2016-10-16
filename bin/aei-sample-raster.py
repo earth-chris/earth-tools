@@ -47,12 +47,11 @@ class parse_args:
                 i += 1
                 arg = arglist[i]
                 
-                if type(arg) is str:
-                    self.trainingFile = arg
-                    if not aei.fn.checkFile(self.trainingFile, quiet = True):
-                        usage()
-                        aei.fn.checkFile(self.trainingFile)
-                        aei.params.sys.exit(1)
+                self.trainingFile = arg
+                if not aei.fn.checkFile(self.trainingFile, quiet = True):
+                    usage()
+                    aei.fn.checkFile(self.trainingFile)
+                    aei.params.sys.exit(1)
             
             # check predictor data paths            
             elif arg.lower() == "-predictors":
@@ -150,15 +149,23 @@ def main():
     # parse the argument list
     args = parse_args(sys.argv)
     
+    # report starting
+    print("[ STATUS ]: Starting aei-sample-raster.py")
+    print("[ STATUS ]: Training stack : %s" % args.trainingFile)
+    print("[ STATUS ]: Random samples : %s" % args.nSamples)
+    print("[ STATUS ]: Balanced samples : %s" % args.balance)
+    print("[ STATUS ]: ----------")
+    print("[ STATUS ]: Reading training data")
+    
     # open the training data set and open the first band
     tdRef = gdal.Open(args.trainingFile)
     tdb1 = tdRef.GetRasterBand(1)
     
     # get metadata from the training file
     tdns = tdRef.RasterXSize
-    tdny = tdRef.RasterYSize
-    ulx, xps, xoff, uly, yoff, yps = tdRef.GetGeoTransform()
-    tdnd = tdb1.GetNoDataValue
+    tdnl = tdRef.RasterYSize
+    tdulx, tdxps, tdxoff, tduly, tdyoff, tdyps = tdRef.GetGeoTransform()
+    tdnd = tdb1.GetNoDataValue()
     
     # if there is a nodata value for the training band, be sure to ignore it
     if tdnd is not None:
@@ -169,7 +176,7 @@ def main():
     
     # remove no data if it exists
     if args.trainingNoData:
-        nd = np.where(td == tdnd)
+        nd = np.where(td != tdnd)
         td = td[nd[0], nd[1]]
     
     # get the number of classes to loop through
@@ -192,7 +199,7 @@ def main():
     #  a 2-element array for [class index, n_samples]
     nSamples = np.zeros((nClasses, 2), np.int64)
     nSamples[:,0] = classNumbers
-    nSamples[:,0] = tdHisto[0][classNumbers]
+    nSamples[:,1] = tdHisto[0][classNumbers]
     
     # now we have the number of samples for each class, we can randomly subset them
     # set up a dictionary to add the indices for each class
@@ -202,6 +209,9 @@ def main():
     #  the smaller number of a) the smallest training class, or b) the minimum set
     if args.balance:
         args.nSamples = min([args.nSamples, nSamples[:,1].min()])
+    
+    # set up a counter to measure total number of values to collect
+    nTotalSamples = []
     
     # set up a loop to run through each class and get the 
     for i in range(nClasses):
@@ -217,12 +227,91 @@ def main():
         else:
             rnd = np.random.randint(0, ngd+1, args.nSamples)
             finalInds = []
-            for j in range(gd.ndim):
+            for j in range(gd[0].ndim):
                 finalInds.append(gd[j][rnd])
         
         # add the indices from this class to the dictionary
-        indDict['class_%03d' % i] = gd
+        indDict['class_%03d' % classNumbers[i]] = finalInds
         
+        # and add the number of samples to the running total
+        nTotalSamples.append(finalInds[0].shape[0])
+        
+    # now that we have our final indices for each class, close the training data set
+    tdRef = None
+    tdb1 = None
+    td = None
+    
+    # report finished
+    print("[ STATUS ]: Finished collecting indices for training data")
+    print("[ STATUS ]: Number of classes found: %s" % nClasses)
+    for i in range(nClasses):
+        print("[ STATUS ]: Random samples for class %s: %s" % (classNumbers[i], 
+            indDict['class_%03d' % classNumbers[i]][0].shape[0]))
+    print("[ STATUS ]: ----------")
+    print("[ STATUS ]: Beginning extraction of predictor data")
+    
+    # create an array that will grow as more predictor data is read in
+    outputArray = np.zeros((nTotalValues,1))
+    outputLabels = ['Class']
+    predictorCounter = 0
+    
+    # fill the array with the class numbers
+    outputArray[0:nTotalSamples[0]] = classNumbers[0]
+    for i in range(1, nClasses):
+        outputArray[nTotalSamples[i-1]:nTotalSamples[i]] = classNumbers[i]
+    
+    # we'll loop through each predictor data set, read the data, and extract
+    #  the random indices
+    for i in range(len(args.predictorFiles)):
+        print("[ STATUS ]: Extracting from predictor set %s: %s" % (i+1, args.predictorFiles[i]))
+        
+        # read the file metadata
+        pdRef = gdal.Open(args.predictorFiles[i])
+        
+        # get the dimensions from the file
+        pdns = pdRef.RasterXSize
+        pdnl = pdRef.RasterYSize
+        pdulx, pdxps, pdxoff, pduly, pdyoff, pdyps = pdRef.GetGeoTransform()
+        
+        # check that the dimensions are the same
+        if (pdns != tdns) or (pdnl != tdnl):
+            print("[ ERROR ]: File dimensions do not match for training and predictor data")
+            print("[ ERROR ]: Training data file : %s" % args.trainingFile)
+            print("[ ERROR ]: Predictor data file: %s" % args.predictorFiles[i])
+            print("[ ERROR ]: Training ns, nl : %s, %s" % (tdns, tdnl))
+            print("[ ERROR ]: Predictor ns, nl: %s, %s" % (pdns, pdnl))
+            print("[ ERROR ]: skipping...")
+            pdRef = None
+            continue
+        
+        # now that we know the data are good, we'll loop through each band and extract the data
+        for j in range(pdRef.RasterCount):
+            
+            # add a new label for this predictor band
+            predictorCounter += 1
+            outputLabels.append("Predictor %s" % predictorCounter)
+            
+            # add a new column to the output array
+            outputArray = np.concatenate([outputArray, np.zeros((nTotalValues,1))],1)
+            
+            # set up a reference to the band we use
+            pdBand = pdRef.GetRasterBand(j+1)
+            
+            # read the data into memory
+            pdData = pdBand.ReadAsArray()
+            
+            # subset to the extent of the training NoData mask
+            pdData = pdData[nd[0], nd[1]]
+            
+            # extract the data from each class and assign it to the output array
+            for k in range(nClasses):
+                if k == 0:
+                    outputArray[0,nTotalSamples[0], predictorCounter] = \
+                        pdData[indDict['class_%03d' % classNumbers[0]][0]]
+                else:
+                    outputArray[nTotalSamples[k-1],nTotalSamples[k], predictorCounter] = \
+                        pdData[indDict['class_%03d' % classNumbers[0]][0]]
+                
 # call the aain routine when run from command lne
 if __name__ == "__main__":
     main()
