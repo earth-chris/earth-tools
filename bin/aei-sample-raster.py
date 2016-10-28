@@ -309,7 +309,7 @@ def main():
                     outputArray[0,nTotalSamples[0], predictorCounter] = \
                         pdData[indDict['class_%03d' % classNumbers[0]][0]]
                 else:
-                    outputArray[nTotalSamples[k-1],nTotalSamples[k], predictorCounter] = \
+                    outputArray[nTotalSamples[predictorCounter-1],nTotalSamples[k], predictorCounter] = \
                         pdData[indDict['class_%03d' % classNumbers[0]][0]]
                 
 # call the aain routine when run from command lne
