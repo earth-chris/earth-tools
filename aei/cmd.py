@@ -119,14 +119,18 @@ class getPaths:
             }[params.system])
             
         # orfeo toolbox commands
+        self.otbBandMath = ''.join({
+            'Windows' : ['otbcli_BandMath'],
+            'Linux'   : ['otbcli_BandMath']
+            }[params.system])
+        self.otbConcatenateImages = ''.join({
+            'Windows' : ['otbcli_ConcatenateImages'],
+            'Linux'   : ['otbcli_ConcatenateImages']
+            }[params.system])
         self.otbHyperspectralUnmixing = ''.join({
             'Windows' : ['otbcli_HyperspectralUnmixing'],
             'Linux'   : ['otbcli_HyperspectralUnmixing']
             }[params.system])
-        self.otbBandMath = ''.join({
-           'Windows' : ['otbcli_BandMath'],
-           'Linux'   : ['otbcli_BandMath']
-           }[params.system])
 
 raw = getPaths()
 
@@ -1497,7 +1501,7 @@ class otb:
         fparams = aei.fn.strJoin(fparams)
         
         # join and run the command
-        ocmd = aei.fn.strJoin([raw.otbBandMath, '-il', inputs, '-out', 
+        ocmd = aei.fn.strJoin([raw.otbConcatenateImages, '-il', inputs, '-out', 
                 output, fparams])
         
         # report status
