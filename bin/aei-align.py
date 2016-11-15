@@ -44,61 +44,67 @@ class parse_args:
         while i < len(arglist):
             arg = arglist[i]
         
-            # check predictor data paths            
+            # check input data paths            
             if arg.lower() == '-i':
                 i += 1
                 arg = arglist[i]
                 
-                # loop through predictor args until we find a new parameter
+                # loop through inputs until we find a new parameter
                 newArg = False
                 while not newArg:
                     if arg[0] == '-':
                         newArg = True
-                        i += 1
+                        i -= 1
                         continue
                     if not aei.fn.checkFile(arg, quiet=True):
                         usage()
                         aei.fn.checkFile(arg)
                         aei.params.sys.exit()
                         
-                    self.predictorFiles.append(arg)
+                    self.inputFiles.append(arg)
                     
-            # parse the training flag    
+                    # increment counter and move on
+                    i += 1
+                    if i >= len(arglist): 
+                        newArg = True
+                        i -= 1
+                        continue
+                    arg = arglist[i]
+                    
+            # parse the base reference file flag    
             elif arg.lower() == '-ref':
                 i += 1
                 arg = arglist[i]
                 
-                self.refFile = arg
-                if not aei.fn.checkFile(self.refFile, quiet = True):
+                if not aei.fn.checkFile(arg, quiet = True):
                     usage()
-                    aei.fn.checkFile(self.refFile)
+                    aei.fn.checkFile(arg)
                     aei.params.sys.exit(1)
-            
-                # loop through each lib and update predictorFiles list
-                for j in range(len(libs)):
-                    if not aei.fn.checkFile(libs[j], quiet=True):
-                        usage()
-                        aei.fn.checkFile(libs[j])
-                        aei.params.sys.exit()
-                        
-                    self.predictorFiles.append(libs[j])
+                    
+                self.refFile = arg
                     
             # check output flag
             elif arg.lower() == '-o':
                 i += 1
                 arg = arglist[i]
                 
-                if type(arg) is str:
-                    self.outfile = arg
-                    outpath = os.path.dirname(self.outfile)
-                    if outpath == '':
-                        outpath = '.'
-                    if not os.access(outpath, os.W_OK):
-                        usage()
-                        print("[ ERROR ]: unable to write to output path: %s" % outpath)
-                        aei.params.sys.exit(1)
-                        
-                    self.outpath = outpath
+                # loop through outputs until we find a new parameter
+                newArg = False
+                while not newArg:
+                    if arg[0] == '-':
+                        newArg = True
+                        i -= 1
+                        continue
+                    
+                    self.outputFiles.append(arg)
+                    
+                    # increment counter and move on
+                    i += 1
+                    if i >= len(arglist): 
+                        newArg = True
+                        i -= 1
+                        continue
+                    arg = arglist[i]
             
             # check resampling options
             elif arg.lower() == "-r":
@@ -110,7 +116,7 @@ class parse_args:
                 while not newArg:
                     if arg[0] == '-':
                         newArg = True
-                        i += 1
+                        i -= 1
                         continue
                     if not arg in resamplingOptions:
                         print("[ ERROR ]: Unrecognized resampling option specified: %s" % arg)
@@ -118,6 +124,14 @@ class parse_args:
                         arg = self.defaultResampling
                         
                     self.resampling.append(arg)
+                    
+                    # increment counter and move on
+                    i += 1
+                    if i >= len(arglist): 
+                        newArg = True
+                        i -= 1
+                        continue
+                    arg = arglist[i]
                     
             elif arg.lower() == '-stack':
                 self.stack = True
@@ -190,10 +204,9 @@ def check_args(args):
             print("[ ERROR ]: Using the first specified output file: %s" % args.outputFiles[0])
         
         # create a series of temp files to hold the resampled outputs prior to stacking
-        else:
-            for i in range(args.nInputFiles):
-                args.tempResampleFiles.append(aei.params.scratchdirdir + args.tempResampleBase \
-                    + "%03d.tif" % (i + 1))
+        for i in range(args.nInputFiles):
+            args.tempResampleFiles.append(aei.params.scratchdir + aei.params.pathsep + \
+                args.tempResampleBase + "%03d.tif" % (i + 1))
             
     else:
         if args.nOutputFiles != args.nInputFiles:
@@ -241,6 +254,7 @@ def main():
     print("[ STATUS ]: Starting aei-align.py")
     print("[ STATUS ]: Reference file : %s" % args.refFile)
     print("[ STATUS ]: Input files    : %s" % aei.fn.strJoin(args.inputFiles))
+    print("[ STATUS ]: Output files   : %s" % aei.fn.strJoin(args.outputFiles))
     print("[ STATUS ]: Resampling     : %s" % aei.fn.strJoin(args.resampling))
     print("[ STATUS ]: ----------")
     print("[ STATUS ]: Reading georeferencing data")
@@ -259,12 +273,13 @@ def main():
     
     # get projection in EPSG
     refProj = refFile.GetProjection()
-    srs.importFromWkt(refProj)
+    srs.ImportFromWkt(refProj)
     refPROJ = '"' + srs.ExportToProj4() + '"'
     
     # report info
-    print("[ STATUS ]: Projection : %s" % refPROJ)
-    print("[ STATUS ]: Bounding box : [%02d, %02d, %02d, %02d]" % (xmin, ymin, xmax, ymax))
+    print("[ STATUS ]: Projection     : %s" % refPROJ)
+    print("[ STATUS ]: Bounding box   : [%0.2f, %0.2f, %0.2f, %0.2f]" % (xmin, ymin, xmax, ymax))
+    print("[ STATUS ]: Pixel size     : %0.2f, %0.2f" % (abs(xps), abs(yps)))
     print("[ STATUS ]: ----------")
     print("[ STATUS ]: Beginning resampling")
     
