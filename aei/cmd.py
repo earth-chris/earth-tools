@@ -1405,8 +1405,8 @@ class otb:
         """
         performs band math on an image file
         
-        syntax: otb.BandMath(inputs, output, 
-          endmembers, ua = 'ucls', inxml = None, etc=etc)
+        syntax: otb.BandMath(inputs, output, exp,
+          ram = 2048, inxml = None, etc=etc)
         
         inputs [list/string] - the input raster file
         output      [string] - the output unmixed file 
@@ -1448,6 +1448,60 @@ class otb:
         
         # report status
         print("[ STATUS ]: Running OTB Band Math")
+        print("[ STATUS ]: %s" % ocmd)
+        
+        # run the command
+        run(ocmd)
+    
+    # ConcatenateImages
+    @staticmethod
+    def ConcatenateImages(inputs, output, etc = '', 
+        ram = 2058, inxml = None):
+        """
+        stacks raster bands
+        
+        syntax: otb.ConcatenateImages(inputs, output, 
+          ram = 2048, inxml = None, etc=etc)
+        
+        inputs [list/string] - the input raster files
+        output      [string] - the output unmixed file 
+        ram         [number] - the amount of ram to use. default is half system ram
+        inxml       [string] - an optional xml application file
+        etc         [string] - additional command line params. enter all
+                               as a scalar string.
+                            
+        full doc: http://www.orfeo-toolbox.org/Applications/ConcatenateImages.html
+        """
+        import aei as aei
+        
+        # parse input params
+        fparams = []
+        
+        # concatenate input list to string if not already done
+        if type(inputs) is list:
+            inputs = aei.fn.strJoin(inputs)
+            
+        # specify how much memory to use
+        if ram:
+            fparams.append(aei.fn.strJoin(['-ram', '%s' % ram]))
+        
+        # add xml app if set
+        if inxml:
+            fparams.append(aei.fn.strJoin(['-inxml', inxml]))
+        
+        # add additional parameters passed through etc keyword
+        if etc:
+            fparams.append(aei.read.etc(etc))
+        
+        # concatenate params list to string
+        fparams = aei.fn.strJoin(fparams)
+        
+        # join and run the command
+        ocmd = aei.fn.strJoin([raw.otbBandMath, '-il', inputs, '-out', 
+                output, fparams])
+        
+        # report status
+        print("[ STATUS ]: Running OTB Concatenate Images")
         print("[ STATUS ]: %s" % ocmd)
         
         # run the command

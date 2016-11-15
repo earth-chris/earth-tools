@@ -42,8 +42,27 @@ class parse_args:
         while i < len(arglist):
             arg = arglist[i]
         
+            # check predictor data paths            
+            if arg.lower() == '-predictors':
+                i += 1
+                arg = arglist[i]
+                #libs = arg.split(" ")
+                # loop through predictor args until we find a new parameter
+                newArg = False
+                while not newArg:
+                    if arg[0] == '-':
+                        newArg = True
+                        i += 1
+                        continue
+                    if not aei.fn.checkFile(arg, quiet=True):
+                        usage()
+                        aei.fn.checkFile(arg)
+                        aei.params.sys.exit()
+                        
+                    self.predictorFiles.append(arg)
+                    
             # parse the training flag    
-            if arg.lower() == '-training':
+            elif arg.lower() == '-training':
                 i += 1
                 arg = arglist[i]
                 
@@ -53,12 +72,6 @@ class parse_args:
                     aei.fn.checkFile(self.trainingFile)
                     aei.params.sys.exit(1)
             
-            # check predictor data paths            
-            elif arg.lower() == "-predictors":
-                i += 1
-                arg = arglist[i]
-                libs = arg.split(" ")
-                
                 # loop through each lib and update predictorFiles list
                 for j in range(len(libs)):
                     if not aei.fn.checkFile(libs[j], quiet=True):
