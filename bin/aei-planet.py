@@ -315,10 +315,10 @@ def main ():
     # add bands from the metadata
     print('[ STATUS ]: Adding metadata bands')
     md_exposure = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.exposureTime
-    md_offNadir = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.offNadir
+    #md_offNadir = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.offNadir
     md_solarZen = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.solarZenith
     md_solarAzi = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.solarAzimuth
-    md_altitude = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.altitude
+    #md_altitude = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.altitude
     md_snr = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.snr
     
     # create the final band stack
@@ -327,6 +327,12 @@ def main ():
         bnScalar[0], dfe, sr_rg, sr_gb, sr_rb, nd_rg, nd_gb, nd_rb, md_exposure, 
         #md_offNadir, md_solarZen, md_solarAzi, md_altitude, md_snr], axis=0)
         md_solarZen, md_solarAzi], axis=0)
+        
+    # undefine a bunch of variables
+    rgba = None ; bn = None ; bnScalar = None ; dfe = None
+    sr_rg = None ; sr_gb = None ; sr_rb = None ; nd_rg = None 
+    nd_gb = None ;  nd_rb = None ; md_exposure = None
+    md_solarZen = None ; md_solarAzi = None
         
     # set nodata for all bands
     nd = -9999.
