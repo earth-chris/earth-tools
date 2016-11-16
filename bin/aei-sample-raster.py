@@ -52,7 +52,7 @@ class parse_args:
                 while not newArg:
                     if arg[0] == '-':
                         newArg = True
-                        i += 1
+                        i -= 1
                         continue
                     if not aei.fn.checkFile(arg, quiet=True):
                         usage()
@@ -60,6 +60,14 @@ class parse_args:
                         aei.params.sys.exit()
                         
                     self.predictorFiles.append(arg)
+                    
+                    # increment counter and move on
+                    i += 1
+                    if i >= len(arglist): 
+                        newArg = True
+                        i -= 1
+                        continue
+                    arg = arglist[i]
                     
             # parse the training flag    
             elif arg.lower() == '-training':
@@ -71,15 +79,6 @@ class parse_args:
                     usage()
                     aei.fn.checkFile(self.trainingFile)
                     aei.params.sys.exit(1)
-            
-                # loop through each lib and update predictorFiles list
-                for j in range(len(libs)):
-                    if not aei.fn.checkFile(libs[j], quiet=True):
-                        usage()
-                        aei.fn.checkFile(libs[j])
-                        aei.params.sys.exit()
-                        
-                    self.predictorFiles.append(libs[j])
                     
             # check output flag
             elif arg.lower() == '-o':
@@ -191,6 +190,9 @@ def main():
     if args.trainingNoData:
         nd = np.where(td != tdnd)
         td = td[nd[0], nd[1]]
+    else:
+        nd = [range(tdns), range(tdnl)]
+        td = td[nd[0], nd[1]]
     
     # get the number of classes to loop through
     startClass = td.min()
@@ -226,6 +228,10 @@ def main():
     # set up a counter to measure total number of values to collect
     nTotalSamples = []
     
+    # set up a counter for cumulative n samples
+    nIterSamples = []
+    nIterSamples.append(0)
+    
     # set up a loop to run through each class and get the 
     for i in range(nClasses):
         gd = np.where(td == classNumbers[i])
@@ -249,6 +255,9 @@ def main():
         # and add the number of samples to the running total
         nTotalSamples.append(finalInds[0].shape[0])
         
+        # add cumulative n samples
+        nIterSamples.append(nIterSamples[i] + nTotalSamples[i])
+        
     # now that we have our final indices for each class, close the training data set
     tdRef = None
     tdb1 = None
@@ -264,14 +273,15 @@ def main():
     print("[ STATUS ]: Beginning extraction of predictor data")
     
     # create an array that will grow as more predictor data is read in
-    outputArray = np.zeros((nTotalValues,1))
+    nTotalValues = sum(nTotalSamples)
+    outputArray = np.zeros((nTotalValues, 1))
     outputLabels = ['Class']
     predictorCounter = 0
     
     # fill the array with the class numbers
     outputArray[0:nTotalSamples[0]] = classNumbers[0]
-    for i in range(1, nClasses):
-        outputArray[nTotalSamples[i-1]:nTotalSamples[i]] = classNumbers[i]
+    for i in range(nClasses):
+        outputArray[nIterSamples[i]:nIterSamples[i+1]] = classNumbers[i]
     
     # we'll loop through each predictor data set, read the data, and extract
     #  the random indices
@@ -305,7 +315,7 @@ def main():
             outputLabels.append("Predictor %s" % predictorCounter)
             
             # add a new column to the output array
-            outputArray = np.concatenate([outputArray, np.zeros((nTotalValues,1))],1)
+            outputArray = np.concatenate([outputArray, np.zeros((nTotalValues, 1))],1)
             
             # set up a reference to the band we use
             pdBand = pdRef.GetRasterBand(j+1)
@@ -318,13 +328,22 @@ def main():
             
             # extract the data from each class and assign it to the output array
             for k in range(nClasses):
-                if k == 0:
-                    outputArray[0,nTotalSamples[0], predictorCounter] = \
-                        pdData[indDict['class_%03d' % classNumbers[0]][0]]
-                else:
-                    outputArray[nTotalSamples[predictorCounter-1],nTotalSamples[k], predictorCounter] = \
-                        pdData[indDict['class_%03d' % classNumbers[0]][0]]
-                
+                outputArray[nIterSamples[k]:nIterSamples[k+1], predictorCounter] = \
+                    pdData[indDict['class_%03d' % classNumbers[k]][0]]
+#                if k == 0:
+#                   outputArray[0:nTotalSamples[k], predictorCounter] = \
+#                        pdData[indDict['class_%03d' % classNumbers[k]][0]]
+#                else:
+#                    outputArray[nTotalSamples[k-1]:nTotalSamples[k], predictorCounter] = \
+#                        pdData[indDict['class_%03d' % classNumbers[k]][0]]
+            
+    # write the output file
+    np.savetxt(args.outfile, outputArray, delimiter = ",", header = aei.fn.strJoin(outputLabels, ','))
+        
+    # report finished
+    print("[ STATUS ]: Completed randomg sampling!")
+    print("[ STATUS ]: See output file: %s" % args.outfile)
+        
 # call the aain routine when run from command lne
 if __name__ == "__main__":
     main()
