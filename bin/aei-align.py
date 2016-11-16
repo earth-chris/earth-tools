@@ -203,6 +203,9 @@ def check_args(args):
             print("[ ERROR ]: Cannot specify more than one output file with -stack")
             print("[ ERROR ]: Using the first specified output file: %s" % args.outputFiles[0])
         
+        # add the input reference file to stack
+        args.tempResampleFiles.append(args.refFile)
+       
         # create a series of temp files to hold the resampled outputs prior to stacking
         for i in range(args.nInputFiles):
             args.tempResampleFiles.append(aei.params.scratchdir + aei.params.pathsep + \
@@ -286,7 +289,8 @@ def main():
     # set the reference for output file in resampling. This will be a list of temp files
     #  if -stack is set
     if args.stack:
-        outputFiles = args.tempResampleFiles
+        # do not include the reference file, the first in the list, as an output file.
+        outputFiles = args.tempResampleFiles[1:]
     else:
         outputFiles = args.outputFiles
         
