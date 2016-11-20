@@ -133,7 +133,7 @@ def usage(exit=False):
     print(
         """
 $ aei-sample-raster.py -training training_raster -predictors 
-      "predictor1, predictor2 ... predictorx" -o output_file
+      predictor1, predictor2 ... predictorx -o output_file
       [-n n_random_samples] [-balance] [-include_xy]
         """
         )
