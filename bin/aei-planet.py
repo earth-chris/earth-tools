@@ -27,6 +27,10 @@ class default_params:
         self.outputFile = None
         self.tempFile = None
         self.append = "_derived.tif"
+        self.noData = -9999
+        
+        # set the number of output bands
+        self.nOutputBands = 18
         
         # set some metadata parameters
         self.snr = None
@@ -250,7 +254,7 @@ def writeArrayToRaster(array, gdalRef, band, noData = None):
     bandRef.WriteArray(array)
     
     # clear the file cache
-    bandRef.FlushCache()
+    #bandRef.FlushCache()
     
 def usage(exit=False):
     """
@@ -265,9 +269,9 @@ $ aei-planet.py -i input_files
     
     output band list is:
     1. Red  2. Green  3. Blue  4. Brightness normalized (BN) Red
-    6. BN Green 7. BN Blue 8. Brightness scalar 9. Distance from edge
-    10. Simple Ratio (SR) red-green, 11. SR green-blue 12. SR red-blue
-    13. Normalized difference (ND) red-green 14. ND green-blue 15. ND red-blue
+    5. BN Green 6. BN Blue 7. Brightness scalar 8. Distance from edge
+    9. Simple Ratio (SR) red-green, 10. SR green-blue 11. SR red-blue
+    12. Normalized difference (ND) red-green 13. ND green-blue 14. ND red-blue
     Exposure Time, Off-Nadir, SNR, Solar Zenith, Solar Azimuth, Sensor Altitude
         """)
     
@@ -277,6 +281,16 @@ $ aei-planet.py -i input_files
 def main ():
     """
     the main program for aei-planet.py
+    
+    this routine performs the following
+    1) finds the indices with actual data (that passes planet's qa)
+    2) performs a brightness normalization
+    3) finds the distance from image edge
+    4) calculates the simple ratios for all rgb bands
+    5) calculates normalized ratios for all rgb bands
+    6) assigns metadata (e.g. solar azimuth and zenith) to raster bands
+    
+    it writes data to file after each set of calculations.
 
     syntax: main()
     """
@@ -299,99 +313,158 @@ def main ():
     
     # report starting
     print('[ STATUS ]: Running aei-planet.py')
-    print('[ STATUS ]: Input file: %s' % params.imageFile)
+    print('[ STATUS ]: Reading input file: %s' % params.imageFile)
     
-    # read the rgb image
-    print('[ STATUS ]: Reading data')
+    # get the input gdal reference
     gdalRef = gdal.Open(params.imageFile)
+                                  
+    ####################
+    # create the output file
+    print('[ STATUS ]: Creating output file: %s' % params.outputFile)
+    outRef = gdal.GetDriverByName("GTiff").Create(params.tempFile, gdalRef.RasterXSize, 
+        gdalRef.RasterYSize, params.nOutputBands, gdal.GDT_Float32, 
+        options=["BIGTIFF=YES"])
+      
+    # add georeferencing info to output file
+    outRef.SetGeoTransform(gdalRef.GetGeoTransform())
+    outRef.SetProjection(gdalRef.GetProjection())
+    
+    ####################
+    # read the rgb image into memory
+    print("[ STATUS ]: Reading RGB data")
     rgba = gdalRef.ReadAsArray()
     
-    # transform the data into components 
+    # get the alpha band to find good data 
     alpha = rgba[3]
-    rgbf = rgba[0:3] * 1.0
     
+    # find the good data to limit analysis to
+    gd = np.where(alpha != 0)
+    
+    # subset rgb to good data, and transform to floating point
+    rgbf = rgba[0:3, gd[0], gd[1]] * 1.0
+    
+    # kill the rgba array to save memory
+    rgba = None
+    
+    # set up a counter for the output bands
+    bandCounter = 1
+    
+    # set up a temp array we'll use to write data band-by-band
+    tmpArray = np.zeros((gdalRef.RasterYSize, gdalRef.RasterXSize), np.float32) + params.noData
+    
+    # write the raw rgb data to the output file
+    for i in range(0,3):
+        tmpArray[gd[0], gd[1]] = rgbf[i]
+        writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+        bandCounter += 1
+    
+    ####################
     # perform the brightness normalization
     print('[ STATUS ]: Brightness normalizing')
     bn, bnScalar = aei.functions.bn(rgbf, returnScalar = True, axis = 0)
     
+    # write to the output file
+    for i in range(0,3):
+        tmpArray[gd[0], gd[1]] = bn[i]
+        writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+        bandCounter +=1
+    
+    # write just the scalar band
+    tmpArray[gd[0], gd[1]] = bnScalar[0]
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    bandCounter +=1
+    
+    # kill bn refs
+    bn = None ; bnScalar = None
+    
+    ####################
     # find the distance from the edge
     print('[ STATUS ]: Finding distance from image edge')
     dfe = distanceFromEdge(alpha, gdalRef)
     
+    # write it
+    writeArrayToRaster(dfe, outRef, bandCounter, noData = 0)
+    bandCounter += 1
+    dfe = None
+    
+    ####################
     # run the simple ratios
     print('[ STATUS ]: Caculating simple ratios')
-    sr_rg = simpleRatio(rgba[0], rgba[1])
-    sr_gb = simpleRatio(rgba[1], rgba[2])
-    sr_rb = simpleRatio(rgba[0], rgba[2])
     
+    # red/green
+    tmpArray[gd[0], gd[1]] = simpleRatio(rgbf[0], rgbf[1])
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    bandCounter +=1
+    
+    # green/blue
+    tmpArray[gd[0], gd[1]] = simpleRatio(rgbf[1], rgbf[2])
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    bandCounter += 1
+    
+    # red/blue
+    tmpArray[gd[0], gd[1]] = simpleRatio(rgbf[0], rgbf[2])
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    bandCounter += 1
+    
+    ####################
     # run the normalized ratios
     print('[ STATUS ]: Calculating normalized ratios')
-    nd_rg = normalizedRatio(rgba[0], rgba[1])
-    nd_gb = normalizedRatio(rgba[1], rgba[2])
-    nd_rb = normalizedRatio(rgba[0], rgba[2])
     
+    # red/green
+    tmpArray[gd[0], gd[1]] = normalizedRatio(rgbf[0], rgbf[1])
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    bandCounter += 1
+    
+    # green/blue
+    tmpArray[gd[0], gd[1]] = normalizedRatio(rgbf[1], rgbf[2])
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    bandCounter += 1
+    
+    # red/blue
+    tmpArray[gd[0], gd[1]] = normalizedRatio(rgbf[0], rgbf[2])
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    bandCounter += 1
+    
+    ####################
     # add bands from the metadata
     print('[ STATUS ]: Adding metadata bands')
-    md_exposure = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.exposureTime
+    
+    # exposure time
+    tmpArray[gd[0], gd[1]] = params.exposureTime
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    bandCounter += 1
+    
     #md_offNadir = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.offNadir
-    md_solarZen = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.solarZenith
-    md_solarAzi = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.solarAzimuth
+    
+    # solar zenith angle
+    tmpArray[gd[0], gd[1]] = params.solarZenith
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    bandCounter += 1
+    
+    # solar azimuth
+    tmpArray[gd[0], gd[1]] = params.solarAzimuth
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    bandCounter += 1
+    
     #md_altitude = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.altitude
-    md_snr = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.snr
     
-    # create the final band stack
-    print('[ STATUS ]: Creating the output stack')
-    outputArray = np.stack([rgba[0], rgba[1], rgba[2], bn[0], bn[1], bn[2], 
-        bnScalar[0], dfe, sr_rg, sr_gb, sr_rb, nd_rg, nd_gb, nd_rb, md_exposure, 
-        #md_offNadir, md_solarZen, md_solarAzi, md_altitude, md_snr], axis=0)
-        md_solarZen, md_solarAzi], axis=0)
-        
-    # undefine a bunch of variables
-    rgba = None ; bn = None ; bnScalar = None ; dfe = None
-    sr_rg = None ; sr_gb = None ; sr_rb = None ; nd_rg = None 
-    nd_gb = None ;  nd_rb = None ; md_exposure = None
-    md_solarZen = None ; md_solarAzi = None
-        
-    # set nodata for all bands
-    nd = -9999.
-    bad = np.where(alpha != alpha.max())
-    outputArray[:, bad[0], bad[1]] = nd
-      
-    # create the output file
-    print('[ STATUS ]: Writing the output file: %s' % params.outputFile)
-    outRef = gdal.GetDriverByName("GTiff").Create(params.tempFile, gdalRef.RasterXSize, 
-        gdalRef.RasterYSize, outputArray.shape[0], gdal.GDT_Float32, 
-        options=["BIGTIFF=YES"])
-      
-    # add georeferencing info
-    outRef.SetGeoTransform(gdalRef.GetGeoTransform())
-    outRef.SetProjection(gdalRef.GetProjection())
-    
-    # loop through each band and write the data
-    for i in range(outputArray.shape[0]):
-        band = outRef.GetRasterBand(i + 1)
-        band.SetNoDataValue(nd)
-        
-        # add color interp info for specific bands
-        if i == 0:
-            band.SetColorInterpretation(gdal.GCI_RedBand)
-        elif i == 1:
-            band.SetColorInterpretation(gdal.GCI_GreenBand)
-        elif i == 2: 
-            band.SetColorInterpretation(gdal.GCI_BlueBand)
-        
-        band.WriteArray(outputArray[i])
-        band.FlushCache()
+    # signal-to-noise ratio
+    tmpArray[gd[0], gd[1]] = params.snr
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    bandCounter += 1
     
     # add overviews
     #print('[ STATUS ]: Building overviews')
     #outRef.BuildOverviews("NEAREST", [2, 4, 8, 16])
         
-    # kill the file references
+    # kill the file references and placeholders
     outRef = None
     gdalRef = None
+    tmpArray = None
     
     # compress the output file and delete the temp file
+    print("[ STATUS ]: Finished performing calculations")
+    print("[ STATUS ]: Compressing output file")
     aei.cmd.gdal_translate(params.tempFile, params.outputFile, etc=['-co','COMPRESS=LZW'])
     aei.params.os.remove(params.tempFile)
     
