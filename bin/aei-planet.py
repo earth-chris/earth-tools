@@ -233,6 +233,24 @@ def distanceFromEdge(array, gdalRef):
     
     # return the final array
     return dfe
+
+# set up a function to write an array to a raster band
+def writeArrayToRaster(array, gdalRef, band, noData = None):
+    """
+    writes a 2-d array to an output raster. requires a gdal open file reference.
+    """
+    # set the gdal band reference
+    bandRef = gdalRef.GetRasterBand(band)
+    
+    # set the No Data value if set
+    if noData:
+        bandRef.SetNoDataValue(noData)
+    
+    # write the array to memory
+    bandRef.WriteArray(array)
+    
+    # clear the file cache
+    bandRef.FlushCache()
     
 def usage(exit=False):
     """
@@ -273,7 +291,7 @@ def main ():
     args = aei.params.sys.argv
     parse_args(args, params)
     
-    # check inputs
+    # check that inputs make sense
     checkInputs(params)
     
     # parse the json data
