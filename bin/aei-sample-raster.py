@@ -341,7 +341,7 @@ def main():
     np.savetxt(args.outfile, outputArray, delimiter = ",", header = aei.fn.strJoin(outputLabels, ','))
         
     # report finished
-    print("[ STATUS ]: Completed randomg sampling!")
+    print("[ STATUS ]: Completed random sampling!")
     print("[ STATUS ]: See output file: %s" % args.outfile)
         
 # call the aain routine when run from command lne
