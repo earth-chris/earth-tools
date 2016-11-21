@@ -233,7 +233,7 @@ def distanceFromEdge(array, gdalRef):
     aei.params.os.remove("temp_proximity.tif")
     
     # mask the bad data
-    dfe[bd[0],bd[1]] = 0.
+    dfe[bd[0],bd[1]] = params.noData
     
     # return the final array
     return dfe
@@ -383,7 +383,7 @@ def main ():
     dfe = distanceFromEdge(alpha, gdalRef)
     
     # write it
-    writeArrayToRaster(dfe, outRef, bandCounter, noData = 0)
+    writeArrayToRaster(dfe, outRef, bandCounter, noData = params.noData)
     bandCounter += 1
     dfe = None
     
