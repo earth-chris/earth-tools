@@ -175,7 +175,7 @@ def normalizedRatio(band1, band2):
     return (band1 - band2) / (band1 + band2)
 
 # set up function to calculate distance from the edge of good data
-def distanceFromEdge(array, gdalRef):
+def distanceFromEdge(array, gdalRef, noData):
     """
     calculates the distance from the edge of an image.
      
@@ -233,7 +233,7 @@ def distanceFromEdge(array, gdalRef):
     aei.params.os.remove("temp_proximity.tif")
     
     # mask the bad data
-    dfe[bd[0],bd[1]] = params.noData
+    dfe[bd[0],bd[1]] = noData
     
     # return the final array
     return dfe
@@ -380,7 +380,7 @@ def main ():
     ####################
     # find the distance from the edge
     print('[ STATUS ]: Finding distance from image edge')
-    dfe = distanceFromEdge(alpha, gdalRef)
+    dfe = distanceFromEdge(alpha, gdalRef, params.noData)
     
     # write it
     writeArrayToRaster(dfe, outRef, bandCounter, noData = params.noData)
