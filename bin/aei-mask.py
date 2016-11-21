@@ -112,8 +112,8 @@ class parse_args:
                 arg = arglist[i]
                 
                 # set the parameter
-                self.maskNoData = arg
-                self.useMaskNoData
+                self.maskNoData = float(arg)
+                self.useMaskNoData = True
                 
             # use a user-defined ref no-data value if set        
             elif arg.lower() == '-refnodata':
@@ -121,8 +121,8 @@ class parse_args:
                 arg = arglist[i]
                 
                 # set the parameter
-                self.refNoData = arg
-                self.useRefNoData
+                self.refNoData = float(arg)
+                self.useRefNoData = True
             
             # set up catch-all for incorrect parameter call
             else:
@@ -222,13 +222,16 @@ def main():
     # determine the no-data value to use if not set
     if not args.useRefNoData:
         refBand = refFile.GetRasterBand(1)
-        args.refNoData = refBand.GetNoDataValue
+        args.refNoData = refBand.GetNoDataValue()
         
         # check that it exists
         if args.refNoData is None:
             print("[ ERROR ]: No data value not specified in reference file")
             print("[ ERROR ]: Please specify using -refnodata, or update ref file")
             sys.exit(1)
+            
+        # kill the reference
+        refBand = None
     
     # loop through each mask file
     for i in range(args.nMaskFiles):
@@ -269,7 +272,7 @@ def main():
         for b in bands:
             
             # report
-            print("[ STATUS ]: Reading band: %02d" % b)
+            print("[ STATUS ]: Reading band: %03d" % b)
             
             # read the band reference
             bandRef = maskRef.GetRasterBand(b)
@@ -291,8 +294,8 @@ def main():
             nd = np.where(bandArr == args.maskNoData)
             
             # check that it is not empty
-            if not nd:
-                print("[ ERROR ]: No no-data values found in band: %02d" % b)
+            if not nd[0].any():
+                print("[ ERROR ]: No no-data values found in band: %03d" % b)
                 bandArr = None
                 continue
             
