@@ -50,7 +50,7 @@ class parse_args:
                     
                 self.refFile = arg
                     
-            # check maskt flag
+            # check mask flag
             elif arg.lower() == '-mask':
                 i += 1
                 arg = arglist[i]
@@ -107,22 +107,22 @@ class parse_args:
                     arg = arglist[i]
             
             # use a user-defined no-data value if set        
-            if arg.lower() == '-masknodata':
+            elif arg.lower() == '-masknodata':
                 i += 1
                 arg = arglist[i]
                 
                 # set the parameter
-                arg.maskNoData = arg
-                arg.useMaskNoData
+                self.maskNoData = arg
+                self.useMaskNoData
                 
             # use a user-defined ref no-data value if set        
-            if arg.lower() == '-refnodata':
+            elif arg.lower() == '-refnodata':
                 i += 1
                 arg = arglist[i]
                 
                 # set the parameter
-                arg.refNoData = arg
-                arg.useRefNoData
+                self.refNoData = arg
+                self.useRefNoData
             
             # set up catch-all for incorrect parameter call
             else:
@@ -258,12 +258,12 @@ def main():
             if (max(args.bands) > masknb):
                 print("[ ERROR ]: Invalid bands set to subset: %s" % max(args.bands))
                 print("[ ERROR ]: Total bands in mask file   : %s" % masknb)
-                bands = range(masknb) + 1
+                bands = range(1, masknb+1)
             else:
                 bands = args.bands
                 
         else:
-            bands = range(masknb) + 1
+            bands = range(1, masknb+1)
             
         # loop through each band and get the indices
         for b in bands:
@@ -313,11 +313,16 @@ def main():
         maskRef = None
             
     # now that each mask band has been read, write the output file
-    if refnb > 1:
-        for i in range(refnb):
-            writeArrayToRaster(refArr[i], refFile, i+1, noData = args.refNoData)
+    if args.fileChanged:
+        print("[ STATUS ]: Writing output file")
+        if refnb > 1:
+            for i in range(refnb):
+                writeArrayToRaster(refArr[i], refFile, i+1, noData = args.refNoData)
+        else:
+            writeArrayToRaster(refArr, refFile, 1, noData = args.refNoData)
+    
     else:
-        writeArrayToRaster(refArr, refFile, 1, noData = args.refNoData)
+        print("[ ERROR ]: No updates were made to input refernce file")
             
     # report finished
     print("[ STATUS ]: ----------")
