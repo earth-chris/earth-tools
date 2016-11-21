@@ -251,7 +251,7 @@ def main():
     args = parse_args(sys.argv)
     
     # check the argument list to ensure consistent arguments are set
-    arge = check_args(args)
+    args = check_args(args)
     
     # report starting
     print("[ STATUS ]: Starting aei-align.py")
