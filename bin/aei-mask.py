@@ -79,7 +79,7 @@ class parse_args:
                 arg = arglist[i]
                 
                 # set the band flag
-                self.subsetBands
+                self.subsetBands = True
                 
                 # loop through band args until we find a new parameter
                 newArg = False
@@ -90,7 +90,7 @@ class parse_args:
                         continue
                     # ensure integers set
                     try:
-                        int(arg)
+                        arg = int(arg)
                     except:
                         usage()
                         print("[ ERROR ]: Invalid argument passed to -b: %s" % arg)
