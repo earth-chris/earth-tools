@@ -74,7 +74,7 @@ class parse_args:
                     arg = arglist[i]
             
             # check -b option
-            elif arg.lower() == "-b":
+            elif arg.lower() == "-b" or arg.lower() == '-band':
                 i += 1
                 arg = arglist[i]
                 
