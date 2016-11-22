@@ -126,6 +126,8 @@ def main():
     print("[ STATUS ]: Input file  : %s" % args.inFile)
     print("[ STATUS ]: Output file : %s" % args.outFile)
     print("[ STATUS ]: ----------")
+    
+    # initialize the h2o cluster
     print("[ STATUS ]: Initializing h2o")
     h2o.init(ip='localhost', nthreads = aei.params.cores)
     
@@ -175,13 +177,9 @@ def main():
     # create h2o array and save the x and y indices
     dframe = h2o.H2OFrame(gd[1])
     dframe = dframe.concat(h2o.H2OFrame(gd[0]))
-    #dframe.concat(tframe)
-    #dframe.concat(h2o.H2OFrame(gd[0]))
     
     # save the band 1 data
-    #tframe = h2o.H2OFrame(bandArr[gd[0], gd[1]])
     dframe = dframe.concat(h2o.H2OFrame(bandArr[gd[0], gd[1]]))
-    #dframe.concat(h2o.H2OFrame(bandArr[gd[0], gd[1]]))
     names.append('Band-001')
     
     # kill references
@@ -194,7 +192,7 @@ def main():
             print("[ STATUS ]: Reading band %03d" % i)
             bandRef = inRef.GetRasterBand(i)
             bandArr = bandRef.ReadAsArray()
-            dframe.concat(h2o.H2OFrame(bandArr[gd[0], gd[1]]))
+            dframe = dframe.concat(h2o.H2OFrame(bandArr[gd[0], gd[1]]))
             bandArr = None
             bandRef = None
             names.append('Band-%03d' % i)
