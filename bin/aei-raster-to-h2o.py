@@ -174,13 +174,13 @@ def main():
     
     # create h2o array and save the x and y indices
     dframe = h2o.H2OFrame(gd[1])
-    tframe = h2o.H2OFrame(gd[0])
-    dframe.concat(tframe)
+    dframe = dframe.concat(h2o.H2OFrame(gd[0]))
+    #dframe.concat(tframe)
     #dframe.concat(h2o.H2OFrame(gd[0]))
     
     # save the band 1 data
-    tframe = h2o.H2OFrame(bandArr[gd[0], gd[1]])
-    dframe.concat(tframe)
+    #tframe = h2o.H2OFrame(bandArr[gd[0], gd[1]])
+    dframe = dframe.concat(h2o.H2OFrame(bandArr[gd[0], gd[1]]))
     #dframe.concat(h2o.H2OFrame(bandArr[gd[0], gd[1]]))
     names.append('Band-001')
     
@@ -202,8 +202,11 @@ def main():
     # that's it for setting up the data frame, so kill reference
     inRef = None
     
+    # set the data frame names
+    dframe.names = names
+    
     # now write the output file
-    h2o.export_file(dframe, args.outFile)
+    h2o.export_file(dframe, args.outFile, force=True)
             
     # report finished
     print("[ STATUS ]: ----------")
