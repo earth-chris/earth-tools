@@ -208,7 +208,7 @@ def main():
             
     # report finished
     print("[ STATUS ]: ----------")
-    print("[ STATUS ]: Finished writing hdf5 data!")
+    print("[ STATUS ]: Finished writing h2o data!")
     print("[ STATUS ]: Please see output file : %s" % args.outFile)
     
 # call the aain routine when run from command lne
