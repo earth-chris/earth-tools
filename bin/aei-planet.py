@@ -272,7 +272,7 @@ $ aei-planet.py -i input_files
     5. BN Green 6. BN Blue 7. Brightness scalar 8. Distance from edge
     9. Simple Ratio (SR) red-green, 10. SR green-blue 11. SR red-blue
     12. Normalized difference (ND) red-green 13. ND green-blue 14. ND red-blue
-    Exposure Time, Off-Nadir, SNR, Solar Zenith, Solar Azimuth, Sensor Altitude
+    15. Exposure Time, 16. Solar Zenith, 17. Solar Azimuth, 18. SNR
         """)
     
     if exit:
