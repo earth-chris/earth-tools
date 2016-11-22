@@ -176,7 +176,9 @@ def main():
         gd = np.where(bandArr != args.noData)
         
         # error check here
-        
+        if not gd[0].any():
+            print("[ ERROR ]: No good-data values found.")
+            sys.exit(1)
         
         # save the x and y indices
         g2.create_dataset("Y-Indices", data = gd[0])
