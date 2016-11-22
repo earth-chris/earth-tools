@@ -288,9 +288,11 @@ def main():
     
     # set the reference for output file in resampling. This will be a list of temp files
     #  if -stack is set
+    tempStart = 0
     if args.stack:
         # do not include the reference file, the first in the list, as an output file.
         outputFiles = args.tempResampleFiles[1:]
+        tempStart += 1
     else:
         outputFiles = args.outputFiles
         
@@ -313,7 +315,7 @@ def main():
         
         # delete the temporary files
         print("[ STATUS ]: Deleting temporary files")
-        for i in range(args.nInputFiles):
+        for i in range(tempStart, args.nInputFiles):
             os.remove(args.tempResampleFiles[i])
             
     # report finished

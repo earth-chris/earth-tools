@@ -148,7 +148,6 @@ def writeArrayToRaster(array, gdalRef, band, noData = None):
     
     # write the array to memory
     bandRef.WriteArray(array)
-    
 
 # set up function to check that arguments have been properly specified
 def check_args(args):
@@ -326,6 +325,10 @@ def main():
     
     else:
         print("[ ERROR ]: No updates were made to input refernce file")
+    
+    # kill some references    
+    refArr = None
+    refFile = None
             
     # report finished
     print("[ STATUS ]: ----------")
