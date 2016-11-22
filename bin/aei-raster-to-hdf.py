@@ -49,11 +49,6 @@ class parse_args:
                 i += 1
                 arg = arglist[i]
                 
-                if not aei.fn.checkFile(arg, quiet = True):
-                    usage()
-                    aei.fn.checkFile(arg)
-                    aei.params.sys.exit(1)
-                    
                 self.outFile = arg
                 
             # check no-data flag
