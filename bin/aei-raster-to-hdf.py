@@ -2,7 +2,8 @@
 #####
 # aei-raster-to-hdf.py
 #  
-#  
+#  converts a raster file to an hdf5 file with a specific format to store
+#   geotiff information
 #
 # c. 2016 Christopher Anderson
 #####

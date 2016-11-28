@@ -22,6 +22,8 @@ class parse_args:
         self.outFile = None
         self.noData = None
         self.useNoData = False
+        self.mem = str("%01dG" % (0.6 * aei.params.mem / (1024 * 1024 * 1024.)))
+        self.cores = aei.params.cores - 1
 
         # exit if no arguments passed
         if len(arglist) == 1:
@@ -129,7 +131,7 @@ def main():
     
     # initialize the h2o cluster
     print("[ STATUS ]: Initializing h2o")
-    h2o.init(ip='localhost', nthreads = aei.params.cores)
+    h2o.init(ip='localhost', nthreads = args.cores, max_mem_size = args.mem)
     
     # report starting
     print("[ STATUS ]: Reading input data")
@@ -179,6 +181,7 @@ def main():
     dframe = dframe.concat(h2o.H2OFrame(gd[0]))
     
     # save the band 1 data
+    print("[ STATUS ]: Reading band 001")
     dframe = dframe.concat(h2o.H2OFrame(bandArr[gd[0], gd[1]]))
     names.append('Band-001')
     
