@@ -279,6 +279,10 @@ def main():
     srs.ImportFromWkt(refProj)
     refPROJ = '"' + srs.ExportToProj4() + '"'
     
+    # check if a no-data value is set
+    refBand = refFile.GetRasterBand(1)
+    refNoData = refBand.GetNoDataValue()
+    
     # report info
     print("[ STATUS ]: Projection     : %s" % refPROJ)
     print("[ STATUS ]: Bounding box   : [%0.2f, %0.2f, %0.2f, %0.2f]" % (xmin, ymin, xmax, ymax))
@@ -305,7 +309,8 @@ def main():
         # call gdalwarp to resample
         aei.cmd.gdalwarp(args.inputFiles[i], outputFiles[i], multi=True, 
             tr=[abs(xps), abs(yps)], te=[xmin, ymin, xmax, ymax],
-            t_srs=refPROJ, r=args.resampling[i], overwrite=args.overwrite)
+            t_srs=refPROJ, r=args.resampling[i], overwrite=args.overwrite,
+            dstnodata=refNoData)
             
     # stack 'em up if set
     if args.stack:
