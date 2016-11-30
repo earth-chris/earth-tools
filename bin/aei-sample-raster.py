@@ -330,12 +330,6 @@ def main():
             for k in range(nClasses):
                 outputArray[nIterSamples[k]:nIterSamples[k+1], predictorCounter] = \
                     pdData[indDict['class_%03d' % classNumbers[k]][0]]
-#                if k == 0:
-#                   outputArray[0:nTotalSamples[k], predictorCounter] = \
-#                        pdData[indDict['class_%03d' % classNumbers[k]][0]]
-#                else:
-#                    outputArray[nTotalSamples[k-1]:nTotalSamples[k], predictorCounter] = \
-#                        pdData[indDict['class_%03d' % classNumbers[k]][0]]
             
     # write the output file
     np.savetxt(args.outfile, outputArray, delimiter = ",", header = aei.fn.strJoin(outputLabels, ','))
