@@ -130,7 +130,7 @@ def main():
     print("[ STATUS ]: Reading input data")
     
     # open the reference file
-    inRef = hdf.File(args.inFile)
+    inf = hdf.File(args.inFile)
     
     # get the geo and raster data stored in the hdf file
     GeoData = inf.get(inf.keys()[0])
@@ -139,11 +139,11 @@ def main():
     # read the GeoTransform data, Projection, and file dimensions
     GeoTransform = np.array(GeoData.get('GeoTransform'))
     Projection = str(np.array(GeoData.get('Projection')))
-    nx, ny, nb = np.array(GeoData.get('nx, ny, nb'))
+    nx, ny, nb = np.array(GeoData.get('[nx, ny, nb]'))
     
     # create the output file and set the parameters
     print("[ STATUS ]: Creating output file")
-    outRef = gdal.GetDriverByName("GTiff").Create(args.outFile, nx, ny, nb)
+    outRef = gdal.GetDriverByName("GTiff").Create(args.outFile, nx, ny, nb, gdal.GDT_Float32)
     outRef.SetGeoTransform(GeoTransform)
     outRef.SetProjection(Projection)
     
