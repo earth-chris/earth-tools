@@ -206,6 +206,6 @@ def main():
     print("[ STATUS ]: Finished writing hdf5 data!")
     print("[ STATUS ]: Please see output file : %s" % args.outFile)
     
-# call the aain routine when run from command lne
+# call the main routine when run from command lne
 if __name__ == "__main__":
     main()
