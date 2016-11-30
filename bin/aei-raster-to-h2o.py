@@ -129,13 +129,6 @@ def main():
     print("[ STATUS ]: Output file : %s" % args.outFile)
     print("[ STATUS ]: ----------")
     
-    # initialize the h2o cluster
-    print("[ STATUS ]: Initializing h2o")
-    h2o.init(ip='localhost', nthreads = args.cores, max_mem_size = args.mem)
-    
-    # report starting
-    print("[ STATUS ]: Reading input data")
-    
     # open the reference file
     inRef = gdal.Open(args.inFile)
     
@@ -146,74 +139,78 @@ def main():
     inny = inRef.RasterYSize
     innb = inRef.RasterCount
     
-    # handle band 1 first to get indices to store
-    bandRef = inRef.GetRasterBand(1)
+    # open the output file
+    with hdf.File(args.outFile, 'w') as outf:
         
-    # check if no-data value set by user, otherwise read from file
-    if not args.useNoData:
-        args.noData = bandRef.GetNoDataValue()
+        # create a group of data with georeferencing info
+        g1 = outf.create_group('GeoData')
+        g1.create_dataset('Projection', data = proj)
+        g1.create_dataset('GeoTransform', data = geot)
+        g1.create_dataset('[nx, ny, nb]', data = [innx, inny, innb])
         
-        # check that it exists
-        if args.noData is None:
-            print("[ ERROR ]: No no-data value set for input file")
-            print("[ ERROR ]: Please set -nodata value, or set in input file")
-            sys.exit(1)
-    
-    # read into an array
-    bandArr = bandRef.ReadAsArray()
-    
-    # find good data values
-    print("[ STATUS ]: Reading good-data indices")
-    gd = np.where(bandArr != args.noData)
-    
-    # error check here
-    if not gd[0].any():
-        print("[ ERROR ]: No good-data values found.")
-        sys.exit(1)
-    
-    # create a list to store output names
-    names = []
-    names.append('X-Indices')
-    names.append('Y-Indices')
-    
-    # create h2o array and save the x and y indices
-    dframe = h2o.H2OFrame(gd[1])
-    dframe = dframe.concat(h2o.H2OFrame(gd[0]))
-    
-    # save the band 1 data
-    print("[ STATUS ]: Reading band 001")
-    dframe = dframe.concat(h2o.H2OFrame(bandArr[gd[0], gd[1]]))
-    names.append('Band-001')
-    
-    # kill references
-    bandArr = None
-    bandRef = None
-    
-    # loop through each other band
-    if innb > 1: 
-        for i in range(2, innb+1):
-            print("[ STATUS ]: Reading band %03d" % i)
-            bandRef = inRef.GetRasterBand(i)
-            bandArr = bandRef.ReadAsArray()
-            dframe = dframe.concat(h2o.H2OFrame(bandArr[gd[0], gd[1]]))
-            bandArr = None
-            bandRef = None
-            names.append('Band-%03d' % i)
+        # create a new group to store raster data
+        g2 = outf.create_group('RasterData')
+        
+        # handle band 1 first to get indices to store
+        bandRef = inRef.GetRasterBand(1)
+        
+        # check if no-data value set by user, otherwise read from file
+        if not args.useNoData:
+            args.noData = bandRef.GetNoDataValue()
             
-    # that's it for setting up the data frame, so kill reference
+            # check that it exists
+            if args.noData is None:
+                print("[ ERROR ]: No no-data value set for input file")
+                print("[ ERROR ]: Please set -nodata value, or set in input file")
+                sys.exit(1)
+        
+        # read into an array
+        bandArr = bandRef.ReadAsArray()
+        
+        # find good data values
+        print("[ STATUS ]: Reading good-data indices")
+        gd = np.where(bandArr != args.noData)
+        
+        # error check here
+        if not gd[0].any():
+            print("[ ERROR ]: No good-data values found.")
+            sys.exit(1)
+        
+        # save the x and y indices
+        g2.create_dataset("Y-Indices", data = gd[0])
+        g2.create_dataset("X-Indices", data = gd[1])
+        
+        # save the band 1 data
+        print("[ STATUS ]: Writing band 001")
+        g2.create_dataset("Band-001", data = bandArr[gd[0], gd[1]])
+        
+        # kill references
+        bandArr = None
+        bandRef = None
+        
+    # then read the full data set into an array
+    fileArr = inRef.ReadAsArray
+    
+    # subset the data
+    fileArr = fileArr[:, gd[0], gd[1]]
+    
+    # create a header for the file
+    header = []
+    for i in range(1, innb+1):
+        header.append("Band-%03d" % i)
+    
+    # then transpose it and write as a csv
+    np.savetxt(args.outFile, fileArr.transpose(), delimiter = ',', 
+        header = aei.fn.strJoin(header))
+                
+    # that's it for writing to the hdf file, so kill reference
     inRef = None
-    
-    # set the data frame names
-    dframe.names = names
-    
-    # now write the output file
-    h2o.export_file(dframe, args.outFile, force=True)
             
     # report finished
     print("[ STATUS ]: ----------")
-    print("[ STATUS ]: Finished writing h2o data!")
+    print("[ STATUS ]: Finished writing hdf5 data!")
     print("[ STATUS ]: Please see output file : %s" % args.outFile)
     
-# call the aain routine when run from command lne
+# call the main routine when run from command lne
 if __name__ == "__main__":
     main()
