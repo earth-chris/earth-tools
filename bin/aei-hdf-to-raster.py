@@ -129,72 +129,74 @@ def main():
     print("[ STATUS ]: ----------")
     print("[ STATUS ]: Reading input data")
     
-    # open the reference file
-    inf = hdf.File(args.inFile)
+    # open the hdf  reference file
+    with hdf.File(args.inFile, 'r') as inf:
     
-    # get the geo and raster data stored in the hdf file
-    GeoData = inf.get(inf.keys()[0])
-    RasterData = inf.get(inf.keys()[1])
+        # get the geo and raster data stored in the hdf file
+        GeoData = inf.get(inf.keys()[0])
+        RasterData = inf.get(inf.keys()[1])
     
-    # read the GeoTransform data, Projection, and file dimensions
-    GeoTransform = np.array(GeoData.get('GeoTransform'))
-    Projection = str(np.array(GeoData.get('Projection')))
-    nx, ny, nb = np.array(GeoData.get('[nx, ny, nb]'))
-    
-    # create the output file and set the parameters
-    print("[ STATUS ]: Creating output file")
-    outRef = gdal.GetDriverByName("GTiff").Create(args.outFile, nx, ny, nb, gdal.GDT_Float32)
-    outRef.SetGeoTransform(GeoTransform)
-    outRef.SetProjection(Projection)
-    
-    # read the x and y indices
-    print("[ STATUS ]: Reading X-Y Indices")
-    x = np.array(RasterData.get('X-Indices'))
-    y = np.array(RasterData.get('Y-Indices'))
-    
-    # create an output array to store outputs
-    outArr = np.zeros((ny, nx), dtype = np.float32)
-    
-    # if no-data included, set it here
-    if args.useNoData:
-        outArr += args.noData
-    
-    # set a key list to loop through and get data from
-    rasterKeys = RasterData.keys()
-    
-    # remove x and y indices to not read them
-    rasterKeys.remove('X-Indices')
-    rasterKeys.remove('Y-Indices')
-    
-    # loop through each band, read the band info from the hdf file, and write to raster
-    for i in range(nb):
+        # read the GeoTransform data, Projection, and file dimensions
+        GeoTransform = np.array(GeoData.get('GeoTransform'))
+        Projection = str(np.array(GeoData.get('Projection')))
+        nx, ny, nb = np.array(GeoData.get('[nx, ny, nb]'))
         
-        # report
-        print("[ STATUS ]: Reading band %03d" % (i + 1))
+        # create the output file and set the parameters
+        print("[ STATUS ]: Creating output file")
+        outRef = gdal.GetDriverByName("GTiff").Create(args.outFile, nx, ny, nb, gdal.GDT_Float32)
+        outRef.SetGeoTransform(GeoTransform)
+        outRef.SetProjection(Projection)
         
-        # get the 1-d data
-        bandData = np.array(RasterData.get(rasterKeys[i]), dtype = np.float32)
+        # read the x and y indices
+        print("[ STATUS ]: Reading X-Y Indices")
+        x = np.array(RasterData.get('X-Indices'))
+        y = np.array(RasterData.get('Y-Indices'))
         
-        # put it in the 2-d array
-        outArr[y, x] = bandData
+        # create an output array to store outputs
+        outArr = np.zeros((ny, nx), dtype = np.float32)
         
-        # get the band reference
-        bandRef = outRef.GetRasterBand(i + 1)
-        
-        # write the array
-        bandRef.WriteArray(outArr)
-        
-        # set no-data if necessary
+        # if no-data included, set it here
         if args.useNoData:
-            bandRef.SetNoDataValue(args.noData)
-            
-        # destroy the band reference and free memory
-        bandRef = None
-        bandData = None
+            outArr += args.noData
         
-    # once finished looping through each band, kill the gdal reference
-    outArr = None
-    outRef = None
+        # set a key list to loop through and get data from
+        rasterKeys = RasterData.keys()
+        
+        # remove x and y indices to not read them
+        rasterKeys.remove('X-Indices')
+        rasterKeys.remove('Y-Indices')
+        
+        print(rasterKeys)
+        
+        # loop through each band, read the band info from the hdf file, and write to raster
+        for i in range(nb):
+            
+            # report
+            print("[ STATUS ]: Reading data set: %s" % (rasterKeys[i]))
+            
+            # get the 1-d data
+            bandData = np.array(RasterData.get(rasterKeys[i]), dtype = np.float32)
+            
+            # put it in the 2-d array
+            outArr[y, x] = bandData
+            
+            # get the band reference
+            bandRef = outRef.GetRasterBand(i + 1)
+            
+            # write the array
+            bandRef.WriteArray(outArr)
+            
+            # set no-data if necessary
+            if args.useNoData:
+                bandRef.SetNoDataValue(args.noData)
+                
+            # destroy the band reference and free memory
+            bandRef = None
+            bandData = None
+        
+        # once finished looping through each band, kill the gdal reference
+        outArr = None
+        outRef = None
             
     # report finished
     print("[ STATUS ]: ----------")
