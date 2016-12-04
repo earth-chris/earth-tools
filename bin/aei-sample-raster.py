@@ -244,10 +244,10 @@ def main():
         if ngd <= args.nSamples:
             finalInds = gd
         else:
-            rnd = np.random.randint(0, ngd+1, args.nSamples)
+            rnd = np.random.randint(0, ngd, args.nSamples)
             finalInds = []
             for j in range(gd[0].ndim):
-                finalInds.append(gd[i][rnd])
+                finalInds.append(gd[j][rnd])
         
         # add the indices from this class to the dictionary
         indDict['class_%03d' % classNumbers[i]] = finalInds
