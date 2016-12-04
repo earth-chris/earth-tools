@@ -20,10 +20,10 @@ class parse_args:
         # set up main variables and defaults to parse
         self.inFile = None
         self.outFile = None
+        self.outHDF = None
+        self.outCSV = None
         self.noData = None
         self.useNoData = False
-        self.mem = str("%01dG" % (0.6 * aei.params.mem / (1024 * 1024 * 1024.)))
-        self.cores = aei.params.cores - 1
 
         # exit if no arguments passed
         if len(arglist) == 1:
@@ -84,10 +84,21 @@ def check_args(args):
         sys.exit(1)
         
     # check output file
-    if len(args.inFile) == 0:
+    if len(args.outFile) == 0:
         usage()
         print("[ ERROR ]: No output file specified.")
         sys.exit(1)
+        
+    # set up output CSV and HDF file names automatically
+    if args.outFile[-4:].lower() == ".csv":
+        args.outCSV = args.outFile
+        args.outHDF = args.outFile[:-4] + ".hdf"
+    elif args.outFile[-4:].lower() == ".hdf":
+        args.outHDF = args.outFile
+        args.outCSV = args.outFile[:,-4] + ".csv"
+    else:
+        args.outHDF = args.outFile + ".hdf"
+        args.outCSV = args.outFile + ".csv"
     
     # return fixed arguments
     return(args)
@@ -139,8 +150,8 @@ def main():
     inny = inRef.RasterYSize
     innb = inRef.RasterCount
     
-    # open the output file
-    with hdf.File(args.outFile, 'w') as outf:
+    # open the output hdf file and write our format of data
+    with hdf.File(args.outHDF, 'w') as outf:
         
         # create a group of data with georeferencing info
         g1 = outf.create_group('GeoData')
@@ -180,10 +191,6 @@ def main():
         g2.create_dataset("Y-Indices", data = gd[0])
         g2.create_dataset("X-Indices", data = gd[1])
         
-        # save the band 1 data
-        print("[ STATUS ]: Writing band 001")
-        g2.create_dataset("Band-001", data = bandArr[gd[0], gd[1]])
-        
         # kill references
         bandArr = None
         bandRef = None
@@ -203,13 +210,14 @@ def main():
     np.savetxt(args.outFile, fileArr.transpose(), delimiter = ',', 
         header = aei.fn.strJoin(header))
                 
-    # that's it for writing to the hdf file, so kill reference
+    # that's it for writing to the hdf and csv files, so kill gdal reference
     inRef = None
             
     # report finished
     print("[ STATUS ]: ----------")
-    print("[ STATUS ]: Finished writing hdf5 data!")
-    print("[ STATUS ]: Please see output file : %s" % args.outFile)
+    print("[ STATUS ]: Finished writing hdf5/csv data!")
+    print("[ STATUS ]: Please see output hdf file : %s" % args.outHDF)
+    print("[ STATUS ]: And outpu csv csv file     : %s" % args.outCSV)
     
 # call the main routine when run from command lne
 if __name__ == "__main__":
