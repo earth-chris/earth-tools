@@ -229,7 +229,7 @@ def main():
     print("[ STATUS ]: ----------")
     print("[ STATUS ]: Finished writing hdf5/csv data!")
     print("[ STATUS ]: Please see output hdf file : %s" % args.outHDF)
-    print("[ STATUS ]: And outpu csv csv file     : %s" % args.outCSV)
+    print("[ STATUS ]: And output csv csv file    : %s" % args.outCSV)
     
 # call the main routine when run from command lne
 if __name__ == "__main__":
