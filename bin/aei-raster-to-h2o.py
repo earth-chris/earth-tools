@@ -12,7 +12,7 @@ import sys
 import aei
 import gdal as gdal
 import numpy as np
-import h2o
+import h5py as hdf
 
 class parse_args:
     def __init__(self, arglist):
