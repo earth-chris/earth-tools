@@ -166,10 +166,8 @@ def main():
         rasterKeys.remove('X-Indices')
         rasterKeys.remove('Y-Indices')
         
-        print(rasterKeys)
-        
         # loop through each band, read the band info from the hdf file, and write to raster
-        for i in range(nb):
+        for i in range(len(rasterKeys)):
             
             # report
             print("[ STATUS ]: Reading data set: %s" % (rasterKeys[i]))
