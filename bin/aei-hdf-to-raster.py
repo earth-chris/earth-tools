@@ -224,7 +224,8 @@ def main():
     # compress the output file
     if args.compress:
         print("[ STATUS ]: Compressing output file")
-        aei.cmd.gdal_translate(args.tempFile, args.outFile, etc=['-co','COMPRESS=LZW'])
+        aei.cmd.gdal_translate(args.tempFile, args.outFile, 
+            etc=['-co','COMPRESS=LZW'], ot=args.ot)
         aei.params.os.remove(args.tempFile)
             
     # report finished
