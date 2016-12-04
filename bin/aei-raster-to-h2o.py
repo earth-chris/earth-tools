@@ -137,7 +137,8 @@ def main():
     # report starting
     print("[ STATUS ]: Starting aei-raster-to-h2o.py")
     print("[ STATUS ]: Input file  : %s" % args.inFile)
-    print("[ STATUS ]: Output file : %s" % args.outFile)
+    print("[ STATUS ]: Output CSV  : %s" % args.outCSV)
+    print("[ STATUS ]: Output HDF  : %s" % args.outHDF)
     print("[ STATUS ]: ----------")
     
     # open the reference file
@@ -195,8 +196,13 @@ def main():
         bandArr = None
         bandRef = None
         
+    # report finished
+    print("[ STATUS ]: Finished reading indices")
+    print("[ STATUS ]: ----------")
+    print("[ STATUS ]: Reading raster data to memory")
+        
     # then read the full data set into an array
-    fileArr = inRef.ReadAsArray
+    fileArr = inRef.ReadAsArray()
     
     # subset the data
     fileArr = fileArr[:, gd[0], gd[1]]
@@ -206,8 +212,14 @@ def main():
     for i in range(1, innb+1):
         header.append("Band-%03d" % i)
     
+    # report writing data    
+    print("[ STATUS ]: Writing raster data to file")
+    
+    # convert to string array
+    fileArr = fileArr.astype(np.str)
+    
     # then transpose it and write as a csv
-    np.savetxt(args.outFile, fileArr.transpose(), delimiter = ',', 
+    np.savetxt(args.outCSV, fileArr.transpose(), delimiter = ',', 
         header = aei.fn.strJoin(header))
                 
     # that's it for writing to the hdf and csv files, so kill gdal reference
