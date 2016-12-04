@@ -318,7 +318,7 @@ def gdal_translate(inputs='', output='', etc='', dstnodata=False,
         else:
             fparams.append(aei.fn.strJoin(['-of', of]))
     if ot:
-        ot=read.ot(ot)
+        ot=aei.read.ot(ot)
         fparams.append(aei.fn.strJoin(['-ot', ot]))
 
     if etc:
