@@ -23,6 +23,9 @@ class parse_args:
         self.outFile = None
         self.noData = None
         self.useNoData = False
+        self.compress = True
+        self.ot = 'Float32'
+        self.tempFile = aei.params.scratchdir + aei.params.pathsep + 'temp_hdf2raster.tif'
 
         # exit if no arguments passed
         if len(arglist) == 1:
@@ -61,7 +64,25 @@ class parse_args:
                     self.noData = float(arg)
                     self.useNoData = True
                 except:
+                    usage()
                     print("[ ERROR ]: Unable to set nodata value: %s" % arg)
+                    sys.exit(1)
+                    
+            # check output data type
+            elif arg.lower() == '-ot':
+                i += 1
+                arg = arglist[i]
+                
+                try:
+                    self.ot = aei.read.ot(arg)
+                except:
+                    usage()
+                    print("[ ERROR ]: Unable to read -ot value: %s" % arg)
+                    sys.exit(1)
+                    
+            # check if compression is not set
+            elif arg.lower() == '-nocompress':
+                self.compress = False
             
             # set up catch-all for incorrect parameter call
             else:
@@ -99,7 +120,8 @@ def usage(exit=False):
     """
     print(
         """
-$ aei-hdf-to-raster.py -i inputFile -o outputFile -nodata noDataVal
+$ aei-hdf-to-raster.py -i inputFile -o outputFile [-nodata noDataVal]
+    [-ot outputDataType] [-nocompress]
         """
         )
     if exit:
@@ -131,10 +153,20 @@ def main():
     
     # open the hdf  reference file
     with hdf.File(args.inFile, 'r') as inf:
-    
+        
         # get the geo and raster data stored in the hdf file
         GeoData = inf.get(inf.keys()[0])
         RasterData = inf.get(inf.keys()[1])
+        
+        # set a key list to loop through and get data from
+        rasterKeys = RasterData.keys()
+        
+        # remove x and y indices to not read them
+        rasterKeys.remove('X-Indices')
+        rasterKeys.remove('Y-Indices')
+        
+        # the number of RasterData keys should be the number out output bands
+        onb = len(rasterKeys)
     
         # read the GeoTransform data, Projection, and file dimensions
         GeoTransform = np.array(GeoData.get('GeoTransform'))
@@ -143,7 +175,7 @@ def main():
         
         # create the output file and set the parameters
         print("[ STATUS ]: Creating output file")
-        outRef = gdal.GetDriverByName("GTiff").Create(args.outFile, nx, ny, nb, gdal.GDT_Float32)
+        outRef = gdal.GetDriverByName("GTiff").Create(args.outFile, nx, ny, onb, gdal.GDT_Float32)
         outRef.SetGeoTransform(GeoTransform)
         outRef.SetProjection(Projection)
         
@@ -159,15 +191,8 @@ def main():
         if args.useNoData:
             outArr += args.noData
         
-        # set a key list to loop through and get data from
-        rasterKeys = RasterData.keys()
-        
-        # remove x and y indices to not read them
-        rasterKeys.remove('X-Indices')
-        rasterKeys.remove('Y-Indices')
-        
         # loop through each band, read the band info from the hdf file, and write to raster
-        for i in range(len(rasterKeys)):
+        for i in range(onb):
             
             # report
             print("[ STATUS ]: Reading data set: %s" % (rasterKeys[i]))
@@ -195,6 +220,12 @@ def main():
         # once finished looping through each band, kill the gdal reference
         outArr = None
         outRef = None
+        
+    # compress the output file
+    if args.compress:
+        print("[ STATUS ]: Compressing output file")
+        aei.cmd.gdal_translate(args.tempFile, args.outFile, etc=['-co','COMPRESS=LZW'])
+        aei.params.os.remove(args.tempFile)
             
     # report finished
     print("[ STATUS ]: ----------")
