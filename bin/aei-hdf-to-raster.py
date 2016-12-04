@@ -144,6 +144,12 @@ def main():
     # check the argument list to ensure consistent arguments are set
     args = check_args(args)
     
+    # if compression is set, we need to create a temp file to write to initially
+    if args.compress:
+        firstFile = args.tempFile
+    else:
+        firstFile = args.outFile
+    
     # report starting
     print("[ STATUS ]: Starting aei-hdf-to-raster.py")
     print("[ STATUS ]: Input file  : %s" % args.inFile)
@@ -175,7 +181,7 @@ def main():
         
         # create the output file and set the parameters
         print("[ STATUS ]: Creating output file")
-        outRef = gdal.GetDriverByName("GTiff").Create(args.outFile, nx, ny, onb, gdal.GDT_Float32)
+        outRef = gdal.GetDriverByName("GTiff").Create(firstFile, nx, ny, onb, gdal.GDT_Float32)
         outRef.SetGeoTransform(GeoTransform)
         outRef.SetProjection(Projection)
         
