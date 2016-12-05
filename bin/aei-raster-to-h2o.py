@@ -215,12 +215,19 @@ def main():
     # report writing data    
     print("[ STATUS ]: Writing raster data to file")
     
-    # convert to string array
-    fileArr = fileArr.astype(np.str)
+    # convert to string array and spin it to row-major
+    #fileArr = fileArr.transpose().astype(np.str)
+    
+    # add a columnn of carriage returns
+    #fileArr = np.append(fileArr, np.reshape(np.repeat('\n', len(gd[0])), (len(gd[0]), 1)), axis=1)
+    
+    # flatten it to 1d for faster write-out
+    #with open(args.outCSV, 'w') as outf:
+    #    outf.write(','.join(line for line in fileArr))
     
     # then transpose it and write as a csv
-    np.savetxt(args.outCSV, fileArr.transpose(), delimiter = ',', 
-        header = aei.fn.strJoin(header))
+    #np.savetxt(args.outCSV, fileArr, delimiter = ',', 
+    #    header = aei.fn.strJoin(header))
                 
     # that's it for writing to the hdf and csv files, so kill gdal reference
     inRef = None
