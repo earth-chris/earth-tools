@@ -227,12 +227,12 @@ def main():
     #    outf.write(','.join(line for line in fileArr))
     
     # write it using pandas
-    df = pd.DataFrame(fileArr.transpose(), columns = header)
-    df.to_csv(args.outCSV)
+    #df = pd.DataFrame(fileArr.transpose(), columns = header)
+    #df.to_csv(args.outCSV)
     
     # then transpose it and write as a csv
-    #np.savetxt(args.outCSV, fileArr, delimiter = ',', 
-    #    header = aei.fn.strJoin(header))
+    np.savetxt(args.outCSV, fileArr, delimiter = ',', 
+        header = aei.fn.strJoin(header, fmt = '%0.5f')
 
     # that's it for writing to the hdf and csv files, so kill gdal reference
     inRef = None
