@@ -232,7 +232,7 @@ def main():
     
     # then transpose it and write as a csv
     np.savetxt(args.outCSV, fileArr, delimiter = ',', 
-        header = aei.fn.strJoin(header, fmt = '%0.5f')
+        header = aei.fn.strJoin(header), fmt = '%0.5f')
 
     # that's it for writing to the hdf and csv files, so kill gdal reference
     inRef = None
