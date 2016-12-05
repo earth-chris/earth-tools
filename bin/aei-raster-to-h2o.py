@@ -13,6 +13,7 @@ import aei
 import gdal as gdal
 import numpy as np
 import h5py as hdf
+import pandas as pd
 
 class parse_args:
     def __init__(self, arglist):
@@ -225,10 +226,14 @@ def main():
     #with open(args.outCSV, 'w') as outf:
     #    outf.write(','.join(line for line in fileArr))
     
+    # write it using pandas
+    df = pd.DataFrame(fileArr.transpose(), columns = header)
+    df.to_csv(args.outCSV)
+    
     # then transpose it and write as a csv
     #np.savetxt(args.outCSV, fileArr, delimiter = ',', 
     #    header = aei.fn.strJoin(header))
-                
+
     # that's it for writing to the hdf and csv files, so kill gdal reference
     inRef = None
             
