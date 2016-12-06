@@ -143,7 +143,8 @@ def main():
     # report starting
     print("[ STATUS ]: Starting aei-raster-to-h2o.py")
     print("[ STATUS ]: Input file  : %s" % args.inFile)
-    print("[ STATUS ]: Output CSV  : %s" % args.outCSV)
+    if not args.noCSV:
+        print("[ STATUS ]: Output CSV  : %s" % args.outCSV)
     print("[ STATUS ]: Output HDF  : %s" % args.outHDF)
     print("[ STATUS ]: ----------")
     
@@ -206,7 +207,7 @@ def main():
     print("[ STATUS ]: Finished reading indices")
     
     # if -nocsv is set, ignore this part, otherwise, write a csv file
-    if args.noCSV:
+    if not args.noCSV:
         
         # report starting
         print("[ STATUS ]: ----------")
