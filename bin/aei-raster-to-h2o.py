@@ -231,8 +231,8 @@ def main():
     #df.to_csv(args.outCSV)
     
     # then transpose it and write as a csv
-    np.savetxt(args.outCSV, fileArr, delimiter = ',', 
-        header = aei.fn.strJoin(header), fmt = '%0.5f')
+    np.savetxt(args.outCSV, fileArr.transpose(), delimiter = ',', 
+        header = aei.fn.strJoin(header), fmt = '%0.4f')
 
     # that's it for writing to the hdf and csv files, so kill gdal reference
     inRef = None
