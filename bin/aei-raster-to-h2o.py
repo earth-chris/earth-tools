@@ -13,7 +13,6 @@ import aei
 import gdal as gdal
 import numpy as np
 import h5py as hdf
-import pandas as pd
 
 class parse_args:
     def __init__(self, arglist):
@@ -25,6 +24,7 @@ class parse_args:
         self.outCSV = None
         self.noData = None
         self.useNoData = False
+        self.noCSV = False
 
         # exit if no arguments passed
         if len(arglist) == 1:
@@ -64,6 +64,10 @@ class parse_args:
                     self.useNoData = True
                 except:
                     print("[ ERROR ]: Unable to set nodata value: %s" % arg)
+            
+            # check if no-csv file should be output        
+            elif arg.lower() == '-nocsv':
+                self.noCSV = True
             
             # set up catch-all for incorrect parameter call
             else:
@@ -112,7 +116,8 @@ def usage(exit=False):
     """
     print(
         """
-$ aei-raster-to-h2o.py -i inputFile -o outputFile -nodata noDataVal
+$ aei-raster-to-h2o.py -i inputFile -o outputFile [-nodata noDataVal]
+    [-nocsv]
         """
         )
     if exit:
@@ -199,43 +204,34 @@ def main():
         
     # report finished
     print("[ STATUS ]: Finished reading indices")
-    print("[ STATUS ]: ----------")
-    print("[ STATUS ]: Reading raster data to memory")
+    
+    # if -nocsv is set, ignore this part, otherwise, write a csv file
+    if args.noCSV:
         
-    # then read the full data set into an array
-    fileArr = inRef.ReadAsArray()
+        # report starting
+        print("[ STATUS ]: ----------")
+        print("[ STATUS ]: Reading raster data to memory")
+            
+        # then read the full data set into an array
+        fileArr = inRef.ReadAsArray()
+        
+        # subset the data
+        fileArr = fileArr[:, gd[0], gd[1]]
+        
+        # create a header for the file
+        header = []
+        for i in range(1, innb+1):
+            header.append("Band-%03d" % i)
+        
+        # report writing data    
+        print("[ STATUS ]: Writing raster data to file")
+        
+        # transpose the array and write as a csv
+        np.savetxt(args.outCSV, fileArr.transpose(), delimiter = ',', 
+            header = aei.fn.strJoin(header,','), fmt = '%0.4f')
     
-    # subset the data
-    fileArr = fileArr[:, gd[0], gd[1]]
-    
-    # create a header for the file
-    header = []
-    for i in range(1, innb+1):
-        header.append("Band-%03d" % i)
-    
-    # report writing data    
-    print("[ STATUS ]: Writing raster data to file")
-    
-    # convert to string array and spin it to row-major
-    #fileArr = fileArr.transpose().astype(np.str)
-    
-    # add a columnn of carriage returns
-    #fileArr = np.append(fileArr, np.reshape(np.repeat('\n', len(gd[0])), (len(gd[0]), 1)), axis=1)
-    
-    # flatten it to 1d for faster write-out
-    #with open(args.outCSV, 'w') as outf:
-    #    outf.write(','.join(line for line in fileArr))
-    
-    # write it using pandas
-    #df = pd.DataFrame(fileArr.transpose(), columns = header)
-    #df.to_csv(args.outCSV)
-    
-    # then transpose it and write as a csv
-    np.savetxt(args.outCSV, fileArr.transpose(), delimiter = ',', 
-        header = aei.fn.strJoin(header), fmt = '%0.4f')
-
-    # that's it for writing to the hdf and csv files, so kill gdal reference
-    inRef = None
+        # that's it for writing to the hdf and csv files, so kill gdal reference
+        inRef = None
             
     # report finished
     print("[ STATUS ]: ----------")
