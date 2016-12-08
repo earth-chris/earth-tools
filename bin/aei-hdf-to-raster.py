@@ -178,11 +178,14 @@ def main():
         GeoTransform = np.array(GeoData.get('GeoTransform'))
         Projection = str(np.array(GeoData.get('Projection')))
         nx, ny, nb = np.array(GeoData.get('[nx, ny, nb]'))
+        nx = int(nx)
+        ny = int(ny)
+        nb = int(nb)
         
         # create the output file and set the parameters
         print("[ STATUS ]: Creating output file")
-        outRef = gdal.GetDriverByName("GTiff").Create(firstFile, int(nx), 
-            int(ny), int(onb), gdal.GDT_Float32)
+        outRef = gdal.GetDriverByName("GTiff").Create(firstFile, nx, 
+            ny, onb, gdal.GDT_Float32)
         outRef.SetGeoTransform(GeoTransform)
         outRef.SetProjection(Projection)
         

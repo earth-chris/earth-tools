@@ -100,7 +100,7 @@ def check_args(args):
         args.outHDF = args.outFile[:-4] + ".hdf"
     elif args.outFile[-4:].lower() == ".hdf":
         args.outHDF = args.outFile
-        args.outCSV = args.outFile[:,-4] + ".csv"
+        args.outCSV = args.outFile[:-4] + ".csv"
     else:
         args.outHDF = args.outFile + ".hdf"
         args.outCSV = args.outFile + ".csv"
@@ -238,7 +238,8 @@ def main():
     print("[ STATUS ]: ----------")
     print("[ STATUS ]: Finished writing hdf5/csv data!")
     print("[ STATUS ]: Please see output hdf file : %s" % args.outHDF)
-    print("[ STATUS ]: And output csv csv file    : %s" % args.outCSV)
+    if not args.noCSV:
+        print("[ STATUS ]: And output csv csv file    : %s" % args.outCSV)
     
 # call the main routine when run from command lne
 if __name__ == "__main__":
