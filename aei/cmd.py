@@ -5,21 +5,21 @@
 
 # set up a function to run commands and return stdout/stderr
 def run(cmd, stderr=True):
-    from aei import params
+    import subprocess
     
     # set whether or not stderr is included in return or just stdout
     if stderr:
-        se = params.subprocess.STDOUT
+        se = subprocess.STDOUT
     else:
         se = None
     
     # run the command, and return stdout as a list
     try:
-        proc = params.subprocess.check_output(cmd, shell = True,
+        proc = subprocess.check_output(cmd, shell = True,
           stderr = se)
         return proc.split("\n")
         
-    except params.subprocess.CalledProcessError, e:
+    except subprocess.CalledProcessError, e:
         output = e.output.strip()
         sp = output.find(":") + 2
         print("[ ERROR ]: %s" % output[sp:])
