@@ -59,6 +59,9 @@ class default_params:
         ### DEFAULT DATA PRODUCTS
         
         # output ground model
+        self.classify = True
+        
+        # output ground model
         self.ground = True
         
         # output surface model
@@ -296,6 +299,9 @@ class parse_args:
                     params.__dict__["step_" + str(j)] = False
                 
             # check if any outputs are turned off
+            elif arg.lower() == '-no_classify':
+                params.classify = False
+            
             elif arg.lower() == '-no_ground':
                 params.step_7 = False
                 
@@ -487,35 +493,44 @@ def step_3(params):
     """
     classifies ground points
     """
-    # report starting
-    print("[ STATUS ]: Starting step 3 - classifying ground points")
     
-    # set up output directory
-    output_directory = params.tiles_ground
-    
-    # check if step 4 is to be run - if so, we can perform both
-    #  in a single command and skip step 4 below
-    compute_height = False
-    if params.step_4:
+    # if -no_classify is set, then don't perform this step
+    if params.classify:
+        # report starting
+        print("[ STATUS ]: Starting step 3 - classifying ground points")
         
-        # don't do this if -drop_above is set, as it needs to run separate
-        #  from the lasground height calculation
-        if not params.drop_above:
-            compute_height = True
-            params.step_4 = False
-            print("[ STATUS ]: Starting step 4 - calculating height")
+        # set up output directory
+        output_directory = params.tiles_ground
         
-    # run the command
-    aei.cmd.lasground(params.input_step_3, odir = output_directory,
-      olaz = params.olaz, city = params.city, town = params.town,
-      compute_height = compute_height, fine = params.fine,
-      extra_fine = params.extra_fine, coarse = params.coarse,
-      extra_coarse = params.extra_coarse, cores = params.cores,
-      non_ground_unchanged=True)
+        # check if step 4 is to be run - if so, we can perform both
+        #  in a single command and skip step 4 below
+        compute_height = False
+        if params.step_4:
+            
+            # don't do this if -drop_above is set, as it needs to run separate
+            #  from the lasground height calculation
+            if not params.drop_above:
+                compute_height = True
+                params.step_4 = False
+                print("[ STATUS ]: Starting step 4 - calculating height")
+            
+        # run the command
+        aei.cmd.lasground(params.input_step_3, odir = output_directory,
+          olaz = params.olaz, city = params.city, town = params.town,
+          compute_height = compute_height, fine = params.fine,
+          extra_fine = params.extra_fine, coarse = params.coarse,
+          extra_coarse = params.extra_coarse, cores = params.cores,
+          non_ground_unchanged=True)
       
-    # update inputs for next steps
-    params.input_step_4 = output_directory + aei.params.pathsep + "*" + params.lt
-    params.input_step_5 = output_directory + aei.params.pathsep + "*" + params.lt
+        # update inputs for next steps
+        params.input_step_4 = output_directory + aei.params.pathsep + "*" + params.lt
+        params.input_step_5 = output_directory + aei.params.pathsep + "*" + params.lt
+        
+    # if classify isn't set, set directories to use
+    else:
+        print("[ STATUS ]: Skipping step 3 - classifying ground points")
+        params.input_step_4 = params.input_step_3 
+        params.input_step_5 = params.input_step_3 
     
 def step_4(params):
     """
@@ -826,7 +841,7 @@ $ aeilas.py -i input_files [-odir output_directory]
   [-scratchdir scratch_directory] [-name output_basename]
   [-keep_temp_files] [-res resolution] [-sres slicer_resolution] 
   [-max_tch max_tch] [-tile_size tile_size] [-buffer_size buffer_size]
-  [-start_step step] [-no_ground] [-no_surface] [-no_tch]
+  [-start_step step] [-no_classify] [-no_ground] [-no_surface] [-no_tch]
   [-no_merged] [-no_shape] [-no_slicer] [-no_density] [-cores cores]
   [-city] [-town] [-fine] [-extra_fine] [-coarse] [-extra_coarse]
         """
