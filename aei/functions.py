@@ -1,6 +1,7 @@
 #####
 # sets up frequently used functions
-# c. 2016 Christopher Anderson
+#
+# c. 2016-2017 Christopher Anderson
 #####
 
 # set up a file check function

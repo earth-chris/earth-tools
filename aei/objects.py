@@ -1,7 +1,8 @@
 ####
 # contains the classes and functions of frequently used objects
 #  to support aei
-# c. 2016 Christopher Anderson
+#
+# c. 2016-2017 Christopher Anderson
 #####
 
 # set up class for spectral objects

@@ -1,6 +1,7 @@
 ####
 # a series of basic tools for processing landsat data
-# c. 2016 Christopher Anderson
+#
+# c. 2016-2017 Christopher Anderson
 #####
 
 # function to read a landsat-format MTL file and return a dictionary

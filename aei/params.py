@@ -1,6 +1,7 @@
 #####
 # contains the parameters accessed by aei functions
-# c. 2016 Christopher Anderson
+#
+# c. 2016-2017 Christopher Anderson
 #####
 
 import os

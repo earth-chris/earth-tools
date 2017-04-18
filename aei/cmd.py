@@ -1,6 +1,7 @@
 #####
 # sets up paths and calls to external executables.
-# c. 2016 Christopher Anderson
+
+# c. 2016-2017 Christopher Anderson
 #####
 
 # set up a function to run commands and return stdout/stderr
