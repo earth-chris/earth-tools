@@ -1,7 +1,7 @@
 #!/bin/env/python2.7
 #
 # an image processing and ecological analysis toolbox developed
-#  by and c. 2016 Christopher Anderson | cbanders@stanford.edu
+#  by and c. 2016-2017 Christopher Anderson | cbanders@stanford.edu
 #
 ###################
 
@@ -9,6 +9,7 @@
 from aei import cmd
 from aei import eco
 from aei import landsat
+from aei import model
 from aei import objects
 from aei import params
 from aei import read
