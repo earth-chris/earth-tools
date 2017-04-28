@@ -7,6 +7,7 @@
 
 # import modules to namespace
 from aei import cmd
+from aei import color
 from aei import eco
 from aei import landsat
 from aei import model

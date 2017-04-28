@@ -182,3 +182,35 @@ class las:
         self.of = 'las'
         self.ext = '.' + self.of
         
+# class for color objects
+class color:
+    def __init__(self, palette = ["#8C1515", "#4D4F53", "#000000"]):
+        from matplotlib import colors
+        
+        # convert to hex if not passed
+        for i in range(len(palette)):
+            if not "#" in palette[i]:
+                palette[i] = colors.to_hex(palette[i])
+        
+        # set as the output        
+        self.palette = palette
+        
+    def interpolate(self, N):
+        """interploates colors to create a new color palette with N colors
+        """
+        from matplotlib import colors
+        self.palette = colors.ListedColormap(self.palette, N = N).colors
+        
+    def add_alpha(self, alpha):
+        """adds alpha values to colors in the palette
+        
+        alpha should be a float from 0-1 specifying the alpha level
+        """
+        # convert the float to 0-255, and convert to hex
+        intval = int(alpha * 255)
+        hexval = hex(intval)[2:].upper()
+        
+        # prepend the alpha value
+        for i in range(len(self.palette)):
+            self.palette[i] = "#{alpha}{color}".format(alpha = hexval, 
+                color = self.palette[i][-6:])
