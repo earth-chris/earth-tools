@@ -56,7 +56,10 @@ class spectral:
         """
         import numpy as np
         
-        water_bands = [[1350.0, 1460.0], [1790.0, 1960.0]]
+        if self.band_unit == 'micrometers':
+            water_bands = [[1.35, 1.46], [1.79, 1.96]]
+        else:
+            water_bands = [[1350.0, 1460.0], [1790.0, 1960.0]]
         
         # start with nir-swir1 transition
         gt = np.where(self.band_centers > water_bands[0][0])
