@@ -35,6 +35,16 @@ class parse_args:
         parser.add_argument('-o', metavar = 'output_file', type = str,
             nargs = 1, help = 'path to the output file',
             required = True)
+            
+        # create options for the despeckling algorithm to use
+        parser.add_argument('--filter', metavar = 'filter', type = str,
+            nargs = 1, help = 'the filter type',
+            options = ['lee', 'frost', 'gammamap', 'kuan'], 
+            default = 'lee', required = False)
+            
+        parser.add_argument('--rad', metavar = 'radius', type = int,
+            nargs = 1, help = 'the despeckling radius', 
+            default = 3, required = False)
         
         # parse the arguments and return the object
         args = parser.parse_args()
@@ -50,14 +60,15 @@ def raw_to_decibel(infile, outfile):
     aei.cmd.otb.BandMath(infile, outfile, "10*log10(im1b1^2)-83")
     
 # function to despeckle the data
-def despeckle(infile, outfile, filtername):
+def despeckle(infile, outfile, filtername, radius):
     
     # add compression to output file
     outfile = '"{}?&gdal:co:COMPRESS=LZW"'.format(outfile)
     
     # run the command
-    cmd = "otbcli_Despeckle -in {} -out {} -filter {} -filter.{}.rad".format(
-        infile, outfile, filtername)
+    cmd = "otbcli_Despeckle -in {} -out {} -filter {} -filter.{}.rad {}".format(
+        infile, outfile, filtername, filtername, radius)
+    print(cmd)
     aei.cmd.run(cmd)
     
 # function to calculate the polarimetric entropy
@@ -84,7 +95,7 @@ def stack_outputs(hh, hv, pol, outfile):
 # the main program function
 def main():
     
-    # parse the input arguments
+    # parse the input bash arguments
     args = parse_args()
     
     # create three temp files for hh, hv, polarimetry data
@@ -97,14 +108,17 @@ def main():
     # calculate the decibel and polarimetery data
     raw_to_decibel(args.hh, hh_dec)
     raw_to_decibel(args.hv, hv_dec)
-    calc_polarimetry(hh_dec, hv_dec, polari)
+    despeckle(hh_dec, hh_des, args.filter, args.rad)
+    calc_polarimetry(hh_des, hv_des, polari)
     
     # concatenate all files into a single stack
-    stack_outputs(hh_dec, hv_dec, polari, args.o)
+    stack_outputs(hh_des, hv_des, polari, args.o)
     
     # delete the temp files
     os.remove(hh_dec)
     os.remove(hv_dec)
+    os.remove(hh_des)
+    os.remove(hv_des)
     os.remove(polari)
     
     # report finished
