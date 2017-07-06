@@ -163,8 +163,8 @@ def kmeans_find_min(data, n_clusters, start_cluster = 1,
     yfit = function(xdata, *opt)
     
     # plot the original and the fit data
-    plt.plot(xdata, ydata, color = 'red', linewidth = 2, label = 'orig. data')
-    plt.plot(xdata, yfit, color = 'green', linewidth = 2, label = 'fit data')
+    plt.plot(xdata, ydata, color = 'purple', linewidth = 2, label = 'orig. data')
+    plt.plot(xdata, yfit, color = 'orange', linewidth = 2, label = 'fit data')
     plt.xlabel("Number of clusters starting from cluster {:02d}".format(
         start_cluster+1))
     plt.ylabel("Scaled sum of squares within each cluster group")
