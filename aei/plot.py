@@ -59,12 +59,10 @@ def density_dist(ydata, plot = None, color = None, aei_color = None,
     else:
         print("[ ERROR ]: unsupported ydata format. must be a list or np.ndarray")
     
-    print(ydata)
-    
     # if a plot object isn't provided, create one
     if not plot:
         plot = plt
-        plot.figure(1)
+        plot.figure(np.random.randint(100))
         
     # set the default aei_color function if not set by user
     if not aei_color:
