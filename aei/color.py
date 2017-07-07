@@ -15,8 +15,8 @@ def color_blind(n = None, alpha = None, black = False, return_cmap = False):
     
     # set metadata
     name = 'color_blind'
-    palette = ["#E69F00", "#009E73", "#0072B2", "#D55E00", "#F0E442", 
-        "#56B4E9", "#CC79A7", "#000000"]
+    palette = ["#0072B2", "#CC79A7", "#56B4E9", "#009E73", "#F0E442",
+        "#E69F00", "#D55E00", "#000000"]
         
     # remove the black value if set
     if not black:
