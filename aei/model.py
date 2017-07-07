@@ -65,7 +65,7 @@ def normalize(x, axis = 0):
     return (x - mn) / sd
     
 # function to linearly scale data to new range
-def scale(x, xlim = [0,1]):
+def scale(x, xlim = [0,1], axis = 0):
     import numpy as np
     
 
@@ -148,7 +148,7 @@ def kmeans_find_min(data, n_clusters, start_cluster = 1,
     
     # exclude points prior to the start cluster
     ydata = multi_ss[start_cluster:]
-    xdata = np.arange(n_clusters-start_cluster)
+    xdata = np.arange(n_clusters - start_cluster + 1)
     
     # linearly scale the data to simplify curve fitting
     ymax = ydata.max()
@@ -162,12 +162,16 @@ def kmeans_find_min(data, n_clusters, start_cluster = 1,
     # calculate the fit from the calibration data
     yfit = function(xdata, *opt)
     
+    # re-scale the xdata to include the starting cluster
+    xplot = xdata + start_cluster + 1
+    
     # plot the original and the fit data
-    plt.plot(xdata, ydata, color = 'purple', linewidth = 2, label = 'orig. data')
-    plt.plot(xdata, yfit, color = 'orange', linewidth = 2, label = 'fit data')
-    plt.xlabel("Number of clusters starting from cluster {:02d}".format(
-        start_cluster+1))
+    plt.figure(np.random.randint(256))
+    plt.plot(xplot, ydata, color = 'purple', linewidth = 2, label = 'orig. data')
+    plt.plot(xplot, yfit, color = 'orange', linewidth = 2, label = 'fit data')
+    plt.xlabel("Number of clusters")
     plt.ylabel("Scaled sum of squares within each cluster group")
+    plt.tight_layout()
     plt.legend()
     
     # calculate the second derivative from the fit function
