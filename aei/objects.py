@@ -187,7 +187,9 @@ class las:
         
 # class for color objects
 class color:
-    def __init__(self, palette = ["#8C1515", "#4D4F53", "#000000"]):
+    def __init__(self, palette = ["#8C1515", "#4D4F53", "#000000"], 
+        n = None, name = 'stanford_colormap'):
+        import numpy as np
         from matplotlib import colors
         
         # convert to hex if not passed
@@ -195,25 +197,44 @@ class color:
             if not "#" in palette[i]:
                 palette[i] = colors.to_hex(palette[i])
         
-        # set as the output        
-        self.palette = palette
+        # create a color map from the passed palette
+        clist = []
+        ncols = len(palette)
+        frac = 1./(ncols - 1)
+        linear_segments = np.arange(0, 1 + frac, frac)
+        for i in range(ncols):
+            clist.append((linear_segments[i], colors.ColorConverter.to_rgba(palette[i])))
+        cmap = colors.LinearSegmentedColormap.from_list(name, clist)
         
-    def interpolate(self, N):
-        """interploates colors to create a new color palette with N colors
-        """
-        from matplotlib import colors
-        self.palette = colors.ListedColormap(self.palette, N = N).colors
+        # output the color map, should it be necessary
+        self.cmap = cmap
         
-    def add_alpha(self, alpha):
+        # if no number of interpolated output values is specified, 
+        #  just return the number of colors in the original palette
+        if n is None:
+            n = len(palette)
+        
+        # create a vector of normalized values to linearly scale colors across range
+        #  since matplotlib color tables need 0-1 scale
+        self.palette = []
+        norm = colors.Normalize(vmin = 0, vmax = n-1)
+        for i in range(n):
+            self.palette.append(self.cmap(norm(i)))
+        
+    def alpha(self, alpha):
         """adds alpha values to colors in the palette
         
         alpha should be a float from 0-1 specifying the alpha level
         """
-        # convert the float to 0-255, and convert to hex
-        intval = int(alpha * 255)
-        hexval = hex(intval)[2:].upper()
         
-        # prepend the alpha value
-        for i in range(len(self.palette)):
-            self.palette[i] = "#{alpha}{color}".format(alpha = hexval, 
-                color = self.palette[i][-6:])
+        # create new list to replace the old one since tuples are immutable
+        new_palette = []
+        
+        # replace the alpha value in each rgba array [r,g,b,a]
+        for color in self.palette:
+            new_color = list(color)
+            new_color[3] = alpha
+            new_palette.append(tuple(new_color))
+        
+        # replace the list of tuples with updated alpha values    
+        self.palette = new_palette
