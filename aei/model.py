@@ -142,7 +142,7 @@ def kmeans_find_min(data, n_clusters, start_cluster = 1,
     import numpy as np
     from sklearn import metrics
     from matplotlib import pyplot as plt
-    
+        
     # run the multi-fit function
     multi_ss = kmeans_fit_multi(data, n_clusters, **kwargs)
     
@@ -168,6 +168,7 @@ def kmeans_find_min(data, n_clusters, start_cluster = 1,
     plt.xlabel("Number of clusters starting from cluster {:02d}".format(
         start_cluster+1))
     plt.ylabel("Scaled sum of squares within each cluster group")
+    plt.legend()
     
     # calculate the second derivative from the fit function
     n_derivs = n_clusters-start_cluster-2
@@ -175,4 +176,7 @@ def kmeans_find_min(data, n_clusters, start_cluster = 1,
     for i in range(start_cluster, n_derivs + start_cluster):
         deriv[i - start_cluster] = sp.misc.derivative(function, 
             xdata[i], args = opt, n = 2)
+            
+    # return the plot for the user to manipulate
+    return plt
         
