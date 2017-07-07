@@ -8,7 +8,7 @@ def rgb_to_hex(rgb):
     """Return color as #rrggbb for the given color values."""
     return '#%02x%02x%02x' % (rgb[0], rgb[1], rgb[2])
 
-def color_blind(n = None, alpha = None, black = False):
+def color_blind(n = None, alpha = None, black = False, return_cmap = False):
     """Returns a color blind friendly color palette
     """
     from aei import objects
@@ -28,10 +28,14 @@ def color_blind(n = None, alpha = None, black = False):
     # add alpha values if set
     if alpha:
         cp.alpha(alpha)
-        
-    return cp.palette
     
-def stanford(n = None, alpha = None):
+    # default to return the palette, otherwise to return the color map
+    if return_cmap:
+        return cp.cmap
+    else:
+        return cp.palette
+    
+def stanford(n = None, alpha = None, return_cmap = False):
     """Returns the stanford base color palette
     """
     from aei import objects
@@ -47,9 +51,13 @@ def stanford(n = None, alpha = None):
     if alpha:
         cp.alpha(alpha)
         
-    return cp.palette
+    # default to return the palette, otherwise to return the color map
+    if return_cmap:
+        return cp.cmap
+    else:
+        return cp.palette
         
-def stanford_bright(n = None, alpha = None):
+def stanford_bright(n = None, alpha = None, return_cmap = False):
     """Returns the stanford bright color palette
     """
     from aei import objects
@@ -65,9 +73,13 @@ def stanford_bright(n = None, alpha = None):
     if alpha:
         cp.alpha(alpha)
         
-    return cp.palette
+    # default to return the palette, otherwise to return the color map
+    if return_cmap:
+        return cp.cmap
+    else:
+        return cp.palette
         
-def stanford_dark(n = None, alpha = None):
+def stanford_dark(n = None, alpha = None, return_cmap = False):
     """Returns the stanford dark color palette
     """
     from aei import objects
@@ -83,9 +95,13 @@ def stanford_dark(n = None, alpha = None):
     if alpha:
         cp.alpha(alpha)
         
-    return cp.palette
+    # default to return the palette, otherwise to return the color map
+    if return_cmap:
+        return cp.cmap
+    else:
+        return cp.palette
         
-def stanford_neutral(n = None, alpha = None):
+def stanford_neutral(n = None, alpha = None, return_cmap = False):
     """Returns the stanford neutral color palette
     """
     from aei import objects
@@ -102,4 +118,8 @@ def stanford_neutral(n = None, alpha = None):
     if alpha:
         cp.alpha(alpha)
         
-    return cp.palette
+    # default to return the palette, otherwise to return the color map
+    if return_cmap:
+        return cp.cmap
+    else:
+        return cp.palette
