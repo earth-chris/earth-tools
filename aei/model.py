@@ -183,4 +183,421 @@ def kmeans_find_min(data, n_clusters, start_cluster = 1,
             
     # return the plot for the user to manipulate
     return plt
+
+# functions to list the available options for various sklearn parameters
+def list_scoring():
+    options = {
+        'Classification': [
+            'accuracy',
+            'average_precision',
+            'f1', 
+            'f1_micro', 
+            'f1_macro', 
+            'f1_weighted', 
+            'f1_samples',
+            'neg_log_loss',
+            'precision',
+            'recall',
+            'roc_auc'
+            ],
+        'Clustering': ['adjusted_rand_score'],
+        'Regression': [
+            'neg_mean_absolute_error',
+            'neg_mean_squared_error',
+            'neg_median_absolute_error',
+            'r2'
+            ]
+        }
+
+# a class for model tuning that has the default parameters pre-set
+class tune:
+    def __init__(self, x, y, optimizer = None, param_grid = None, 
+        scoring = None, fit_params = None, n_jobs = None, refit = True, 
+        verbose = 2, error_score = 0, return_train_score = True,
+        cv = None, n_splits = 4):
+        from aei import params
+        from sklearn import model_selection
         
+        # set defaults for each of the potential parameters
+        if optimizer is None:
+            optimizer = model_selection.GridSearchCV
+        if n_jobs is None:
+            n_jobs = params.cores - 1
+        
+        # set the variables to the tune class
+        self.x = x
+        self.y = y
+        self.optimizer = optimizer
+        self.param_grid = param_grid
+        self.scoring = scoring
+        self.fit_params = fit_params
+        self.n_jobs = n_jobs
+        self.refit = refit
+        self.verbose = verbose
+        self.error_score = error_score
+        self.return_train_score = return_train_score
+        self.cv = cv
+        self.n_splits = n_splits
+        
+    # function to actually run the tuning process and report outputs
+    def run_gs(self, estimator):
+        
+        # create the grid search 
+        gs = self.optimizer(estimator, param_grid = self.param_grid,
+            scoring = self.scoring, fit_params = self.fit_params, 
+            n_jobs = self.n_jobs, cv = self.cv, refit = self.refit, 
+            verbose = self.verbose, error_score = self.error_score, 
+            return_train_score = self.return_train_score)
+            
+        # begin fitting the grid search
+        gs.fit(self.x, self.y)
+        
+        # update the tuning object with the outputs of the tuning
+        self.cv_results = gs.cv_results_
+        self.best_estimator = gs.best_estimator_
+        self.best_score = gs.best_score_
+        self.best_params = gs.best_params_
+        self.best_index = gs.best_index_
+        self.scorer = gs.scorer_
+        self.n_splits = gs.n_splits_
+    
+    #####
+    # create functions to tune each different model type based on
+    #  a set of default parameter grids
+    
+    ##### 
+    # LINEAR MODELS
+    
+    # the logistic (i.e. MaxEnt) model
+    def LogisticRegression(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import linear_model, model_selection
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'C': (1e-2, 1e-1, 1e0, 1e1),
+                    'tol': (1e-3, 1e-4, 1e-5),
+                    'fit_intercept': (True, False)
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = 'f1'
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = linear_model.LogisticRegression()
+        self.run_gs(estimator)
+    
+    #####
+    # DECISION TREE FUNCTIONS
+    
+    # function for decision tree classifier
+    def DecisionTreeClassifier(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import tree, model_selection
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'criterion': ('gini', 'entropy'),
+                    'splitter': ('best', 'random'),
+                    'max_features': ('sqrt', 'log2', None),
+                    'max_depth': (2, 5, 10, None),
+                    'min_samples_split': (2, 0.01, 0.1),
+                    'min_impurity_split': (1e-7, 1e-6)
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = 'f1'
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = tree.DecisionTreeClassifier()
+        self.run_gs(estimator)
+    
+    ##### 
+    # SVM FUNCTIONS 
+    
+    # function for Support Vector Classifier (SVC)
+    def SVC(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import svm, model_selection
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'C': (1e-2, 1e-1, 1e0, 1e1),
+                    'kernel': ('rbf', 'linear', 'poly', 'sigmoid'),
+                    'gamma': (1e-2, 1e-3, 1e-4)
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = 'f1'
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = svm.SVC()
+        self.run_gs(estimator)
+    
+    # function for Linear SVC
+    def LinearSVC(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import svm, model_selection
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'C': (1e-2, 1e-1, 1e0, 1e1),
+                    'loss': ('hinge', 'squared_hinge'),
+                    'penalty': ('l2'),
+                    'tol': (1e-3, 1e-4, 1e-5),
+                    'fit_intercept': (True, False)
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = 'f1'
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = svm.LinearSVC()
+        self.run_gs(estimator)
+    
+    #####
+    # ENSEMBLE METHODS
+    
+    # Ada boosting classifier
+    def AdaBoostClassifier(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import ensemble, model_selection
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'n_estimators': (25, 50, 75, 100),
+                    'learning_rate': (0.1, 0.5, 1.)
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = 'f1'
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = ensemble.AdaBoostClassifier()
+        self.run_gs(estimator)
+        
+    # Gradient boosting classifier
+    def GradientBoostClassifier(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import ensemble, model_selection
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'n_estimators': (100, 200, 500, 1000),
+                    'learning_rate': (0.01, 0.1, 0.5, 1.),
+                    'max_features': ('sqrt', 'log2', None),
+                    'max_depth': (1, 2, 5, 10, None),
+                    'min_samples_split': (2, 0.01, 0.1),
+                    'min_impurity_split': (1e-7, 1e-6)
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = 'f1'
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = ensemble.GradientBoostingClassifier()
+        self.run_gs(estimator)
+        
+    # Random Forest classifier
+    def RandomForestClassifier(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import ensemble, model_selection
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'criterion': ('gini', 'entropy'),
+                    'n_estimators': (100, 200, 500, 1000),
+                    'max_features': ('sqrt', 'log2', None),
+                    'max_depth': (1, 2, 5, 10, None),
+                    'min_samples_split': (2, 0.01, 0.1),
+                    'min_impurity_split': (1e-7, 1e-6)
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = 'f1'
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = ensemble.RandomForestClassifier()
+        self.run_gs(estimator)
