@@ -285,3 +285,33 @@ def rasterBoundingBox(infile):
     
     # return in order of minx, miny, maxx, maxy
     return [ulx, lry, lrx, uly]
+    
+# function to return all possible pair-wise combinations of a list
+def pairwise(inlist, n_combos = 2, all_combos = False):
+    """Returns a list of all unique pairwise combinations of an input list
+    
+    Args:
+        inlist: the list of items to generate pairwise combinations from
+        n_combos: the number of items to match (2 for pairwise, 3 for unique groups of 3, etc.)
+        all_combos: set if all combinations should be returned instead of only unique combos
+        
+    Returns:
+        outlist: a list of pairwise combinations for each item in inlist
+    """
+    import itertools
+    
+    # if all combos are specified, use a separate iterator
+    if all_combos:
+        iterator = itertools.combinations_with_replacement
+    else:
+        iterator = itertools.combinations
+    
+    # populate the iterator
+    combos = iterator(inlist, n_combos)
+        
+    # create the output list to return, and add all the combinations
+    outlist = []
+    for unique in combos:
+        outlist.append(unique)
+        
+    return outlist
