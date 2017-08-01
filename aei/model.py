@@ -213,7 +213,7 @@ def list_scoring():
 class tune:
     def __init__(self, x, y, optimizer = None, param_grid = None, 
         scoring = None, fit_params = None, n_jobs = None, refit = True, 
-        verbose = 2, error_score = 0, return_train_score = True,
+        verbose = 1, error_score = 0, return_train_score = True,
         cv = None, n_splits = 4):
         from aei import params
         from sklearn import model_selection
@@ -260,6 +260,7 @@ class tune:
         self.best_index = gs.best_index_
         self.scorer = gs.scorer_
         self.n_splits = gs.n_splits_
+        self.gs = gs
     
     #####
     # create functions to tune each different model type based on
@@ -292,7 +293,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'f1'
+                scoring = 'roc_auc'
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -343,7 +344,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'f1'
+                scoring = 'roc_auc'
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -391,7 +392,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'f1'
+                scoring = 'roc_auc'
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -438,7 +439,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'f1'
+                scoring = 'roc_auc'
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -485,7 +486,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'f1'
+                scoring = 'roc_auc'
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -519,10 +520,10 @@ class tune:
         if param_grid is None:
             if self.param_grid is None:
                 param_grid = {
-                    'n_estimators': (100, 200, 500, 1000),
-                    'learning_rate': (0.01, 0.1, 0.5, 1.),
+                    'n_estimators': (100, 500, 1000),
+                    'learning_rate': (0.01, 0.1, 0.5),
                     'max_features': ('sqrt', 'log2', None),
-                    'max_depth': (1, 2, 5, 10, None),
+                    'max_depth': (1, 5, 10, None),
                     'min_samples_split': (2, 0.01, 0.1),
                     'min_impurity_split': (1e-7, 1e-6)
                     }
@@ -533,7 +534,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'f1'
+                scoring = 'roc_auc'
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -568,9 +569,9 @@ class tune:
             if self.param_grid is None:
                 param_grid = {
                     'criterion': ('gini', 'entropy'),
-                    'n_estimators': (100, 200, 500, 1000),
+                    'n_estimators': (100, 500, 1000),
                     'max_features': ('sqrt', 'log2', None),
-                    'max_depth': (1, 2, 5, 10, None),
+                    'max_depth': (1, 5, 10, None),
                     'min_samples_split': (2, 0.01, 0.1),
                     'min_impurity_split': (1e-7, 1e-6)
                     }
@@ -581,7 +582,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'f1'
+                scoring = 'roc_auc'
                 self.scoring = scoring
         else:
             self.scoring = scoring
