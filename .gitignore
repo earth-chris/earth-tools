@@ -13,6 +13,8 @@ Thumbs.db
 # program specific files
 ######################
 .zedstate
+.idea
+.idea/*
 
 # Python stuff
 ######################
