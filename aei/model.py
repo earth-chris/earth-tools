@@ -269,6 +269,50 @@ class tune:
     ##### 
     # LINEAR MODELS
     
+    # OLS linear regression
+    def LinearRegression(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import linear_model, model_selection, metrics
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'normalize': (True, False),
+                    'fit_intercept': (True, False)
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = metrics.explained_variance_score
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = linear_model.LinearRegression()
+        self.run_gs(estimator)
+    
     # the logistic (i.e. MaxEnt) model
     def LogisticRegression(self, optimizer = None, param_grid = None,
         scoring = None, fit_params = None, cv = None):
@@ -412,6 +456,52 @@ class tune:
         # create the estimator and run the grid search
         estimator = svm.SVC()
         self.run_gs(estimator)
+        
+    # function for Support Vector Regression (SVR)
+    def SVR(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import svm, model_selection, metrics
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'C': (1e-2, 1e-1, 1e0, 1e1),
+                    'epsilon': (0.01, 0.1, 1),
+                    'kernel': ('rbf', 'linear', 'poly', 'sigmoid'),
+                    'gamma': (1e-2, 1e-3, 1e-4)
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = metrics.explained_variance_score
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = svm.SVR()
+        self.run_gs(estimator)
     
     # function for Linear SVC
     def LinearSVC(self, optimizer = None, param_grid = None,
@@ -428,7 +518,6 @@ class tune:
                 param_grid = {
                     'C': (1e-2, 1e-1, 1e0, 1e1),
                     'loss': ('hinge', 'squared_hinge'),
-                    'penalty': ('l2'),
                     'tol': (1e-3, 1e-4, 1e-5),
                     'fit_intercept': (True, False)
                     }
@@ -458,6 +547,54 @@ class tune:
             
         # create the estimator and run the grid search
         estimator = svm.LinearSVC()
+        self.run_gs(estimator)
+        
+    # function for Linear SVR
+    def LinearSVR(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import svm, model_selection, metrics
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'C': (1e-2, 1e-1, 1e0, 1e1),
+                    'loss': ('epsilon_insensitive', 'squared_epsilon_insensitive'),
+                    'epsilon': (0, 0.01, 0.1),
+                    'dual': (False),
+                    'tol': (1e-3, 1e-4, 1e-5),
+                    'fit_intercept': (True, False)
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = metrics.explained_variance_score
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = svm.LinearSVR()
         self.run_gs(estimator)
     
     #####
@@ -505,6 +642,51 @@ class tune:
             
         # create the estimator and run the grid search
         estimator = ensemble.AdaBoostClassifier()
+        self.run_gs(estimator)
+        
+    # Ada boosting regressor
+    def AdaBoostRegressor(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import ensemble, model_selection, metrics
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'n_estimators': (25, 50, 75, 100),
+                    'learning_rate': (0.1, 0.5, 1.),
+                    'loss': ('linear', 'exponential', 'square')
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = metrics.explained_variance_score
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = ensemble.AdaBoostRegressor()
         self.run_gs(estimator)
         
     # Gradient boosting classifier
@@ -555,6 +737,54 @@ class tune:
         estimator = ensemble.GradientBoostingClassifier()
         self.run_gs(estimator)
         
+    # Gradient boosting regressor
+    def GradientBoostRegressor(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import ensemble, model_selection
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'n_estimators': (100, 500, 1000),
+                    'learning_rate': (0.01, 0.1, 0.5),
+                    'max_features': ('sqrt', 'log2', None),
+                    'max_depth': (1, 5, 10, None),
+                    'min_samples_split': (2, 0.01, 0.1),
+                    'min_impurity_split': (1e-7, 1e-6)
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = 'neg_mean_absolute_error'
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = ensemble.GradientBoostingRegressor()
+        self.run_gs(estimator)
+        
     # Random Forest classifier
     def RandomForestClassifier(self, optimizer = None, param_grid = None,
         scoring = None, fit_params = None, cv = None):
@@ -601,4 +831,51 @@ class tune:
             
         # create the estimator and run the grid search
         estimator = ensemble.RandomForestClassifier()
+        self.run_gs(estimator)
+        
+    # Random Forest regressor
+    def RandomForestRegressor(self, optimizer = None, param_grid = None,
+        scoring = None, fit_params = None, cv = None):
+        from sklearn import ensemble, model_selection
+        
+        # check if the optimizer has changed, otherwise use default
+        if optimizer is not None:
+            self.optimizer = optimizer
+        
+        # check if the parameter grid has been set, otherwise set defaults
+        if param_grid is None:
+            if self.param_grid is None:
+                param_grid = {
+                    'n_estimators': (100, 500, 1000),
+                    'max_features': ('sqrt', 'log2', None),
+                    'max_depth': (1, 5, 10, None),
+                    'min_samples_split': (2, 0.01, 0.1),
+                    'min_impurity_split': (1e-7, 1e-6)
+                    }
+                self.param_grid = param_grid
+        else:
+            self.param_grid = param_grid
+            
+        # set the scoring function
+        if scoring is None:
+            if self.scoring is None:
+                scoring = 'neg_mean_absolute_error'
+                self.scoring = scoring
+        else:
+            self.scoring = scoring
+        
+        # set the default fit parameters
+        if fit_params is not None:
+            self.fit_params = fit_params
+                
+        # set the cross validation strategy
+        if cv is None:
+            if self.cv is None:
+                cv = model_selection.StratifiedKFold(n_splits = self.n_splits)
+                self.cv = cv
+        else:
+            self.cv = cv
+            
+        # create the estimator and run the grid search
+        estimator = ensemble.RandomForestRegressor()
         self.run_gs(estimator)
