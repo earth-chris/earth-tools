@@ -1,0 +1,34 @@
+Bootstrap: docker
+From: qgis/qgis
+
+%help
+    Singularity image based on ubuntu 16.04 with qgis installed
+    https://github.com/tianon/docker-brew-ubuntu-core/blob/85822fe532df3854da30b4829c31878ac51bcb91/xenial/Dockerfile
+    Maintained by Christopher Anderson (cbanders@stanford.edu) @christobal54
+
+%labels
+    Maintainer christobal54
+    Version UserEror
+
+%post
+    # install packages via apt
+    apt-get update -y
+    apt-get upgrade  -y
+    apt-get install -y \
+	python-gdal \
+	ipython \
+	python-setuptools \
+	python-dev \
+	python-pip \
+	python-tk
+    apt-get clean 
+    rm -rf /var/lib/apt/lists/*
+
+    # install pip packages
+    pip install --upgrade pip
+    pip install matplotlib
+
+%runscript
+    echo "ccb-qgis-build"
+    echo "Arguments passed: $*"
+    exec "$@"

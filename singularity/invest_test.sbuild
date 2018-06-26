@@ -1,0 +1,46 @@
+Bootstrap: docker
+From: ubuntu:17.10 
+
+%help
+    Singularity image based on ubuntu 17.10 with qgis installed
+    https://github.com/tianon/docker-brew-ubuntu-core/blob/85822fe532df3854da30b4829c31878ac51bcb91/xenial/Dockerfile
+    Maintained by Christopher Anderson (cbanders@stanford.edu) @christobal54
+
+%labels
+    Maintainer christobal54
+    Version UserEror
+
+%post
+    # install packages via apt
+    apt-get update -y
+    apt-get upgrade  -y
+    apt-get install -y \
+	python-gdal \
+	ipython \
+	python-setuptools \
+	python-dev \
+	python-pip \
+	python-scipy \
+	python-numpy \
+	python-sip \
+	python-qt4 \
+	python-pyside \
+	gtk2.0 \
+	gtk2-engines* \
+	libatk-adaptor \
+	libgail-common \
+	unity-gtk3-module \
+	libcanberra-gtk3-module
+
+    # clean up apt packages
+    apt-get clean 
+    rm -rf /var/lib/apt/lists/*
+
+    # install pip packages
+    pip install --upgrade pip
+    pip install natcap.invest[ui] Pyro4 matplotlib rtree shapely setuptools qtpy qtawesome six taskgraph psutil
+
+%runscript
+    echo "ccb-invest"
+    echo "Arguments passed: $*"
+    exec "$@"

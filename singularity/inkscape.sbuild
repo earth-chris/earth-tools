@@ -1,0 +1,42 @@
+Bootstrap: docker
+From: ubuntu:17.10 
+
+%help
+    Singularity image based on ubuntu 17.10 with vector/raster editors (inkscape, gimp, etc.)
+    Maintained by Christopher Anderson (cbanders@stanford.edu) @christobal54
+
+%labels
+    Maintainer christobal54
+    Version UserEror
+
+%post
+    # set the default directory for storing configuration files
+
+    # install packages via apt
+    apt-get update -y
+    apt-get upgrade -y
+    apt-get install -y \
+	inkscape \
+	gimp \
+	vim \
+	wget \
+	unzip
+
+    # clean up the apt files
+    apt-get clean 
+    rm -rf /var/lib/apt/lists/*
+
+    # install the google fonts package
+    mkdir /ccb 
+    cd /ccb
+    wget https://github.com/google/fonts/archive/master.zip
+    unzip master.zip
+    find . -name "*.ttf" | xargs -I '{}' mv '{}' /usr/local/share/fonts/
+    fc-cache -f -v
+
+    # clear these tmp files
+    cd /
+    rm -r /ccb
+
+%runscript
+    exec "$@"
