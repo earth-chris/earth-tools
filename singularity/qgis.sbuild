@@ -1,9 +1,8 @@
 Bootstrap: docker
-From: qgis/qgis
+From: ubuntu:bionic
 
 %help
     Singularity image based on ubuntu 16.04 with qgis installed
-    https://github.com/tianon/docker-brew-ubuntu-core/blob/85822fe532df3854da30b4829c31878ac51bcb91/xenial/Dockerfile
     Maintained by Christopher Anderson (cbanders@stanford.edu) @christobal54
 
 %labels
@@ -13,22 +12,49 @@ From: qgis/qgis
 %post
     # install packages via apt
     apt-get update -y
-    apt-get upgrade  -y
+    apt-get install -y gnupg apt-transport-https ca-certificates wget
+
+    # set the qgis deb paths
+    echo "deb http://qgis.org/debian artful main" >> /etc/apt/sources.list
+    #gpg --keyserver keyserver.ubuntu.com --recv CAEB3DC3BDF7FB45
+    wget -O - https://qgis.org/downloads/qgis-2017.gpg.key | gpg --import
+    gpg --fingerprint CAEB3DC3BDF7FB45
+    gpg --export --armor CAEB3DC3BDF7FB45 | apt-key add -
+    apt-get update 
+    apt-get install -y qgis python-qgis qgis-plugin-grass \
+    locales locales-all 
+    
+    # install other packages
     apt-get install -y \
-	python-gdal \
-	ipython \
-	python-setuptools \
-	python-dev \
-	python-pip \
-	python-tk
-    apt-get clean 
-    rm -rf /var/lib/apt/lists/*
+        python-gdal \
+        gdal-bin \
+        ipython \
+        python-setuptools \
+        python-matplotlib \
+        python-dev \
+        python-pip \
+        python-tk \
+        wget \
+        build-essential \
+        mesa-common-dev \
+        libglu1-mesa-dev \
+        libqt4-dev \
+        unzip
+        apt-get clean 
+        rm -rf /var/lib/apt/lists/*
 
     # install pip packages
-    pip install --upgrade pip
-    pip install matplotlib
+    pip install --upgrade matplotlib
+
+    # install the google fonts package
+    mkdir /ccb 
+    cd /ccb
+    wget https://github.com/google/fonts/archive/master.zip
+    unzip master.zip
+    find . -name "*.ttf" | xargs -I '{}' mv '{}' /usr/local/share/fonts/
+    fc-cache -f -v
+    rm master.zip
 
 %runscript
-    echo "ccb-qgis-build"
-    echo "Arguments passed: $*"
-    exec "$@"
+    echo "ccb-qgis-3.2"
+    exec "qgis"

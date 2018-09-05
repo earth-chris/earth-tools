@@ -23,25 +23,25 @@ From: ubuntu:xenial
 	locales locales-all 
 
     apt-get install -y \
-	python-gdal \
-	gdal-bin \
-	ipython \
-	python-setuptools \
-	python-dev \
-	python-pip \
-	python-tk \
-	wget \
-	build-essential \
-	mesa-common-dev \
-	libglu1-mesa-dev \
-	libqt4-dev \
-	unzip
-    apt-get clean 
-    rm -rf /var/lib/apt/lists/*
+    	python-gdal \
+    	gdal-bin \
+    	ipython \
+    	python-setuptools \
+    	python-matplotlib \
+    	python-dev \
+    	python-pip \
+    	python-tk \
+    	wget \
+    	build-essential \
+    	mesa-common-dev \
+    	libglu1-mesa-dev \
+    	libqt4-dev \
+    	unzip
+        apt-get clean 
+        rm -rf /var/lib/apt/lists/*
 
     # install pip packages
-    pip install --upgrade pip
-    pip install matplotlib
+    pip install --upgrade matplotlib
 
     # install the google fonts package
     mkdir /ccb 
@@ -52,6 +52,5 @@ From: ubuntu:xenial
     fc-cache -f -v
 
 %runscript
-    echo "ccb-qgis-2.18-build"
-    echo "Arguments passed: $*"
-    exec "$@"
+    echo "ccb-qgis-2.18"
+    exec "qgis"
