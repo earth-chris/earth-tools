@@ -1,14 +1,13 @@
-# aei-py
-Contains functions and classes for image processing and ecological analysis - a personal platform.
+# aei
+Contains functions and classes for image processing and ecological analysis - a personal platform. The acronym stands for anderson ecological imaging.
 
 ## Installation
-In development - no pip/easy_install/etc. method currently available.
+No pip/easy_install/etc. method is currently available. Update your `PYTHONPATH`.
 
 ### Required binary packages
 **For all users**
 - GDAL/OGR - from [source](http://download.osgeo.org/gdal/) or [QGIS](http://qgis.org/en/site/forusers/download.html)
 - LAStools - from [Rapidlasso](https://rapidlasso.com/lastools/) - Don't forget the [license!](http://www.cs.unc.edu/~isenburg/lastools/LICENSE.txt)
-- SAGA - from [source](https://sourceforge.net/projects/saga-gis/)
 
 **For linux/unix users**
 - Wine - from [WineHQ](https://www.winehq.org/download)
@@ -23,7 +22,7 @@ Check `aei/params.py` for the environment variables to set. If all of the execut
 ## Contact info:
 
 Christopher Anderson
-- cbanders@stanford.edu
-- [Twitter](http://twitter.com/@hypersketch)
+- [E-mail](mailto:cbanders@stanford.edu)
+- [Twitter](http://twitter.com/earth_chris)
 - [Google Scholar](https://scholar.google.com/citations?user=LoGxS40AAAAJ&hl=encba@anderson-ubuntu:)
 - [Library Thing](http://www.librarything.com/catalog/anderzen)
