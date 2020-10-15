@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #####
-# aei-mask.py
-#  
+# et-mask.py
+#
 #  masks a raster file using other raster files of the same dimensions.
 #  primary use is to ensure no-data pixels from one file is aligned with another.
 #
@@ -11,7 +11,7 @@
 import gdal as gdal
 import sys
 import numpy as np
-import aei
+import earthtools as et
 
 
 class parse_args:
@@ -38,15 +38,15 @@ class parse_args:
         while i < len(arglist):
             arg = arglist[i]
 
-            # parse the base reference file flag    
+            # parse the base reference file flag
             if arg.lower() == '-ref':
                 i += 1
                 arg = arglist[i]
 
-                if not aei.fn.checkFile(arg, quiet=True):
+                if not et.fn.checkFile(arg, quiet=True):
                     usage()
-                    aei.fn.checkFile(arg)
-                    aei.params.sys.exit(1)
+                    et.fn.checkFile(arg)
+                    et.params.sys.exit(1)
 
                 self.refFile = arg
 
@@ -106,7 +106,7 @@ class parse_args:
                         continue
                     arg = arglist[i]
 
-            # use a user-defined no-data value if set        
+            # use a user-defined no-data value if set
             elif arg.lower() == '-masknodata':
                 i += 1
                 arg = arglist[i]
@@ -115,7 +115,7 @@ class parse_args:
                 self.maskNoData = float(arg)
                 self.useMaskNoData = True
 
-            # use a user-defined ref no-data value if set        
+            # use a user-defined ref no-data value if set
             elif arg.lower() == '-refnodata':
                 i += 1
                 arg = arglist[i]
@@ -129,7 +129,7 @@ class parse_args:
                 usage()
                 print("[ ERROR ]: Unrecognized argument: %s" % arg)
                 print("%s" % i)
-                aei.params.sys.exit(1)
+                et.params.sys.exit(1)
 
             # increment the counter for next argument
             i += 1
@@ -172,13 +172,13 @@ def check_args(args):
 
 def usage(exit=False):
     """
-    describes the aei-mask.py procedure in case of incorrect parameter calls
-    
+    describes the et-mask.py procedure in case of incorrect parameter calls
+
     syntax: usage()
     """
     print(
         """
-$ aei-mask.py -ref fileToMask -mask inputMask 
+$ et-mask.py -ref fileToMask -mask inputMask
         [-b bandList] [-masknodata noDataVal] [-refnodata noDataVal]
         """
     )
@@ -188,13 +188,13 @@ $ aei-mask.py -ref fileToMask -mask inputMask
 
 def main():
     """
-    the main program for aei-mask.py
-    
+    the main program for et-mask.py
+
     the order of operations for this procedure is to
     1) ensure the masks are the same dimensions
-    2) loop through each band, or the specified bands, of the mask files and 
+    2) loop through each band, or the specified bands, of the mask files and
        mask the input reference file.
-    
+
     syntax: main()
     """
     # parse the argument list
@@ -204,9 +204,9 @@ def main():
     args = check_args(args)
 
     # report starting
-    print("[ STATUS ]: Starting aei-mask.py")
+    print("[ STATUS ]: Starting et-mask.py")
     print("[ STATUS ]: Reference file : %s" % args.refFile)
-    print("[ STATUS ]: Mask file(s)   : %s" % aei.fn.strJoin(args.maskFiles))
+    print("[ STATUS ]: Mask file(s)   : %s" % et.fn.strJoin(args.maskFiles))
     print("[ STATUS ]: ----------")
     print("[ STATUS ]: Reading reference data")
 
@@ -301,7 +301,7 @@ def main():
                 bandArr = None
                 continue
 
-            # mask the reference data 
+            # mask the reference data
             if refnb > 1:
                 refArr[:, nd[0], nd[1]] = args.refNoData
             else:
@@ -329,7 +329,7 @@ def main():
     else:
         print("[ ERROR ]: No updates were made to input refernce file")
 
-    # kill some references    
+    # kill some references
     refArr = None
     refFile = None
 

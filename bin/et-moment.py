@@ -11,7 +11,7 @@ import sys
 import numpy as np
 from scipy import stats
 
-import aei
+import earthtools as et
 
 
 # function to parse the input arguments
@@ -132,7 +132,7 @@ def main():
     args = parse_args()
 
     # read the raster metadata into memory
-    inref = aei.read.raster(args.i[0])
+    inref = et.read.raster(args.i[0])
 
     # first, we'll determine the output file parameters and how we loop through the raster
     # check that either window size or output resolution are set.
@@ -191,7 +191,7 @@ def main():
 
     # report finished
     print("[ STATUS ]: Finished writing output file: {}".format(args.o[0]))
-    print("[ STATUS ]: aei-moment.py complete!")
+    print("[ STATUS ]: et-moment.py complete!")
 
 
 # call the main routine when run from command lne

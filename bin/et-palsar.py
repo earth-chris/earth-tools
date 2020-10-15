@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #####
-# aei-palsar.py
+# et-palsar.py
 #  
 #  computes standard data products for ALOS-PALSAR imagery
 #
@@ -8,7 +8,7 @@
 #####
 
 import os
-import aei
+import earthtools as et
 import argparse
 
 
@@ -62,7 +62,7 @@ def raw_to_decibel(infile, outfile):
     outfile = '"{}?&gdal:co:COMPRESS=LZW"'.format(outfile)
 
     # run the command
-    aei.cmd.otb.BandMath(infile, outfile, '"10*log10(im1b1^2)-83"')
+    et.cmd.otb.BandMath(infile, outfile, '"10*log10(im1b1^2)-83"')
 
 
 # function to despeckle the data
@@ -74,7 +74,7 @@ def despeckle(infile, outfile, filtername, radius):
     cmd = "otbcli_Despeckle -in {} -out {} -filter {} -filter.{}.rad {}".format(
         infile, outfile, filtername, filtername, radius)
     print(cmd)
-    aei.cmd.run(cmd)
+    et.cmd.run(cmd)
 
 
 # function to calculate the polarimetric entropy
@@ -86,7 +86,7 @@ def calc_polarimetry(hh, hv, outfile):
     exp = '"(-1)/(im1b1+im2b1)*(im1b1*log2(im1b1/(im1b1+im2b1))+im2b1*log2(im2b1/(im1b1+im2b1)))"'
 
     # run the command
-    aei.cmd.otb.BandMath([hh, hv], outfile, exp)
+    et.cmd.otb.BandMath([hh, hv], outfile, exp)
 
 
 # function to stack all three images
@@ -95,7 +95,7 @@ def stack_outputs(hh, hv, pol, outfile):
     outfile = '"{}?&gdal:co:COMPRESS=LZW"'.format(outfile)
 
     # run the command
-    aei.cmd.otb.ConcatenateImages([hh, hv, pol], outfile)
+    et.cmd.otb.ConcatenateImages([hh, hv, pol], outfile)
 
 
 # function to build a mask from the input data
@@ -107,7 +107,7 @@ def get_mask(infile, outfile):
     cmd = "otbcli_ManageNoData -in {} -out {} uint8".format(
         infile, outfile)
     print(cmd)
-    aei.cmd.run(cmd)
+    et.cmd.run(cmd)
 
 
 # function to apply the mask
@@ -119,7 +119,7 @@ def apply_mask(infile, outfile, maskfile, ndval):
     cmd = "otbcli_ManageNoData -in {} -out {} -mode apply -mode.apply.mask {} -mode.apply.ndval {}".format(
         infile, outfile, maskfile, ndval)
     print(cmd)
-    aei.cmd.run(cmd)
+    et.cmd.run(cmd)
 
 
 # the main program function
