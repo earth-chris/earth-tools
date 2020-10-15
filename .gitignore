@@ -22,6 +22,12 @@ Thumbs.db
 *.pyc
 *~
 
+# iPython stuff
+######################
+ipython/profile_default/history.sqlite
+ipython/profile_default/db/*
+ipython/profile_default/startup/README
+
 # GIS / RS data
 ######################
 *.tif*
