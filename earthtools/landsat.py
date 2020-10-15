@@ -19,7 +19,7 @@ def readMTL(mtlFile):
 
     # set up dictionary
     mtlDict = {}
-    with open(mtlFile, 'r') as f:
+    with open(mtlFile, "r") as f:
         for line in f:
             if "GROUP =" in line:
                 continue
@@ -35,12 +35,13 @@ def readMTL(mtlFile):
                     pass
 
             # update the output dictionary
-            mtlDict.update({line[0] : line[-1]})
+            mtlDict.update({line[0]: line[-1]})
 
     return mtlDict
 
+
 # write function to calculate TOA reflectance
-def calcTOA(mtlFile, outFile, dnFile = '', of = 'GTiff'):
+def calcTOA(mtlFile, outFile, dnFile="", of="GTiff"):
     """
     calculates top of atmosphere reflectance for a given
     landsat scene. Must specify MTL file.
@@ -56,8 +57,8 @@ def calcTOA(mtlFile, outFile, dnFile = '', of = 'GTiff'):
     import params
 
     # set creation options based on the output format
-    if of == 'GTiff':
-        options = ['INTERLEAVE=PIXEL', 'PHOTOMETRIC=RGB']
+    if of == "GTiff":
+        options = ["INTERLEAVE=PIXEL", "PHOTOMETRIC=RGB"]
     else:
         options = []
 
@@ -77,8 +78,8 @@ def calcTOA(mtlFile, outFile, dnFile = '', of = 'GTiff'):
 
     # read the mtl file for parameters
     inputPath = os.path.dirname(mtlFile)
-    if inputPath == '':
-        inputPath = '.'
+    if inputPath == "":
+        inputPath = "."
     inputPath = inputPath + params.pathsep
 
     mtl = readMTL(mtlFile)
@@ -87,11 +88,11 @@ def calcTOA(mtlFile, outFile, dnFile = '', of = 'GTiff'):
         return -1
 
     # set reflectance bands to use based on landsat sensor
-    if mtl['SPACECRAFT_ID'] == '"LANDSAT_8"':
+    if mtl["SPACECRAFT_ID"] == '"LANDSAT_8"':
         bands = [2, 3, 4, 5, 6, 7]
-    elif mtl['SPACECRAFT_ID'] == '"LANDSAT_5"':
+    elif mtl["SPACECRAFT_ID"] == '"LANDSAT_5"':
         bands = [1, 2, 3, 4, 5, 7]
-    elif mtl['SPACECRAFT_ID'] == '"LANDSAT_7"':
+    elif mtl["SPACECRAFT_ID"] == '"LANDSAT_7"':
         bands = [1, 2, 3, 4, 5, 7]
     else:
         bands = [1, 2, 3, 4]
@@ -100,29 +101,34 @@ def calcTOA(mtlFile, outFile, dnFile = '', of = 'GTiff'):
     if dnFlag:
         dims = [dn.RasterXSize, dn.RasterYSize, dn.RasterCount]
     else:
-        dims = [mtl['REFLECTIVE_SAMPLES'], mtl['REFLECTIVE_LINES'], 6.]
+        dims = [mtl["REFLECTIVE_SAMPLES"], mtl["REFLECTIVE_LINES"], 6.0]
 
     # set up the output file
     print("[ STATUS ]: Creating output file %s" % output_file)
     outRaster = gdal.GetDriverByName(of).Create(
-        outputFile, int(dims[0]), int(dims[1]), int(dims[2]),
-        gdal.GDT_Float32, options = options)
+        outputFile, int(dims[0]), int(dims[1]), int(dims[2]), gdal.GDT_Float32, options=options
+    )
 
     # set color interpretation so bands 5-4-3 are default rgb
-    colorInterp = [gdal.GCI_Undefined, gdal.GCI_Undefined,
-        gdal.GCI_BlueBand, gdal.GCI_GreenBand,
-        gdal.GCI_RedBand, gdal.GCI_Undefined]
+    colorInterp = [
+        gdal.GCI_Undefined,
+        gdal.GCI_Undefined,
+        gdal.GCI_BlueBand,
+        gdal.GCI_GreenBand,
+        gdal.GCI_RedBand,
+        gdal.GCI_Undefined,
+    ]
 
     # read the input file(s) and apply gain/offset
     for j in bands:
-        gain = mtl['REFLECTANCE_MULT_BAND_' + str(j)]
-        offset = mtl['REFLECTANCE_ADD_BAND_' + str(j)]
+        gain = mtl["REFLECTANCE_MULT_BAND_" + str(j)]
+        offset = mtl["REFLECTANCE_ADD_BAND_" + str(j)]
 
         # read the data to an array
         if dn_flag:
             band = dn.GetRasterBand(j).ReadAsArray()
         else:
-            dn = gdal.Open(inputPath + mtl['FILE_NAME_BAND_' + str(j)].strip('"'))
+            dn = gdal.Open(inputPath + mtl["FILE_NAME_BAND_" + str(j)].strip('"'))
             band = dn.GetRasterBand(1).ReadAsArray()
 
         # report status
@@ -132,7 +138,7 @@ def calcTOA(mtlFile, outFile, dnFile = '', of = 'GTiff'):
         array = np.multiply(band, gain) + offset
 
         # write the output array to file and set metadata info
-        outBand = outRaster.GetRasterBand(i+1)
+        outBand = outRaster.GetRasterBand(i + 1)
         outBand.WriteArray(array)
         outBand.FlushCache()
         outBand.SetNoDataValue(offset)
@@ -147,8 +153,7 @@ def calcTOA(mtlFile, outFile, dnFile = '', of = 'GTiff'):
     # set output file info
     outRaster.SetProjection(proj)
     outRaster.SetGeoTransform(geot)
-    outRaster.BuildOverviews(resampling = 'NEAREST',
-        overviewlist = [2, 4, 8, 16, 32, 64, 128])
+    outRaster.BuildOverviews(resampling="NEAREST", overviewlist=[2, 4, 8, 16, 32, 64, 128])
 
     # close up shop
     outBand = None

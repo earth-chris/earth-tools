@@ -42,6 +42,7 @@ class default_params:
         self.localTime = None
         self.cloudCover = None
 
+
 # parse command line arguments
 class parse_args:
     def __init__(self, arglist, params):
@@ -61,7 +62,7 @@ class parse_args:
             arg = arglist[i]
 
             # check input flag
-            if arg.lower() == '-i':
+            if arg.lower() == "-i":
                 i += 1
                 arg = arglist[i]
 
@@ -104,7 +105,7 @@ class parse_args:
                         params.geoinfoFile = arg[:loc] + "_geoinfo.json"
 
             # check if output is set
-            elif arg.lower() == '-o':
+            elif arg.lower() == "-o":
                 i += 1
                 arg = arglist[i]
 
@@ -121,23 +122,25 @@ class parse_args:
 
             i += 1
 
+
 # read the metadata json file
 def readMetadata(params):
 
     # read the json metadata info into memory
-    with open(params.metadataFile, 'r') as jsonf:
+    with open(params.metadataFile, "r") as jsonf:
         jdict = json.load(jsonf)
-    j = jdict[u'properties']
+    j = jdict["properties"]
 
     # extract useful metadata info
-    params.exposureTime = j[u'camera'][u'exposure_time']
-    params.cloudCover = j[u'cloud_cover'][u'estimated']
-    params.snr = j[u'image_statistics'][u'snr']
-    params.altitude = j[u'sat'][u'alt']
-    params.offNadir = j[u'sat'][u'off_nadir']
-    params.solarZenith = 90-j[u'sun'][u'altitude']
-    params.solarAzimuth = j[u'sun'][u'azimuth']
-    params.localTime = j[u'sun'][u'local_time_of_day']
+    params.exposureTime = j["camera"]["exposure_time"]
+    params.cloudCover = j["cloud_cover"]["estimated"]
+    params.snr = j["image_statistics"]["snr"]
+    params.altitude = j["sat"]["alt"]
+    params.offNadir = j["sat"]["off_nadir"]
+    params.solarZenith = 90 - j["sun"]["altitude"]
+    params.solarAzimuth = j["sun"]["azimuth"]
+    params.localTime = j["sun"]["local_time_of_day"]
+
 
 # make sure files exist
 def checkInputs(params):
@@ -164,15 +167,18 @@ def checkInputs(params):
         params.outputFile = params.inputPath + params.basename + params.append
         params.tempFile = params.inputPath + params.basename + "_temp" + params.append
 
+
 # set up function to calculate simple ratios
 def simpleRatio(band1, band2):
     return (band1.astype(np.float32)) / (band2.astype(np.float32))
+
 
 # set up function to calculate normalized ratios
 def normalizedRatio(band1, band2):
     band1 = band1.astype(np.float32)
     band2 = band2.astype(np.float32)
     return (band1 - band2) / (band1 + band2)
+
 
 # set up function to calculate distance from the edge of good data
 def distanceFromEdge(array, gdalRef, noData):
@@ -188,7 +194,7 @@ def distanceFromEdge(array, gdalRef, noData):
     bd = np.where(array != array.max())
 
     # create a byte array and set good data to 255
-    byte = np.zeros(array.shape, dtype = np.uint8)
+    byte = np.zeros(array.shape, dtype=np.uint8)
     byte[gd[0], gd[1]] = 255
 
     # create a kernel to close up small chunks of no-data
@@ -199,8 +205,9 @@ def distanceFromEdge(array, gdalRef, noData):
     edges = cv2.Canny(closing, 0, 255)
 
     # set up a temp output file
-    newFile = gdal.GetDriverByName("GTiff").Create("temp_edge.tif", array.shape[1],
-        array.shape[0], 1, gdal.GDT_Byte, options=["COMPRESS=LZW"])
+    newFile = gdal.GetDriverByName("GTiff").Create(
+        "temp_edge.tif", array.shape[1], array.shape[0], 1, gdal.GDT_Byte, options=["COMPRESS=LZW"]
+    )
 
     # set up projection info
     geo = gdalRef.GetGeoTransform()
@@ -218,8 +225,7 @@ def distanceFromEdge(array, gdalRef, noData):
     newFile = None
 
     # run gdal_proximity to get distance from edge
-    et.cmd.gdal_proximity("temp_edge.tif", "temp_proximity.tif",
-        of="GTiff", distunits="GEO")
+    et.cmd.gdal_proximity("temp_edge.tif", "temp_proximity.tif", of="GTiff", distunits="GEO")
 
     # read the output into memory
     dfeRef = gdal.Open("temp_proximity.tif")
@@ -233,13 +239,14 @@ def distanceFromEdge(array, gdalRef, noData):
     et.params.os.remove("temp_proximity.tif")
 
     # mask the bad data
-    dfe[bd[0],bd[1]] = noData
+    dfe[bd[0], bd[1]] = noData
 
     # return the final array
     return dfe
 
+
 # set up a function to write an array to a raster band
-def writeArrayToRaster(array, gdalRef, band, noData = None):
+def writeArrayToRaster(array, gdalRef, band, noData=None):
     """
     writes a 2-d array to an output raster. requires a gdal open file reference.
     """
@@ -254,7 +261,8 @@ def writeArrayToRaster(array, gdalRef, band, noData = None):
     bandRef.WriteArray(array)
 
     # clear the file cache
-    #bandRef.FlushCache()
+    # bandRef.FlushCache()
+
 
 def usage(exit=False):
     """
@@ -273,12 +281,14 @@ $ et-planet.py -i input_files
     9. Simple Ratio (SR) red-green, 10. SR green-blue 11. SR red-blue
     12. Normalized difference (ND) red-green 13. ND green-blue 14. ND red-blue
     15. Exposure Time, 16. Solar Zenith, 17. Solar Azimuth, 18. SNR
-        """)
+        """
+    )
 
     if exit:
         sys.exit(1)
 
-def main ():
+
+def main():
     """
     the main program for et-planet.py
 
@@ -312,18 +322,23 @@ def main ():
     readMetadata(params)
 
     # report starting
-    print('[ STATUS ]: Running et-planet.py')
-    print('[ STATUS ]: Reading input file: %s' % params.imageFile)
+    print("[ STATUS ]: Running et-planet.py")
+    print("[ STATUS ]: Reading input file: %s" % params.imageFile)
 
     # get the input gdal reference
     gdalRef = gdal.Open(params.imageFile)
 
     ####################
     # create the output file
-    print('[ STATUS ]: Creating output file: %s' % params.outputFile)
-    outRef = gdal.GetDriverByName("GTiff").Create(params.tempFile, gdalRef.RasterXSize,
-        gdalRef.RasterYSize, params.nOutputBands, gdal.GDT_Float32,
-        options=["BIGTIFF=YES"])
+    print("[ STATUS ]: Creating output file: %s" % params.outputFile)
+    outRef = gdal.GetDriverByName("GTiff").Create(
+        params.tempFile,
+        gdalRef.RasterXSize,
+        gdalRef.RasterYSize,
+        params.nOutputBands,
+        gdal.GDT_Float32,
+        options=["BIGTIFF=YES"],
+    )
 
     # add georeferencing info to output file
     outRef.SetGeoTransform(gdalRef.GetGeoTransform())
@@ -353,109 +368,110 @@ def main ():
     tmpArray = np.zeros((gdalRef.RasterYSize, gdalRef.RasterXSize), np.float32) + params.noData
 
     # write the raw rgb data to the output file
-    for i in range(0,3):
+    for i in range(0, 3):
         tmpArray[gd[0], gd[1]] = rgbf[i]
-        writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+        writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
         bandCounter += 1
 
     ####################
     # perform the brightness normalization
-    print('[ STATUS ]: Brightness normalizing')
-    bn, bnScalar = et.functions.bn(rgbf, returnScalar = True, axis = 0)
+    print("[ STATUS ]: Brightness normalizing")
+    bn, bnScalar = et.functions.bn(rgbf, returnScalar=True, axis=0)
 
     # write to the output file
-    for i in range(0,3):
+    for i in range(0, 3):
         tmpArray[gd[0], gd[1]] = bn[i]
-        writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
-        bandCounter +=1
+        writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
+        bandCounter += 1
 
     # write just the scalar band
     tmpArray[gd[0], gd[1]] = bnScalar[0]
-    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
-    bandCounter +=1
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
+    bandCounter += 1
 
     # kill bn refs
-    bn = None ; bnScalar = None
+    bn = None
+    bnScalar = None
 
     ####################
     # find the distance from the edge
-    print('[ STATUS ]: Finding distance from image edge')
+    print("[ STATUS ]: Finding distance from image edge")
     dfe = distanceFromEdge(alpha, gdalRef, params.noData)
 
     # write it
-    writeArrayToRaster(dfe, outRef, bandCounter, noData = params.noData)
+    writeArrayToRaster(dfe, outRef, bandCounter, noData=params.noData)
     bandCounter += 1
     dfe = None
 
     ####################
     # run the simple ratios
-    print('[ STATUS ]: Caculating simple ratios')
+    print("[ STATUS ]: Caculating simple ratios")
 
     # red/green
     tmpArray[gd[0], gd[1]] = simpleRatio(rgbf[0], rgbf[1])
-    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
-    bandCounter +=1
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
+    bandCounter += 1
 
     # green/blue
     tmpArray[gd[0], gd[1]] = simpleRatio(rgbf[1], rgbf[2])
-    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
     bandCounter += 1
 
     # red/blue
     tmpArray[gd[0], gd[1]] = simpleRatio(rgbf[0], rgbf[2])
-    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
     bandCounter += 1
 
     ####################
     # run the normalized ratios
-    print('[ STATUS ]: Calculating normalized ratios')
+    print("[ STATUS ]: Calculating normalized ratios")
 
     # red/green
     tmpArray[gd[0], gd[1]] = normalizedRatio(rgbf[0], rgbf[1])
-    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
     bandCounter += 1
 
     # green/blue
     tmpArray[gd[0], gd[1]] = normalizedRatio(rgbf[1], rgbf[2])
-    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
     bandCounter += 1
 
     # red/blue
     tmpArray[gd[0], gd[1]] = normalizedRatio(rgbf[0], rgbf[2])
-    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
     bandCounter += 1
 
     ####################
     # add bands from the metadata
-    print('[ STATUS ]: Adding metadata bands')
+    print("[ STATUS ]: Adding metadata bands")
 
     # exposure time
     tmpArray[gd[0], gd[1]] = params.exposureTime
-    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
     bandCounter += 1
 
-    #md_offNadir = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.offNadir
+    # md_offNadir = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.offNadir
 
     # solar zenith angle
     tmpArray[gd[0], gd[1]] = params.solarZenith
-    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
     bandCounter += 1
 
     # solar azimuth
     tmpArray[gd[0], gd[1]] = params.solarAzimuth
-    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
     bandCounter += 1
 
-    #md_altitude = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.altitude
+    # md_altitude = np.zeros([alpha.shape[0], alpha.shape[1]], dtype=np.float32) + params.altitude
 
     # signal-to-noise ratio
     tmpArray[gd[0], gd[1]] = params.snr
-    writeArrayToRaster(tmpArray, outRef, bandCounter, noData = params.noData)
+    writeArrayToRaster(tmpArray, outRef, bandCounter, noData=params.noData)
     bandCounter += 1
 
     # add overviews
-    #print('[ STATUS ]: Building overviews')
-    #outRef.BuildOverviews("NEAREST", [2, 4, 8, 16])
+    # print('[ STATUS ]: Building overviews')
+    # outRef.BuildOverviews("NEAREST", [2, 4, 8, 16])
 
     # kill the file references and placeholders
     outRef = None
@@ -465,14 +481,15 @@ def main ():
     # compress the output file and delete the temp file
     print("[ STATUS ]: Finished performing calculations")
     print("[ STATUS ]: Compressing output file")
-    et.cmd.gdal_translate(params.tempFile, params.outputFile, etc=['-co','COMPRESS=LZW'])
+    et.cmd.gdal_translate(params.tempFile, params.outputFile, etc=["-co", "COMPRESS=LZW"])
     et.params.os.remove(params.tempFile)
 
     # final report
-    print('[ STATUS ]: et-planet.py complete!')
-    print('[ STATUS ]: Please see output file: %s' % params.outputFile)
+    print("[ STATUS ]: et-planet.py complete!")
+    print("[ STATUS ]: Please see output file: %s" % params.outputFile)
 
     # high fives
+
 
 if __name__ == "__main__":
     main()

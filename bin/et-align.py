@@ -15,13 +15,15 @@ import earthtools as et
 import gdal as gdal
 import osr as osr
 import numpy as np
+
 srs = osr.SpatialReference()
+
 
 class parse_args:
     def __init__(self, arglist):
 
         # set up main variables and defaults to parse
-        self.refFile = ''
+        self.refFile = ""
         self.inputFiles = []
         self.nInputFiles = 0
         self.outputFiles = []
@@ -29,11 +31,11 @@ class parse_args:
         self.overwrite = False
         self.stack = False
         self.tempResampleFiles = []
-        self.tempResampleBase = 'temp_resample_file_'
+        self.tempResampleBase = "temp_resample_file_"
         self.resampling = []
         self.nResamplingOptions = 0
-        self.defaultResampling = 'nearest'
-        resamplingOptions = ['nearest', 'bilinear', 'cubic', 'average', 'mode']
+        self.defaultResampling = "nearest"
+        resamplingOptions = ["nearest", "bilinear", "cubic", "average", "mode"]
 
         # exit if no arguments passed
         if len(arglist) == 1:
@@ -45,14 +47,14 @@ class parse_args:
             arg = arglist[i]
 
             # check input data paths
-            if arg.lower() == '-i':
+            if arg.lower() == "-i":
                 i += 1
                 arg = arglist[i]
 
                 # loop through inputs until we find a new parameter
                 newArg = False
                 while not newArg:
-                    if arg[0] == '-':
+                    if arg[0] == "-":
                         newArg = True
                         i -= 1
                         continue
@@ -72,11 +74,11 @@ class parse_args:
                     arg = arglist[i]
 
             # parse the base reference file flag
-            elif arg.lower() == '-ref':
+            elif arg.lower() == "-ref":
                 i += 1
                 arg = arglist[i]
 
-                if not et.fn.checkFile(arg, quiet = True):
+                if not et.fn.checkFile(arg, quiet=True):
                     usage()
                     et.fn.checkFile(arg)
                     et.params.sys.exit(1)
@@ -84,14 +86,14 @@ class parse_args:
                 self.refFile = arg
 
             # check output flag
-            elif arg.lower() == '-o':
+            elif arg.lower() == "-o":
                 i += 1
                 arg = arglist[i]
 
                 # loop through outputs until we find a new parameter
                 newArg = False
                 while not newArg:
-                    if arg[0] == '-':
+                    if arg[0] == "-":
                         newArg = True
                         i -= 1
                         continue
@@ -114,7 +116,7 @@ class parse_args:
                 # loop through resampling args until we find a new parameter
                 newArg = False
                 while not newArg:
-                    if arg[0] == '-':
+                    if arg[0] == "-":
                         newArg = True
                         i -= 1
                         continue
@@ -133,10 +135,10 @@ class parse_args:
                         continue
                     arg = arglist[i]
 
-            elif arg.lower() == '-stack':
+            elif arg.lower() == "-stack":
                 self.stack = True
 
-            elif arg.lower() == '-overwrite':
+            elif arg.lower() == "-overwrite":
                 self.overwrite = True
 
             # set up catch-all for incorrect parameter call
@@ -148,6 +150,7 @@ class parse_args:
 
             # increment the counter for next argument
             i += 1
+
 
 # set up function to check that arguments have been properly specified
 def check_args(args):
@@ -184,7 +187,7 @@ def check_args(args):
 
         # if too many options set, use the first [n input files] specified
         else:
-            args.resampling = args.resampling[:args.nInputFiles-1]
+            args.resampling = args.resampling[: args.nInputFiles - 1]
             print("[ ERROR ]: Too many resampling options set.")
             print("[ ERROR ]: Using the following: %s" % et.fn.strJoin(args.resampling, ", "))
 
@@ -208,8 +211,9 @@ def check_args(args):
 
         # create a series of temp files to hold the resampled outputs prior to stacking
         for i in range(args.nInputFiles):
-            args.tempResampleFiles.append(et.params.scratchdir + et.params.pathsep + \
-                args.tempResampleBase + "%03d.tif" % (i + 1))
+            args.tempResampleFiles.append(
+                et.params.scratchdir + et.params.pathsep + args.tempResampleBase + "%03d.tif" % (i + 1)
+            )
 
     else:
         if args.nOutputFiles != args.nInputFiles:
@@ -218,7 +222,8 @@ def check_args(args):
             sys.exit(1)
 
     # return fixed arguments
-    return(args)
+    return args
+
 
 def usage(exit=False):
     """
@@ -231,9 +236,10 @@ def usage(exit=False):
 $ et-align.py -ref baseReferenceFile -i inputFileList -o outputFileList
       [-overwrite] [-stack] [-r resamplingOptionList]
         """
-        )
+    )
     if exit:
         sys.exit(1)
+
 
 def main():
     """
@@ -304,13 +310,20 @@ def main():
     for i in range(args.nInputFiles):
 
         # report iteration
-        print("[ STATUS ]: Resampling image %03d: %s" % (i+1, args.inputFiles[i]))
+        print("[ STATUS ]: Resampling image %03d: %s" % (i + 1, args.inputFiles[i]))
 
         # call gdalwarp to resample
-        et.cmd.gdalwarp(args.inputFiles[i], outputFiles[i], multi=True,
-            tr=[abs(xps), abs(yps)], te=[xmin, ymin, xmax, ymax],
-            t_srs=refPROJ, r=args.resampling[i], overwrite=args.overwrite,
-            dstnodata=refNoData)
+        et.cmd.gdalwarp(
+            args.inputFiles[i],
+            outputFiles[i],
+            multi=True,
+            tr=[abs(xps), abs(yps)],
+            te=[xmin, ymin, xmax, ymax],
+            t_srs=refPROJ,
+            r=args.resampling[i],
+            overwrite=args.overwrite,
+            dstnodata=refNoData,
+        )
 
     # stack 'em up if set
     if args.stack:
@@ -327,6 +340,7 @@ def main():
     print("[ STATUS ]: ----------")
     print("[ STATUS ]: Finished aligning raster layers!")
     print("[ STATUS ]: Please see output file(s) : %s" % et.fn.strJoin(args.outputFiles))
+
 
 # call the aain routine when run from command lne
 if __name__ == "__main__":

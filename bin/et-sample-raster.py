@@ -21,13 +21,14 @@ import random
 import gdal as gdal
 import numpy as np
 
+
 class parse_args:
     def __init__(self, arglist):
 
         # set up main variables and defaults to parse
-        self.trainingFile = ''
+        self.trainingFile = ""
         self.predictorFiles = []
-        self.outfile = ''
+        self.outfile = ""
         self.nSamples = 10000
         self.balance = False
         self.includeXY = False
@@ -43,14 +44,14 @@ class parse_args:
             arg = arglist[i]
 
             # check predictor data paths
-            if arg.lower() == '-predictors':
+            if arg.lower() == "-predictors":
                 i += 1
                 arg = arglist[i]
-                #libs = arg.split(" ")
+                # libs = arg.split(" ")
                 # loop through predictor args until we find a new parameter
                 newArg = False
                 while not newArg:
-                    if arg[0] == '-':
+                    if arg[0] == "-":
                         newArg = True
                         i -= 1
                         continue
@@ -70,26 +71,26 @@ class parse_args:
                     arg = arglist[i]
 
             # parse the training flag
-            elif arg.lower() == '-training':
+            elif arg.lower() == "-training":
                 i += 1
                 arg = arglist[i]
 
                 self.trainingFile = arg
-                if not et.fn.checkFile(self.trainingFile, quiet = True):
+                if not et.fn.checkFile(self.trainingFile, quiet=True):
                     usage()
                     et.fn.checkFile(self.trainingFile)
                     et.params.sys.exit(1)
 
             # check output flag
-            elif arg.lower() == '-o':
+            elif arg.lower() == "-o":
                 i += 1
                 arg = arglist[i]
 
                 if type(arg) is str:
                     self.outfile = arg
                     outpath = os.path.dirname(self.outfile)
-                    if outpath == '':
-                        outpath = '.'
+                    if outpath == "":
+                        outpath = "."
                     if not os.access(outpath, os.W_OK):
                         usage()
                         print("[ ERROR ]: unable to write to output path: %s" % outpath)
@@ -109,10 +110,10 @@ class parse_args:
                     print("[ ERROR ]: -n argument is not an integer: %s" % arg)
                     et.params.sys.exit(1)
 
-            elif arg.lower() == '-balance':
+            elif arg.lower() == "-balance":
                 self.balance = True
 
-            elif arg.lower() == '-include_xy':
+            elif arg.lower() == "-include_xy":
                 self.includeXY = True
 
             # set up catch-all for incorrect parameter call
@@ -123,6 +124,7 @@ class parse_args:
                 et.params.sys.exit(1)
 
             i += 1
+
 
 def usage(exit=False):
     """
@@ -136,9 +138,10 @@ $ et-sample-raster.py -training training_raster -predictors
       predictor1, predictor2 ... predictorx -o output_file
       [-n n_random_samples] [-balance] [-include_xy]
         """
-        )
+    )
     if exit:
         sys.exit(1)
+
 
 def main():
     """
@@ -213,8 +216,8 @@ def main():
     # set a variable to store which class has the fewest samples,
     #  a 2-element array for [class index, n_samples]
     nSamples = np.zeros((nClasses, 2), np.int64)
-    nSamples[:,0] = classNumbers
-    nSamples[:,1] = tdHisto[0][classNumbers]
+    nSamples[:, 0] = classNumbers
+    nSamples[:, 1] = tdHisto[0][classNumbers]
 
     # now we have the number of samples for each class, we can randomly subset them
     # set up a dictionary to add the indices for each class
@@ -223,7 +226,7 @@ def main():
     # if we are balancing the training data sets, set the number of samples to
     #  the smaller number of a) the smallest training class, or b) the minimum set
     if args.balance:
-        args.nSamples = min([args.nSamples, nSamples[:,1].min()])
+        args.nSamples = min([args.nSamples, nSamples[:, 1].min()])
 
     # set up a counter to measure total number of values to collect
     nTotalSamples = []
@@ -250,7 +253,7 @@ def main():
                 finalInds.append(gd[j][rnd])
 
         # add the indices from this class to the dictionary
-        indDict['class_%03d' % classNumbers[i]] = finalInds
+        indDict["class_%03d" % classNumbers[i]] = finalInds
 
         # and add the number of samples to the running total
         nTotalSamples.append(finalInds[0].shape[0])
@@ -267,26 +270,28 @@ def main():
     print("[ STATUS ]: Finished collecting indices for training data")
     print("[ STATUS ]: Number of classes found: %s" % nClasses)
     for i in range(nClasses):
-        print("[ STATUS ]: Random samples for class %s: %s" % (classNumbers[i],
-            indDict['class_%03d' % classNumbers[i]][0].shape[0]))
+        print(
+            "[ STATUS ]: Random samples for class %s: %s"
+            % (classNumbers[i], indDict["class_%03d" % classNumbers[i]][0].shape[0])
+        )
     print("[ STATUS ]: ----------")
     print("[ STATUS ]: Beginning extraction of predictor data")
 
     # create an array that will grow as more predictor data is read in
     nTotalValues = sum(nTotalSamples)
     outputArray = np.zeros((nTotalValues, 1))
-    outputLabels = ['Class']
+    outputLabels = ["Class"]
     predictorCounter = 0
 
     # fill the array with the class numbers
-    outputArray[0:nTotalSamples[0]] = classNumbers[0]
+    outputArray[0 : nTotalSamples[0]] = classNumbers[0]
     for i in range(nClasses):
-        outputArray[nIterSamples[i]:nIterSamples[i+1]] = classNumbers[i]
+        outputArray[nIterSamples[i] : nIterSamples[i + 1]] = classNumbers[i]
 
     # we'll loop through each predictor data set, read the data, and extract
     #  the random indices
     for i in range(len(args.predictorFiles)):
-        print("[ STATUS ]: Extracting from predictor set %s: %s" % (i+1, args.predictorFiles[i]))
+        print("[ STATUS ]: Extracting from predictor set %s: %s" % (i + 1, args.predictorFiles[i]))
 
         # read the file metadata
         pdRef = gdal.Open(args.predictorFiles[i])
@@ -315,10 +320,10 @@ def main():
             outputLabels.append("Predictor %s" % predictorCounter)
 
             # add a new column to the output array
-            outputArray = np.concatenate([outputArray, np.zeros((nTotalValues, 1))],1)
+            outputArray = np.concatenate([outputArray, np.zeros((nTotalValues, 1))], 1)
 
             # set up a reference to the band we use
-            pdBand = pdRef.GetRasterBand(j+1)
+            pdBand = pdRef.GetRasterBand(j + 1)
 
             # read the data into memory
             pdData = pdBand.ReadAsArray()
@@ -328,15 +333,17 @@ def main():
 
             # extract the data from each class and assign it to the output array
             for k in range(nClasses):
-                outputArray[nIterSamples[k]:nIterSamples[k+1], predictorCounter] = \
-                    pdData[indDict['class_%03d' % classNumbers[k]][0]]
+                outputArray[nIterSamples[k] : nIterSamples[k + 1], predictorCounter] = pdData[
+                    indDict["class_%03d" % classNumbers[k]][0]
+                ]
 
     # write the output file
-    np.savetxt(args.outfile, outputArray, delimiter = ",", header = et.fn.strJoin(outputLabels, ','))
+    np.savetxt(args.outfile, outputArray, delimiter=",", header=et.fn.strJoin(outputLabels, ","))
 
     # report finished
     print("[ STATUS ]: Completed random sampling!")
     print("[ STATUS ]: See output file: %s" % args.outfile)
+
 
 # call the aain routine when run from command lne
 if __name__ == "__main__":

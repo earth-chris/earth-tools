@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #####
 # et-palsar.py
-#  
+#
 #  computes standard data products for ALOS-PALSAR imagery
 #
 # c. 2017 Christopher Anderson
@@ -18,38 +18,37 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Processes ALOS-PALSAR data")
 
     # create options for input files
-    parser.add_argument('--hh', metavar='hh', type=str,
-                        nargs=1, help='path to the HH polarization data',
-                        required=True)
+    parser.add_argument("--hh", metavar="hh", type=str, nargs=1, help="path to the HH polarization data", required=True)
 
-    parser.add_argument('--hv', metavar='hv', type=str,
-                        nargs=1, help='path to the HV polarization data',
-                        required=True)
+    parser.add_argument("--hv", metavar="hv", type=str, nargs=1, help="path to the HV polarization data", required=True)
 
     # create option for output file
-    parser.add_argument('-o', metavar='output_file', type=str,
-                        nargs=1, help='path to the output file',
-                        required=True)
+    parser.add_argument("-o", metavar="output_file", type=str, nargs=1, help="path to the output file", required=True)
 
     # create options for the despeckling algorithm to use
-    parser.add_argument('--filter', metavar='filter', type=str,
-                        nargs=1, help='the filter type',
-                        choices=['lee', 'frost', 'gammamap', 'kuan'],
-                        default='lee', required=False)
+    parser.add_argument(
+        "--filter",
+        metavar="filter",
+        type=str,
+        nargs=1,
+        help="the filter type",
+        choices=["lee", "frost", "gammamap", "kuan"],
+        default="lee",
+        required=False,
+    )
 
-    # options for the despeckling radius    
-    parser.add_argument('--rad', metavar='radius', type=int,
-                        nargs=1, help='the despeckling radius',
-                        default=3, required=False)
+    # options for the despeckling radius
+    parser.add_argument(
+        "--rad", metavar="radius", type=int, nargs=1, help="the despeckling radius", default=3, required=False
+    )
 
-    # option to set the output nodata value    
-    parser.add_argument('--nodata', metavar='no data val', nargs=1,
-                        help='the output nodata value', default=-9999,
-                        required=False)
+    # option to set the output nodata value
+    parser.add_argument(
+        "--nodata", metavar="no data val", nargs=1, help="the output nodata value", default=-9999, required=False
+    )
 
     # option to not mask the output file
-    parser.add_argument('--nomask', action='store_true',
-                        help='set to prevent masking', required=False)
+    parser.add_argument("--nomask", action="store_true", help="set to prevent masking", required=False)
 
     # parse the arguments and return the object
     args = parser.parse_args()
@@ -72,7 +71,8 @@ def despeckle(infile, outfile, filtername, radius):
 
     # run the command
     cmd = "otbcli_Despeckle -in {} -out {} -filter {} -filter.{}.rad {}".format(
-        infile, outfile, filtername, filtername, radius)
+        infile, outfile, filtername, filtername, radius
+    )
     print(cmd)
     et.cmd.run(cmd)
 
@@ -104,8 +104,7 @@ def get_mask(infile, outfile):
     outfile = '"{}?&gdal:co:COMPRESS=LZW"'.format(outfile)
 
     # run the command
-    cmd = "otbcli_ManageNoData -in {} -out {} uint8".format(
-        infile, outfile)
+    cmd = "otbcli_ManageNoData -in {} -out {} uint8".format(infile, outfile)
     print(cmd)
     et.cmd.run(cmd)
 
@@ -117,7 +116,8 @@ def apply_mask(infile, outfile, maskfile, ndval):
 
     # run the command
     cmd = "otbcli_ManageNoData -in {} -out {} -mode apply -mode.apply.mask {} -mode.apply.ndval {}".format(
-        infile, outfile, maskfile, ndval)
+        infile, outfile, maskfile, ndval
+    )
     print(cmd)
     et.cmd.run(cmd)
 
@@ -128,15 +128,15 @@ def main():
     args = parse_args()
 
     # create three temp files for hh, hv, polarimetry data
-    hh_dec = 'temp_HH_decibel.tif'
-    hh_msk = 'temp_HH_decibel_masked.tif'
-    hh_des = 'temp_HH_despeckle.tif'
-    hv_dec = 'temp_HV_decibel.tif'
-    hv_msk = 'temp_HV_decibel_masked.tif'
-    hv_des = 'temp_HV_despeckle.tif'
-    polari = 'temp_polarimetry.tif'
-    tmpmsk = 'temp_mask.tif'
-    premsk = 'temp_stack.tif'
+    hh_dec = "temp_HH_decibel.tif"
+    hh_msk = "temp_HH_decibel_masked.tif"
+    hh_des = "temp_HH_despeckle.tif"
+    hv_dec = "temp_HV_decibel.tif"
+    hv_msk = "temp_HV_decibel_masked.tif"
+    hv_des = "temp_HV_despeckle.tif"
+    polari = "temp_polarimetry.tif"
+    tmpmsk = "temp_mask.tif"
+    premsk = "temp_stack.tif"
 
     # build a mask file, if set
     if not args.nomask:

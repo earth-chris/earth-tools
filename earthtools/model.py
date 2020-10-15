@@ -39,7 +39,7 @@ def linear(x, a, b):
 
 # gaussian model
 def gaus(x, a, x0, sigma):
-    return a * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
+    return a * np.exp(-((x - x0) ** 2) / (2 * sigma ** 2))
 
 
 # logistic sigmoid model
@@ -80,32 +80,30 @@ def scale(x, xlim=[0, 1], axis=0):
 
 
 # function to test normality of a data set
-def test_normal(x, method='shapiro-wilk', *args, **kwargs):
-    """
-    """
+def test_normal(x, method="shapiro-wilk", *args, **kwargs):
+    """"""
     import scipy as sp
     import earthtools as et
 
-    methods = ['shapiro-wilk', 'anderson', 'kstest']
+    methods = ["shapiro-wilk", "anderson", "kstest"]
 
     if method.lower() not in method:
-        print("[ ERROR ]: method must be one of: {}".format(et.fn.strJoin(methods, ', ')))
+        print("[ ERROR ]: method must be one of: {}".format(et.fn.strJoin(methods, ", ")))
         return -1
 
-    if method.lower() == 'shapiro-wilk':
+    if method.lower() == "shapiro-wilk":
         return sp.stats.shapiro(x, *args, **kwargs)
 
-    elif method.lower() == 'anderson':
+    elif method.lower() == "anderson":
         return sp.stats.anderson(x, *args, **kwargs)
 
-    elif method.lower() == 'kstest':
+    elif method.lower() == "kstest":
         return sp.stats.kstest(x, *args, **kwargs)
 
 
 # function to calculate sum of squares for each kmeans cluster
 def kmeans_ss(data, km_model):
-    """
-    """
+    """"""
 
     # create output array based on number of clusters in model
     n_clusters = km_model.cluster_centers_.shape[0]
@@ -128,8 +126,7 @@ def kmeans_ss(data, km_model):
 # function to calculate multiple kmeans cluster centers and return a vector of
 #  the sum of squared residuals for each cluster setup
 def kmeans_fit_multi(data, n_clusters, n_jobs=-1, **kwargs):
-    """
-    """
+    """"""
     from sklearn import cluster
 
     # create an output array based on the number of output clusters
@@ -138,8 +135,7 @@ def kmeans_fit_multi(data, n_clusters, n_jobs=-1, **kwargs):
     # loop through each clustering iteration, fit the model, then
     #  record the sum of squares fits for each
     for i in range(n_clusters):
-        km_model = cluster.KMeans(n_clusters=i + 1, n_jobs=n_jobs,
-                                  **kwargs)
+        km_model = cluster.KMeans(n_clusters=i + 1, n_jobs=n_jobs, **kwargs)
         km_model.fit(data)
         out_ss[i] = kmeans_ss(data, km_model)
 
@@ -148,10 +144,8 @@ def kmeans_fit_multi(data, n_clusters, n_jobs=-1, **kwargs):
 
 
 # function to find the minimum rate of change for multi kmeans clusters
-def kmeans_find_min(data, n_clusters, start_cluster=1,
-                    function=exp_decay_neg, **kwargs):
-    """
-    """
+def kmeans_find_min(data, n_clusters, start_cluster=1, function=exp_decay_neg, **kwargs):
+    """"""
     import scipy as sp
     import numpy as np
     from sklearn import metrics
@@ -181,8 +175,8 @@ def kmeans_find_min(data, n_clusters, start_cluster=1,
 
     # plot the original and the fit data
     plt.figure(np.random.randint(256))
-    plt.plot(xplot, ydata, color='purple', linewidth=2, label='orig. data')
-    plt.plot(xplot, yfit, color='orange', linewidth=2, label='fit data')
+    plt.plot(xplot, ydata, color="purple", linewidth=2, label="orig. data")
+    plt.plot(xplot, yfit, color="orange", linewidth=2, label="fit data")
     plt.xlabel("Number of clusters")
     plt.ylabel("Scaled sum of squares within each cluster group")
     plt.tight_layout()
@@ -192,8 +186,7 @@ def kmeans_find_min(data, n_clusters, start_cluster=1,
     n_derivs = n_clusters - start_cluster - 2
     deriv = np.zeros(n_derivs)
     for i in range(start_cluster, n_derivs + start_cluster):
-        deriv[i - start_cluster] = sp.misc.derivative(function,
-                                                      xdata[i], args=opt, n=2)
+        deriv[i - start_cluster] = sp.misc.derivative(function, xdata[i], args=opt, n=2)
 
     # return the plot for the user to manipulate
     return plt
@@ -202,35 +195,42 @@ def kmeans_find_min(data, n_clusters, start_cluster=1,
 # functions to list the available options for various sklearn parameters
 def list_scoring():
     options = {
-        'Classification': [
-            'accuracy',
-            'average_precision',
-            'f1',
-            'f1_micro',
-            'f1_macro',
-            'f1_weighted',
-            'f1_samples',
-            'neg_log_loss',
-            'precision',
-            'recall',
-            'roc_auc'
+        "Classification": [
+            "accuracy",
+            "average_precision",
+            "f1",
+            "f1_micro",
+            "f1_macro",
+            "f1_weighted",
+            "f1_samples",
+            "neg_log_loss",
+            "precision",
+            "recall",
+            "roc_auc",
         ],
-        'Clustering': ['adjusted_rand_score'],
-        'Regression': [
-            'neg_mean_absolute_error',
-            'neg_mean_squared_error',
-            'neg_median_absolute_error',
-            'r2'
-        ]
+        "Clustering": ["adjusted_rand_score"],
+        "Regression": ["neg_mean_absolute_error", "neg_mean_squared_error", "neg_median_absolute_error", "r2"],
     }
 
 
 # a class for model tuning that has the default parameters pre-set
 class tune:
-    def __init__(self, x, y, optimizer=None, param_grid=None,
-                 scoring=None, fit_params=None, n_jobs=None, refit=True,
-                 verbose=1, error_score=0, return_train_score=True,
-                 cv=None, n_splits=5):
+    def __init__(
+        self,
+        x,
+        y,
+        optimizer=None,
+        param_grid=None,
+        scoring=None,
+        fit_params=None,
+        n_jobs=None,
+        refit=True,
+        verbose=1,
+        error_score=0,
+        return_train_score=True,
+        cv=None,
+        n_splits=5,
+    ):
         from earthtools import params
         from sklearn import model_selection
 
@@ -259,11 +259,18 @@ class tune:
     def run_gs(self, estimator):
 
         # create the grid search
-        gs = self.optimizer(estimator, param_grid=self.param_grid,
-                            scoring=self.scoring, fit_params=self.fit_params,
-                            n_jobs=self.n_jobs, cv=self.cv, refit=self.refit,
-                            verbose=self.verbose, error_score=self.error_score,
-                            return_train_score=self.return_train_score)
+        gs = self.optimizer(
+            estimator,
+            param_grid=self.param_grid,
+            scoring=self.scoring,
+            fit_params=self.fit_params,
+            n_jobs=self.n_jobs,
+            cv=self.cv,
+            refit=self.refit,
+            verbose=self.verbose,
+            error_score=self.error_score,
+            return_train_score=self.return_train_score,
+        )
 
         # begin fitting the grid search
         gs.fit(self.x, self.y)
@@ -286,8 +293,7 @@ class tune:
     # LINEAR MODELS
 
     # OLS linear regression
-    def LinearRegression(self, optimizer=None, param_grid=None,
-                         scoring=None, fit_params=None, cv=None):
+    def LinearRegression(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
         from sklearn import linear_model, model_selection, metrics
 
         # check if the optimizer has changed, otherwise use default
@@ -297,10 +303,7 @@ class tune:
         # check if the parameter grid has been set, otherwise set defaults
         if param_grid is None:
             if self.param_grid is None:
-                param_grid = {
-                    'normalize': (True, False),
-                    'fit_intercept': (True, False)
-                }
+                param_grid = {"normalize": (True, False), "fit_intercept": (True, False)}
                 self.param_grid = param_grid
         else:
             self.param_grid = param_grid
@@ -330,8 +333,7 @@ class tune:
         self.run_gs(estimator)
 
     # the logistic (i.e. MaxEnt) model
-    def LogisticRegression(self, optimizer=None, param_grid=None,
-                           scoring=None, fit_params=None, cv=None):
+    def LogisticRegression(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
         from sklearn import linear_model, model_selection
 
         # check if the optimizer has changed, otherwise use default
@@ -341,11 +343,7 @@ class tune:
         # check if the parameter grid has been set, otherwise set defaults
         if param_grid is None:
             if self.param_grid is None:
-                param_grid = {
-                    'C': (1e-2, 1e-1, 1e0, 1e1),
-                    'tol': (1e-3, 1e-4, 1e-5),
-                    'fit_intercept': (True, False)
-                }
+                param_grid = {"C": (1e-2, 1e-1, 1e0, 1e1), "tol": (1e-3, 1e-4, 1e-5), "fit_intercept": (True, False)}
                 self.param_grid = param_grid
         else:
             self.param_grid = param_grid
@@ -353,7 +351,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'roc_auc'
+                scoring = "roc_auc"
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -378,8 +376,7 @@ class tune:
     # DECISION TREE FUNCTIONS
 
     # function for decision tree classifier
-    def DecisionTreeClassifier(self, optimizer=None, param_grid=None,
-                               scoring=None, fit_params=None, cv=None):
+    def DecisionTreeClassifier(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
         from sklearn import tree, model_selection
 
         # check if the optimizer has changed, otherwise use default
@@ -390,12 +387,12 @@ class tune:
         if param_grid is None:
             if self.param_grid is None:
                 param_grid = {
-                    'criterion': ('gini', 'entropy'),
-                    'splitter': ('best', 'random'),
-                    'max_features': ('sqrt', 'log2', None),
-                    'max_depth': (2, 5, 10, None),
-                    'min_samples_split': (2, 0.01, 0.1),
-                    'min_impurity_split': (1e-7, 1e-6)
+                    "criterion": ("gini", "entropy"),
+                    "splitter": ("best", "random"),
+                    "max_features": ("sqrt", "log2", None),
+                    "max_depth": (2, 5, 10, None),
+                    "min_samples_split": (2, 0.01, 0.1),
+                    "min_impurity_split": (1e-7, 1e-6),
                 }
                 self.param_grid = param_grid
         else:
@@ -404,7 +401,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'roc_auc'
+                scoring = "roc_auc"
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -429,9 +426,7 @@ class tune:
     # SVM FUNCTIONS
 
     # function for Support Vector Classifier (SVC)
-    def SVC(self, optimizer=None, param_grid=None,
-            scoring=None, fit_params=None, cv=None,
-            class_weight=None):
+    def SVC(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None, class_weight=None):
         from sklearn import svm, model_selection
 
         # check if the optimizer has changed, otherwise use default
@@ -442,16 +437,16 @@ class tune:
         if param_grid is None:
             if self.param_grid is None:
                 param_grid = {
-                    'C': (1e-3, 1e-2, 1e-1, 1e0, 1e1),
-                    'kernel': ('rbf', 'linear'),
-                    'gamma': (1e-3, 1e-4, 1e-5, 1e-6, 1e-7)
+                    "C": (1e-3, 1e-2, 1e-1, 1e0, 1e1),
+                    "kernel": ("rbf", "linear"),
+                    "gamma": (1e-3, 1e-4, 1e-5, 1e-6, 1e-7),
                 }
         self.param_grid = param_grid
 
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'roc_auc'
+                scoring = "roc_auc"
         self.scoring = scoring
 
         # set the default fit parameters
@@ -467,16 +462,15 @@ class tune:
         # set the class weight
         if class_weght is not None:
             if self.class_weight is None:
-                class_weight = 'balanced'
-        self.param_grid['class_weight'] = class_weight
+                class_weight = "balanced"
+        self.param_grid["class_weight"] = class_weight
 
         # create the estimator and run the grid search
         estimator = svm.SVC()
         self.run_gs(estimator)
 
     # function for Support Vector Regression (SVR)
-    def SVR(self, optimizer=None, param_grid=None,
-            scoring=None, fit_params=None, cv=None):
+    def SVR(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
         from sklearn import svm, model_selection, metrics
 
         # check if the optimizer has changed, otherwise use default
@@ -487,10 +481,10 @@ class tune:
         if param_grid is None:
             if self.param_grid is None:
                 param_grid = {
-                    'C': (1e-2, 1e-1, 1e0, 1e1),
-                    'epsilon': (0.01, 0.1, 1),
-                    'kernel': ('rbf', 'linear', 'poly', 'sigmoid'),
-                    'gamma': (1e-2, 1e-3, 1e-4)
+                    "C": (1e-2, 1e-1, 1e0, 1e1),
+                    "epsilon": (0.01, 0.1, 1),
+                    "kernel": ("rbf", "linear", "poly", "sigmoid"),
+                    "gamma": (1e-2, 1e-3, 1e-4),
                 }
                 self.param_grid = param_grid
         else:
@@ -521,8 +515,7 @@ class tune:
         self.run_gs(estimator)
 
     # function for Linear SVC
-    def LinearSVC(self, optimizer=None, param_grid=None,
-                  scoring=None, fit_params=None, cv=None):
+    def LinearSVC(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
         from sklearn import svm, model_selection
 
         # check if the optimizer has changed, otherwise use default
@@ -533,10 +526,10 @@ class tune:
         if param_grid is None:
             if self.param_grid is None:
                 param_grid = {
-                    'C': (1e-2, 1e-1, 1e0, 1e1),
-                    'loss': ('hinge', 'squared_hinge'),
-                    'tol': (1e-3, 1e-4, 1e-5),
-                    'fit_intercept': (True, False)
+                    "C": (1e-2, 1e-1, 1e0, 1e1),
+                    "loss": ("hinge", "squared_hinge"),
+                    "tol": (1e-3, 1e-4, 1e-5),
+                    "fit_intercept": (True, False),
                 }
                 self.param_grid = param_grid
         else:
@@ -545,7 +538,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'roc_auc'
+                scoring = "roc_auc"
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -567,8 +560,7 @@ class tune:
         self.run_gs(estimator)
 
     # function for Linear SVR
-    def LinearSVR(self, optimizer=None, param_grid=None,
-                  scoring=None, fit_params=None, cv=None):
+    def LinearSVR(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
         from sklearn import svm, model_selection, metrics
 
         # check if the optimizer has changed, otherwise use default
@@ -579,12 +571,12 @@ class tune:
         if param_grid is None:
             if self.param_grid is None:
                 param_grid = {
-                    'C': (1e-2, 1e-1, 1e0, 1e1),
-                    'loss': ('epsilon_insensitive', 'squared_epsilon_insensitive'),
-                    'epsilon': (0, 0.01, 0.1),
-                    'dual': (False),
-                    'tol': (1e-3, 1e-4, 1e-5),
-                    'fit_intercept': (True, False)
+                    "C": (1e-2, 1e-1, 1e0, 1e1),
+                    "loss": ("epsilon_insensitive", "squared_epsilon_insensitive"),
+                    "epsilon": (0, 0.01, 0.1),
+                    "dual": (False),
+                    "tol": (1e-3, 1e-4, 1e-5),
+                    "fit_intercept": (True, False),
                 }
                 self.param_grid = param_grid
         else:
@@ -618,8 +610,7 @@ class tune:
     # ENSEMBLE METHODS
 
     # Ada boosting classifier
-    def AdaBoostClassifier(self, optimizer=None, param_grid=None,
-                           scoring=None, fit_params=None, cv=None):
+    def AdaBoostClassifier(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
         from sklearn import ensemble, model_selection
 
         # check if the optimizer has changed, otherwise use default
@@ -629,10 +620,7 @@ class tune:
         # check if the parameter grid has been set, otherwise set defaults
         if param_grid is None:
             if self.param_grid is None:
-                param_grid = {
-                    'n_estimators': (25, 50, 75, 100),
-                    'learning_rate': (0.1, 0.5, 1.)
-                }
+                param_grid = {"n_estimators": (25, 50, 75, 100), "learning_rate": (0.1, 0.5, 1.0)}
                 self.param_grid = param_grid
         else:
             self.param_grid = param_grid
@@ -640,7 +628,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'roc_auc'
+                scoring = "roc_auc"
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -662,8 +650,7 @@ class tune:
         self.run_gs(estimator)
 
     # Ada boosting regressor
-    def AdaBoostRegressor(self, optimizer=None, param_grid=None,
-                          scoring=None, fit_params=None, cv=None):
+    def AdaBoostRegressor(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
         from sklearn import ensemble, model_selection, metrics
 
         # check if the optimizer has changed, otherwise use default
@@ -674,9 +661,9 @@ class tune:
         if param_grid is None:
             if self.param_grid is None:
                 param_grid = {
-                    'n_estimators': (25, 50, 75, 100),
-                    'learning_rate': (0.1, 0.5, 1.),
-                    'loss': ('linear', 'exponential', 'square')
+                    "n_estimators": (25, 50, 75, 100),
+                    "learning_rate": (0.1, 0.5, 1.0),
+                    "loss": ("linear", "exponential", "square"),
                 }
                 self.param_grid = param_grid
         else:
@@ -707,8 +694,7 @@ class tune:
         self.run_gs(estimator)
 
     # Gradient boosting classifier
-    def GradientBoostClassifier(self, optimizer=None, param_grid=None,
-                                scoring=None, fit_params=None, cv=None):
+    def GradientBoostClassifier(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
         from sklearn import ensemble, model_selection
 
         # check if the optimizer has changed, otherwise use default
@@ -719,12 +705,12 @@ class tune:
         if param_grid is None:
             if self.param_grid is None:
                 param_grid = {
-                    'n_estimators': (10, 100, 500),
-                    'learning_rate': (0.01, 0.1, 0.5),
-                    'max_features': ('sqrt', 'log2', None),
-                    'max_depth': (1, 10, None),
-                    'min_samples_split': (2, 0.01, 0.1),
-                    'min_impurity_split': (1e-7, 1e-6)
+                    "n_estimators": (10, 100, 500),
+                    "learning_rate": (0.01, 0.1, 0.5),
+                    "max_features": ("sqrt", "log2", None),
+                    "max_depth": (1, 10, None),
+                    "min_samples_split": (2, 0.01, 0.1),
+                    "min_impurity_split": (1e-7, 1e-6),
                 }
                 self.param_grid = param_grid
         else:
@@ -733,7 +719,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'roc_auc'
+                scoring = "roc_auc"
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -755,8 +741,7 @@ class tune:
         self.run_gs(estimator)
 
     # Gradient boosting regressor
-    def GradientBoostRegressor(self, optimizer=None, param_grid=None,
-                               scoring=None, fit_params=None, cv=None):
+    def GradientBoostRegressor(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
         from sklearn import ensemble, model_selection
 
         # check if the optimizer has changed, otherwise use default
@@ -767,12 +752,12 @@ class tune:
         if param_grid is None:
             if self.param_grid is None:
                 param_grid = {
-                    'n_estimators': (10, 100, 500),
-                    'learning_rate': (0.01, 0.1, 0.5),
-                    'max_features': ('sqrt', 'log2', None),
-                    'max_depth': (1, 10, None),
-                    'min_samples_split': (2, 0.01, 0.1),
-                    'min_impurity_split': (1e-7, 1e-6)
+                    "n_estimators": (10, 100, 500),
+                    "learning_rate": (0.01, 0.1, 0.5),
+                    "max_features": ("sqrt", "log2", None),
+                    "max_depth": (1, 10, None),
+                    "min_samples_split": (2, 0.01, 0.1),
+                    "min_impurity_split": (1e-7, 1e-6),
                 }
                 self.param_grid = param_grid
         else:
@@ -781,7 +766,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'neg_mean_absolute_error'
+                scoring = "neg_mean_absolute_error"
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -803,9 +788,9 @@ class tune:
         self.run_gs(estimator)
 
     # Random Forest classifier
-    def RandomForestClassifier(self, optimizer=None, param_grid=None,
-                               scoring=None, fit_params=None, cv=None,
-                               class_weight=None):
+    def RandomForestClassifier(
+        self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None, class_weight=None
+    ):
         from sklearn import ensemble, model_selection
 
         # check if the optimizer has changed, otherwise use default
@@ -816,12 +801,12 @@ class tune:
         if param_grid is None:
             if self.param_grid is None:
                 param_grid = {
-                    'criterion': ('gini', 'entropy'),
-                    'n_estimators': (10, 100, 500),
-                    'max_features': ('sqrt', 'log2', None),
-                    'max_depth': (1, 10, None),
-                    'min_samples_split': (2, 0.01, 0.1),
-                    'min_impurity_split': (1e-7, 1e-6)
+                    "criterion": ("gini", "entropy"),
+                    "n_estimators": (10, 100, 500),
+                    "max_features": ("sqrt", "log2", None),
+                    "max_depth": (1, 10, None),
+                    "min_samples_split": (2, 0.01, 0.1),
+                    "min_impurity_split": (1e-7, 1e-6),
                 }
                 self.param_grid = param_grid
         else:
@@ -830,7 +815,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'roc_auc'
+                scoring = "roc_auc"
                 self.scoring = scoring
         else:
             self.scoring = scoring
@@ -852,8 +837,7 @@ class tune:
         self.run_gs(estimator)
 
     # Random Forest regressor
-    def RandomForestRegressor(self, optimizer=None, param_grid=None,
-                              scoring=None, fit_params=None, cv=None):
+    def RandomForestRegressor(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
         from sklearn import ensemble, model_selection
 
         # check if the optimizer has changed, otherwise use default
@@ -864,11 +848,11 @@ class tune:
         if param_grid is None:
             if self.param_grid is None:
                 param_grid = {
-                    'n_estimators': (10, 100, 500),
-                    'max_features': ('sqrt', 'log2', None),
-                    'max_depth': (1, 10, None),
-                    'min_samples_split': (2, 0.01, 0.1),
-                    'min_impurity_split': (1e-7, 1e-6)
+                    "n_estimators": (10, 100, 500),
+                    "max_features": ("sqrt", "log2", None),
+                    "max_depth": (1, 10, None),
+                    "min_samples_split": (2, 0.01, 0.1),
+                    "min_impurity_split": (1e-7, 1e-6),
                 }
                 self.param_grid = param_grid
         else:
@@ -877,7 +861,7 @@ class tune:
         # set the scoring function
         if scoring is None:
             if self.scoring is None:
-                scoring = 'neg_mean_absolute_error'
+                scoring = "neg_mean_absolute_error"
                 self.scoring = scoring
         else:
             self.scoring = scoring

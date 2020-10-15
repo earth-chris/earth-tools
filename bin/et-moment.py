@@ -20,34 +20,43 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Processes ALOS-PALSAR data")
 
     # create options for input files
-    parser.add_argument('-i', metavar='input_file', type=str,
-                        nargs=1, help='path to the input raster data',
-                        required=True)
+    parser.add_argument(
+        "-i", metavar="input_file", type=str, nargs=1, help="path to the input raster data", required=True
+    )
 
     # create option for output file
-    parser.add_argument('-o', metavar='output_file', type=str,
-                        nargs=1, help='path to the output file',
-                        required=True)
+    parser.add_argument("-o", metavar="output_file", type=str, nargs=1, help="path to the output file", required=True)
 
     # create option for setting output resolution
-    parser.add_argument('--tr', metavar='resolution', type=float,
-                        nargs=2, help='the target spatial resolution',
-                        required=False)
+    parser.add_argument(
+        "--tr", metavar="resolution", type=float, nargs=2, help="the target spatial resolution", required=False
+    )
 
     # create option for setting output window size
-    parser.add_argument('--ws', metavar='window_size', type=int,
-                        nargs=2, help='the window size to calculate moments for',
-                        required=False)
+    parser.add_argument(
+        "--ws",
+        metavar="window_size",
+        type=int,
+        nargs=2,
+        help="the window size to calculate moments for",
+        required=False,
+    )
 
     # create option for the number of moments to calculate
-    parser.add_argument('-m', metavar='moments', type=int,
-                        nargs=1, help='the number of moments to calculate',
-                        default=4, required=False)
+    parser.add_argument(
+        "-m", metavar="moments", type=int, nargs=1, help="the number of moments to calculate", default=4, required=False
+    )
 
     # create option for output no-data value
-    parser.add_argument('--dstnodata', metavar='nodata', nargs=1, type=float,
-                        help='the output nodata value', default=-9999.0,
-                        required=False)
+    parser.add_argument(
+        "--dstnodata",
+        metavar="nodata",
+        nargs=1,
+        type=float,
+        help="the output nodata value",
+        default=-9999.0,
+        required=False,
+    )
 
     # parse the arguments and return the object
     args = parser.parse_args()
@@ -166,7 +175,7 @@ def main():
         # and we'll loop through each window (by row, column)
         for j in range(len(ystart)):
             for k in range(len(xstart)):
-                window = inref.data[ystart[j]:yend[j], xstart[k]:xend[k]]
+                window = inref.data[ystart[j] : yend[j], xstart[k] : xend[k]]
 
                 # if there is no good data, skip this window
                 if np.isnan(window).all():
@@ -177,7 +186,7 @@ def main():
                     if l == 0:
                         moment = np.nanmean(window)
                     else:
-                        moment = stats.moment(window, l + 1, nan_policy='omit', axis=None)
+                        moment = stats.moment(window, l + 1, nan_policy="omit", axis=None)
                     output_array[l, j, k] = moment
 
         # write the output to disk

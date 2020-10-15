@@ -16,68 +16,68 @@ def ot(arg):
     """
     # Python style data type flags
     try:
-        if str(arg).lower() == 'byte':
-            return 'Byte'
-        elif (str(arg).lower() == 'int16'):
-            return 'Int16'
-        elif (str(arg).lower() == 'int32'):
-            return 'Int32'
-        elif (str(arg).lower() == 'uint16'):
-            return 'UInt16'
-        elif (str(arg).lower() == 'uint32'):
-            return 'UInt32'
-        elif (str(arg).lower() == 'float32'):
-            return 'Float32'
-        elif (str(arg).lower() == 'float64'):
-            return 'Float64'
-        elif (str(arg).lower() == 'cint16'):
-            return 'CInt16'
-        elif (str(arg).lower() == 'cint32'):
-            return 'CInt32'
-        elif (str(arg).lower() == 'cfloat32'):
-            return 'CFloat32'
-        elif str(arg).lower() == 'cfloat64':
-            return 'CFloat64'
+        if str(arg).lower() == "byte":
+            return "Byte"
+        elif str(arg).lower() == "int16":
+            return "Int16"
+        elif str(arg).lower() == "int32":
+            return "Int32"
+        elif str(arg).lower() == "uint16":
+            return "UInt16"
+        elif str(arg).lower() == "uint32":
+            return "UInt32"
+        elif str(arg).lower() == "float32":
+            return "Float32"
+        elif str(arg).lower() == "float64":
+            return "Float64"
+        elif str(arg).lower() == "cint16":
+            return "CInt16"
+        elif str(arg).lower() == "cint32":
+            return "CInt32"
+        elif str(arg).lower() == "cfloat32":
+            return "CFloat32"
+        elif str(arg).lower() == "cfloat64":
+            return "CFloat64"
 
         # IDL style data type flags
-        elif (str(arg).lower() == '1'):
-            return 'Byte'
-        elif (str(arg).lower() == '2'):
-            return 'Int16'
-        elif (str(arg).lower() == '3'):
-            return 'Int32'
-        elif (str(arg).lower() == '4'):
-            return 'Float32'
-        elif str(arg).lower() == '5':
-            return 'Float64'
-        elif (str(arg).lower() == '6'):
-            return 'CFloat32'
-        elif (str(arg).lower() == '7'):
-            print('[ ERROR ]: Invalid -ot argument: %s, unable to output using String format' % (arg))
+        elif str(arg).lower() == "1":
+            return "Byte"
+        elif str(arg).lower() == "2":
+            return "Int16"
+        elif str(arg).lower() == "3":
+            return "Int32"
+        elif str(arg).lower() == "4":
+            return "Float32"
+        elif str(arg).lower() == "5":
+            return "Float64"
+        elif str(arg).lower() == "6":
+            return "CFloat32"
+        elif str(arg).lower() == "7":
+            print("[ ERROR ]: Invalid -ot argument: %s, unable to output using String format" % (arg))
             return -1
-        elif (str(arg).lower() == '8'):
-            print('[ ERROR ]: Invalid -ot argument: %s, unable to output using Structure format' % (arg))
+        elif str(arg).lower() == "8":
+            print("[ ERROR ]: Invalid -ot argument: %s, unable to output using Structure format" % (arg))
             return -1
-        elif (str(arg).lower() == '9'):
-            return 'CFloat64'
-        elif (str(arg).lower() == '10'):
-            print('[ ERROR ]: Invalid -ot argument: %s, unable to output using Pointer format' % (arg))
+        elif str(arg).lower() == "9":
+            return "CFloat64"
+        elif str(arg).lower() == "10":
+            print("[ ERROR ]: Invalid -ot argument: %s, unable to output using Pointer format" % (arg))
             return -1
-        elif (str(arg).lower() == '11'):
-            print('[ ERROR ]: Invalid -ot argument: %s unable to output using Object format' % (arg))
+        elif str(arg).lower() == "11":
+            print("[ ERROR ]: Invalid -ot argument: %s unable to output using Object format" % (arg))
             return -1
-        elif (str(arg).lower() == '12'):
-            return 'UInt16'
-        elif (str(arg).lower() == '13'):
-            return 'UInt32'
-        elif (str(arg).lower() == '14'):
-            return 'Int64'
-        elif (str(arg).lower() == '15'):
-            return 'UInt64'
+        elif str(arg).lower() == "12":
+            return "UInt16"
+        elif str(arg).lower() == "13":
+            return "UInt32"
+        elif str(arg).lower() == "14":
+            return "Int64"
+        elif str(arg).lower() == "15":
+            return "UInt64"
 
     # error message for unknown argument
     except ValueError:
-        print('[ ERROR ]: Unable to parse -ot argument: %s' % (arg))
+        print("[ ERROR ]: Unable to parse -ot argument: %s" % (arg))
         return -1
 
 
@@ -87,9 +87,9 @@ def etc(etcList):
 
     etcStr = et.fn.strJoin(etcList)
     if type(etcStr) is not str:
-        print('[ ERROR ]: Unable to parse the etc argument. Must be of type: list')
-        print('[ ERROR ]: ' + str(type(etcList)))
-        etcStr = ''
+        print("[ ERROR ]: Unable to parse the etc argument. Must be of type: list")
+        print("[ ERROR ]: " + str(type(etcList)))
+        etcStr = ""
     return etcStr
 
 
@@ -133,12 +133,12 @@ def jfsc(infile):
         return -1
 
     # create the spectral object
-    s = et.objects.spectral(1, type='asd')
+    s = et.objects.spectral(1, type="asd")
     s.spectra_stdevm = np.zeros(s.spectra.shape)
     s.spectra_stdevp = np.zeros(s.spectra.shape)
 
     # open the file and read the data
-    f = open(infile, 'r')
+    f = open(infile, "r")
     header = f.readline()
     i = 0
     for line in f:
@@ -168,8 +168,8 @@ def usgs(infile):
         return -1
 
     # open the file and read header info
-    f = open(infile, 'r')
-    x_start = 'gibberish'
+    f = open(infile, "r")
+    x_start = "gibberish"
     for line in f:
         if x_start in line:
             break
@@ -177,10 +177,10 @@ def usgs(infile):
             spectrum_name = line.strip().split("Name:")[-1].strip()
         if "X Units:" in line:
             band_unit = line.strip().split()
-            band_unit = band_unit[-1].strip('()').capitalize()
+            band_unit = band_unit[-1].strip("()").capitalize()
         if "Y Units:" in line:
             refl_unit = line.strip().split()
-            refl_unit = refl_unit[-1].strip('()').capitalize()
+            refl_unit = refl_unit[-1].strip("()").capitalize()
         if "First X Value:" in line:
             x_start = line.strip().split()[-1]
         if "Number of X Values:" in line:
@@ -209,15 +209,14 @@ def usgs(infile):
         reflectance = reflectance[::1]
 
     # convert units to nanometers and scale 0-1
-    if band_unit == 'Micrometers':
-        band_centers *= 1000.
-        band_unit = 'Nanometers'
-    if refl_unit == 'Percent':
-        reflectance /= 100.
+    if band_unit == "Micrometers":
+        band_centers *= 1000.0
+        band_unit = "Nanometers"
+    if refl_unit == "Percent":
+        reflectance /= 100.0
 
     # create the spectral object
-    s = et.objects.spectral(1, n_values, band_centers=band_centers,
-                             band_unit=band_unit, band_quantity='Wavelength')
+    s = et.objects.spectral(1, n_values, band_centers=band_centers, band_unit=band_unit, band_quantity="Wavelength")
 
     # assign relevant values
     s.spectra[0] = reflectance
@@ -245,11 +244,11 @@ def spectralLib(infile):
         return -1
 
     # check for header file
-    if et.fn.checkFile(infile[:-4] + '.hdr', quiet=True):
-        hdr = infile[:-4] + '.hdr'
+    if et.fn.checkFile(infile[:-4] + ".hdr", quiet=True):
+        hdr = infile[:-4] + ".hdr"
     else:
-        if et.fn.checkFile(infile + '.hdr'):
-            hdr = infile + '.hdr'
+        if et.fn.checkFile(infile + ".hdr"):
+            hdr = infile + ".hdr"
         else:
             return -1
 
@@ -257,10 +256,13 @@ def spectralLib(infile):
     slib = spectral.envi.open(hdr, infile)
 
     # create the spectral object
-    s = et.objects.spectral(slib.params.nrows, slib.params.ncols,
-                             band_centers=np.asarray(slib.bands.centers),
-                             band_unit=slib.bands.band_unit,
-                             band_quantity=slib.bands.band_quantity)
+    s = et.objects.spectral(
+        slib.params.nrows,
+        slib.params.ncols,
+        band_centers=np.asarray(slib.bands.centers),
+        band_unit=slib.bands.band_unit,
+        band_quantity=slib.bands.band_quantity,
+    )
 
     # set the spectra and names
     s.spectra = slib.spectra
@@ -336,6 +338,7 @@ class raster:
             numpy array of raster values
         """
         import gdal
+
         ref = gdal.Open(self.file_name, 0)
         band = ref.GetRasterBand(band)
         self.data = band.ReadAsArray()
@@ -352,6 +355,7 @@ class raster:
             numpy array of raster values
         """
         import gdal
+
         ref = gdal.Open(self.file_name, 0)
         self.data = ref.ReadAsArray()
 
@@ -367,6 +371,7 @@ class raster:
             None.
         """
         import gdal
+
         ref = gdal.Open(self.file_name, 1)
         band = ref.GetRasterBand(band)
         band.WriteArray(data)
@@ -382,6 +387,7 @@ class raster:
             None.
         """
         import gdal
+
         ref = gdal.Open(self.file_name, 1)
 
         # see which data to write
@@ -400,13 +406,13 @@ class raster:
             None
         """
         import gdal
+
         if ref is None:
             ref = gdal.Open(self.file_name, 1)
 
         # update projection and geotransform at file-level
         ref.SetProjection(self.prj)
-        ref.SetGeoTransform([self.xmin, self.xps, self.xoff,
-                             self.ymax, self.yoff, self.yps])
+        ref.SetGeoTransform([self.xmin, self.xps, self.xoff, self.ymax, self.yoff, self.yps])
 
         # update no-data value band by band
         if self.no_data is not None:
@@ -450,8 +456,8 @@ class raster:
 
         # create a new raster file with these parameters, but don't write any data
         ref = gdal.GetDriverByName(new_obj.driver_name).Create(
-            new_obj.file_name, new_obj.nx, new_obj.ny, new_obj.nb,
-            new_obj.dt, options=options)
+            new_obj.file_name, new_obj.nx, new_obj.ny, new_obj.nb, new_obj.dt, options=options
+        )
 
         # set the projection and geotransform parameters
         new_obj.write_metadata(ref=ref)
@@ -465,7 +471,7 @@ class raster:
 # functions to convert decimal degrees and degrees-minutes-seconds
 #  both functions written by Curtis Price, http://profile.usgs.gov/cprice
 #  and pulled from ESRI forums (https://community.esri.com/thread/27279)
-def dd_to_dms(dd1,dd2,ndec=6):
+def dd_to_dms(dd1, dd2, ndec=6):
     """Convert a decimal degree coordinate pair to a six-tuple of degrees, minutes seconds.
 
     The returned values are not rounded.
@@ -479,14 +485,16 @@ def dd_to_dms(dd1,dd2,ndec=6):
       >>> dd2dms(-74.25,32.1)
       (-74, 15, 6.9444444444444444e-05, 32, 6, 2.7777777777778172e-05)
     """
+
     def ToDMS(dd):
         dd1 = abs(float(dd))
         cdeg = int(dd1)
         minsec = dd1 - cdeg
         cmin = int(minsec * 60)
         csec = (minsec % 60) / float(3600)
-        if dd < 0: cdeg = cdeg * -1
-        return cdeg,cmin,csec
+        if dd < 0:
+            cdeg = cdeg * -1
+        return cdeg, cmin, csec
 
     try:
         # return a six-tuple
@@ -494,7 +502,8 @@ def dd_to_dms(dd1,dd2,ndec=6):
     except:
         raise Exception
 
-def dms_to_dd(deg1,min1,sec1,deg2,min2,sec2):
+
+def dms_to_dd(deg1, min1, sec1, deg2, min2, sec2):
     """Convert a degrees-minutes seconds coordinate pair to decimal degrees.
 
     The returned values are not rounded.
@@ -509,12 +518,13 @@ def dms_to_dd(deg1,min1,sec1,deg2,min2,sec2):
     (-74.75, 34.172222222222217)
     """
 
-    def ToDD(deg,min=0,sec=0):
+    def ToDD(deg, min=0, sec=0):
         dd = abs(deg) + min / 60.0 + sec / 3600.0
         if deg < 0:
             dd = dd * -1.0
         return dd
+
     try:
-        return ToDD(deg1,min1,sec1), ToDD(deg2,min2,sec2)
+        return ToDD(deg1, min1, sec1), ToDD(deg2, min2, sec2)
     except Exception:
         raise Exception

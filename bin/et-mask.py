@@ -39,7 +39,7 @@ class parse_args:
             arg = arglist[i]
 
             # parse the base reference file flag
-            if arg.lower() == '-ref':
+            if arg.lower() == "-ref":
                 i += 1
                 arg = arglist[i]
 
@@ -51,14 +51,14 @@ class parse_args:
                 self.refFile = arg
 
             # check mask flag
-            elif arg.lower() == '-mask':
+            elif arg.lower() == "-mask":
                 i += 1
                 arg = arglist[i]
 
                 # loop through masks until we find a new parameter
                 newArg = False
                 while not newArg:
-                    if arg[0] == '-':
+                    if arg[0] == "-":
                         newArg = True
                         i -= 1
                         continue
@@ -74,7 +74,7 @@ class parse_args:
                     arg = arglist[i]
 
             # check -b option
-            elif arg.lower() == "-b" or arg.lower() == '-band':
+            elif arg.lower() == "-b" or arg.lower() == "-band":
                 i += 1
                 arg = arglist[i]
 
@@ -84,7 +84,7 @@ class parse_args:
                 # loop through band args until we find a new parameter
                 newArg = False
                 while not newArg:
-                    if arg[0] == '-':
+                    if arg[0] == "-":
                         newArg = True
                         i -= 1
                         continue
@@ -107,7 +107,7 @@ class parse_args:
                     arg = arglist[i]
 
             # use a user-defined no-data value if set
-            elif arg.lower() == '-masknodata':
+            elif arg.lower() == "-masknodata":
                 i += 1
                 arg = arglist[i]
 
@@ -116,7 +116,7 @@ class parse_args:
                 self.useMaskNoData = True
 
             # use a user-defined ref no-data value if set
-            elif arg.lower() == '-refnodata':
+            elif arg.lower() == "-refnodata":
                 i += 1
                 arg = arglist[i]
 
@@ -167,7 +167,7 @@ def check_args(args):
         sys.exit(1)
 
     # return fixed arguments
-    return (args)
+    return args
 
 
 def usage(exit=False):
@@ -260,7 +260,7 @@ def main():
         if args.subsetBands == True:
 
             # ensure that the bands set make sense
-            if (max(args.bands) > masknb):
+            if max(args.bands) > masknb:
                 print("[ ERROR ]: Invalid bands set to subset: %s" % max(args.bands))
                 print("[ ERROR ]: Total bands in mask file   : %s" % masknb)
                 bands = range(1, masknb + 1)

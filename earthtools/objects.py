@@ -7,27 +7,25 @@
 
 # set up class for spectral objects
 class spectral:
-
-    def __init__(self, n_spectra=1, n_wl=2151, type='', band_unit = '',
-            band_quantity = '', band_centers = []):
+    def __init__(self, n_spectra=1, n_wl=2151, type="", band_unit="", band_quantity="", band_centers=[]):
 
         import numpy as np
 
         # set to asd type if no params set to change n_wl
         if n_wl == 2151:
-            type = 'asd'
+            type = "asd"
 
         # set up pre-defined types
-        if (str(type).lower()) == 'asd':
+        if (str(type).lower()) == "asd":
             n_wl = 2151
-            band_unit = 'Nanometers'
-            band_quantity = 'Wavelength'
-            band_centers = np.arange(350.,2501.)
+            band_unit = "Nanometers"
+            band_quantity = "Wavelength"
+            band_centers = np.arange(350.0, 2501.0)
 
         # return a list same size as number of spectra
         names = []
         for i in range(n_spectra):
-            names.append('Spectrum ' + str(i))
+            names.append("Spectrum " + str(i))
         self.names = names
 
         # set up the band definitions
@@ -56,7 +54,7 @@ class spectral:
         """
         import numpy as np
 
-        if self.band_unit == 'micrometers':
+        if self.band_unit == "micrometers":
             water_bands = [[1.35, 1.46], [1.79, 1.96]]
         else:
             water_bands = [[1350.0, 1460.0], [1790.0, 1960.0]]
@@ -65,13 +63,13 @@ class spectral:
         gt = np.where(self.band_centers > water_bands[0][0])
         lt = np.where(self.band_centers < water_bands[0][1])
         nd = np.intersect1d(gt[0], lt[0])
-        self.spectra[:,nd] = 0.0
+        self.spectra[:, nd] = 0.0
 
         # then swir1-swir2 transition
         gt = np.where(self.band_centers > water_bands[1][0])
         lt = np.where(self.band_centers < water_bands[1][1])
         nd = np.intersect1d(gt[0], lt[0])
-        self.spectra[:,nd] = 0.0
+        self.spectra[:, nd] = 0.0
 
     def get_shortwave_bands(self, bands=[]):
         """
@@ -85,11 +83,11 @@ class spectral:
         import numpy as np
 
         # set range to return in nanometers
-        shortwave_range = [350., 2500.]
+        shortwave_range = [350.0, 2500.0]
 
         # normalize if wavelength units are different
-        if self.band_unit == 'Micrometers':
-            shortwave_range /= 1000.
+        if self.band_unit == "Micrometers":
+            shortwave_range /= 1000.0
 
         # find overlapping range
         gt = np.where(self.band_centers > shortwave_range[0])
@@ -99,7 +97,7 @@ class spectral:
         # return output
         return overlap
 
-    def plot(self, inds = [], legend = False):
+    def plot(self, inds=[], legend=False):
         """
         plots the spectra using a standard plot format
         can be set to only plot selected spectra
@@ -113,9 +111,9 @@ class spectral:
 
         # set basic parameters
         plt.xlim((self.band_centers.min(), self.band_centers.max()))
-        plt.xlabel('Wavelength (' + self.band_unit + ')')
-        plt.ylabel('Reflectance (%)')
-        plt.title('spectralObject plot')
+        plt.xlabel("Wavelength (" + self.band_unit + ")")
+        plt.ylabel("Reflectance (%)")
+        plt.title("spectralObject plot")
 
         # check if indices were set and valid. if not, plot all items
         if inds:
@@ -134,18 +132,16 @@ class spectral:
 
         # loop through each item to plot
         for i in inds:
-            plt.plot(self.band_centers, self.spectra[i,:],
-                label = self.names[i])
+            plt.plot(self.band_centers, self.spectra[i, :], label=self.names[i])
 
         # add the legend with each spectrum's name
         if legend:
-            plt.legend(fontsize = 'small', framealpha = 0.5,
-                fancybox = True)
+            plt.legend(fontsize="small", framealpha=0.5, fancybox=True)
 
         # display the plot
         plt.show()
 
-    def bn(self, inds = []):
+    def bn(self, inds=[]):
         """
         brightness normalizes the spectra
 
@@ -164,12 +160,12 @@ class spectral:
             inds = range(0, self.spectra.shape[-1])
 
         # perform the bn
-        self.spectra = self.spectra[:,inds] / np.expand_dims(
-            np.sqrt((self.spectra[:,inds]**2).sum(1)),1)
+        self.spectra = self.spectra[:, inds] / np.expand_dims(np.sqrt((self.spectra[:, inds] ** 2).sum(1)), 1)
 
         # subset band centers to the indices selected, if they exist
         if self.band_centers.ndim != 0:
             self.band_centers = self.band_centers[inds]
+
 
 # class for las/laz data
 class las:
@@ -182,13 +178,13 @@ class las:
         self.z = np.zeros(n_pts)
 
         # output parameters
-        self.of = 'las'
-        self.ext = '.' + self.of
+        self.of = "las"
+        self.ext = "." + self.of
+
 
 # class for color objects
 class color:
-    def __init__(self, palette = ["#8C1515", "#4D4F53", "#000000"],
-        n = None, name = 'stanford_colormap'):
+    def __init__(self, palette=["#8C1515", "#4D4F53", "#000000"], n=None, name="stanford_colormap"):
         import numpy as np
         from matplotlib import colors
 
@@ -200,7 +196,7 @@ class color:
         # create a color map from the passed palette
         clist = []
         ncols = len(palette)
-        frac = 1./(ncols - 1)
+        frac = 1.0 / (ncols - 1)
         linear_segments = np.arange(0, 1 + frac, frac)
         for i in range(ncols):
             clist.append((linear_segments[i], colors.ColorConverter.to_rgba(palette[i])))
@@ -217,7 +213,7 @@ class color:
         # create a vector of normalized values to linearly scale colors across range
         #  since matplotlib color tables need 0-1 scale
         self.palette = []
-        norm = colors.Normalize(vmin = 0, vmax = n-1)
+        norm = colors.Normalize(vmin=0, vmax=n - 1)
         for i in range(n):
             self.palette.append(self.cmap(norm(i)))
 

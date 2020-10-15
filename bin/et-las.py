@@ -11,6 +11,7 @@ class default_params:
     def __init__(self):
 
         import datetime
+
         now = datetime.datetime.now()
 
         ### OUTPUT / PROCESSING PARAMETERS
@@ -53,7 +54,7 @@ class default_params:
         ### FILE FORMAT PARAMETERS
 
         # default format for output
-        self.lt = '.laz'
+        self.lt = ".laz"
         self.olaz = True
 
         ### DEFAULT DATA PRODUCTS
@@ -79,25 +80,24 @@ class default_params:
         ### OUTPUT DIRECTORIES AN DEFAULT FILE NAMES
 
         # the input file list
-        self.input_files = ''
+        self.input_files = ""
 
         # the site name that will have everything appended to it e.g. site_tch.tif, site_merged.laz
-        self.sitename = 'etlas'
+        self.sitename = "etlas"
 
         # the output directory for final products
         #  default is to use outdir/YYYY-MM-DD_HH-MM/ if not set
-        datestring = ("%04d-%02d-%02d_%02d%02d" % (now.year, now.month, now.day, now.hour, now.minute))
-        self.outdir = et.params.outdir + et.params.pathsep + \
-          datestring + et.params.pathsep
+        datestring = "%04d-%02d-%02d_%02d%02d" % (now.year, now.month, now.day, now.hour, now.minute)
+        self.outdir = et.params.outdir + et.params.pathsep + datestring + et.params.pathsep
 
         # the output directory for intermediate products
         self.scratchdir = et.params.scratchdir
 
         # set directory names for temp outputs
-        self.dir_unclassified = 'unclassified'
-        self.dir_ground = 'ground'
-        self.dir_classified = 'classified'
-        self.dir_height = 'height_normalized'
+        self.dir_unclassified = "unclassified"
+        self.dir_ground = "ground"
+        self.dir_classified = "classified"
+        self.dir_height = "height_normalized"
 
         # the scratch directory for unclassified tiles
         self.tiles_unclassified = self.scratchdir + et.params.pathsep + self.dir_unclassified
@@ -135,7 +135,7 @@ class default_params:
         self.step_10 = True
         self.step_11 = True
         self.step_12 = True
-        self.step_13 = False # don't run lasboundary for now
+        self.step_13 = False  # don't run lasboundary for now
 
         # and create parameters for each step
         self.input_step_1 = self.input_files
@@ -151,6 +151,7 @@ class default_params:
         self.input_step_11 = self.input_files
         self.input_step_12 = self.input_files
         self.input_step_13 = self.input_files
+
 
 class parse_args:
     def __init__(self, arglist, params):
@@ -173,7 +174,7 @@ class parse_args:
             arg = arglist[i]
 
             # check input flag
-            if arg.lower() == '-i':
+            if arg.lower() == "-i":
                 i += 1
                 arg = arglist[i]
 
@@ -192,44 +193,44 @@ class parse_args:
                     params.input_files = arg
 
             # check output flag
-            elif arg.lower() == '-odir':
+            elif arg.lower() == "-odir":
                 i += 1
                 arg = arglist[i]
 
-                #if not et.params.os.access(arg, et.params.os.W_OK):
+                # if not et.params.os.access(arg, et.params.os.W_OK):
                 #    usage()
                 #    print("[ ERROR ]: unable to write to output path: %s" % arg)
                 #    et.params.sys.exit(1)
                 #
-                #else:
+                # else:
                 params.odir = arg
 
             # check scratchdir flag
-            elif arg.lower() == '-scratchdir':
+            elif arg.lower() == "-scratchdir":
                 i += 1
                 arg = arglist[i]
 
-                #if not et.params.os.access(arg, et.params.os.W_OK):
+                # if not et.params.os.access(arg, et.params.os.W_OK):
                 #    usage()
                 #    print("[ ERROR ]: unable to write to output path: %s" % arg)
                 #    et.params.sys.exit(1)
                 #
-                #else:
+                # else:
                 params.scratchdir = arg
 
             # check -name flag
-            elif arg.lower() == '-name':
+            elif arg.lower() == "-name":
                 i += 1
                 arg = arglist[i]
 
                 params.name = str(arg)
 
             # check if we keep temp files
-            elif arg.lower() == '-keep_temp_files':
+            elif arg.lower() == "-keep_temp_files":
                 params.cleanup = False
 
             # check the resolution set
-            elif arg.lower() == '-res':
+            elif arg.lower() == "-res":
                 i += 1
                 arg = arglist[i]
 
@@ -240,7 +241,7 @@ class parse_args:
                     et.params.sys.exit(1)
 
             # check the slicer resolution set
-            elif arg.lower() == '-sres':
+            elif arg.lower() == "-sres":
                 i += 1
                 arg = arglist[i]
 
@@ -251,7 +252,7 @@ class parse_args:
                     et.params.sys.exit(1)
 
             # check the max tch value set
-            elif arg.lower() == '-max_tch':
+            elif arg.lower() == "-max_tch":
                 i += 1
                 arg = arglist[i]
 
@@ -262,7 +263,7 @@ class parse_args:
                     et.params.sys.exit(1)
 
             # check the tile size set
-            elif arg.lower() == '-tile_size':
+            elif arg.lower() == "-tile_size":
                 i += 1
                 arg = arglist[i]
 
@@ -273,7 +274,7 @@ class parse_args:
                     et.params.sys.exit(1)
 
             # check the buffer size set
-            elif arg.lower() == '-buffer_size':
+            elif arg.lower() == "-buffer_size":
                 i += 1
                 arg = arglist[i]
 
@@ -284,7 +285,7 @@ class parse_args:
                     et.params.sys.exit(1)
 
             # check the starting step
-            elif arg.lower() == '-start_step':
+            elif arg.lower() == "-start_step":
                 i += 1
                 arg = arglist[i]
 
@@ -299,54 +300,54 @@ class parse_args:
                     params.__dict__["step_" + str(j)] = False
 
             # check if any outputs are turned off
-            elif arg.lower() == '-no_classify':
+            elif arg.lower() == "-no_classify":
                 params.classify = False
 
-            elif arg.lower() == '-no_ground':
+            elif arg.lower() == "-no_ground":
                 params.step_7 = False
 
-            elif arg.lower() == '-no_surface':
+            elif arg.lower() == "-no_surface":
                 params.step_8 = False
 
-            elif arg.lower() == '-no_tch':
+            elif arg.lower() == "-no_tch":
                 params.step_9 = False
 
-            elif arg.lower() == '-no_density':
+            elif arg.lower() == "-no_density":
                 params.step_10 = False
 
-            elif arg.lower() == '-no_slicer':
+            elif arg.lower() == "-no_slicer":
                 params.step_11 = False
 
-            elif arg.lower() == '-no_merged':
+            elif arg.lower() == "-no_merged":
                 params.step_12 = False
 
-            elif arg.lower() == '-no_shape':
+            elif arg.lower() == "-no_shape":
                 params.step_13 = False
 
-            elif arg.lower() == '-city':
+            elif arg.lower() == "-city":
                 params.city = True
 
-            elif arg.lower() == '-town':
+            elif arg.lower() == "-town":
                 params.town = True
 
-            elif arg.lower() == '-fine':
+            elif arg.lower() == "-fine":
                 params.fine = True
 
-            elif arg.lower() == '-extra_fine':
+            elif arg.lower() == "-extra_fine":
                 params.extra_fine = True
 
-            elif arg.lower() == '-coarse':
+            elif arg.lower() == "-coarse":
                 params.coarse = True
 
-            elif arg.lower() == '-extra_coarse':
+            elif arg.lower() == "-extra_coarse":
                 params.extra_coarse = True
 
-            elif arg.lower() == '-cores':
+            elif arg.lower() == "-cores":
                 i += 1
                 arg = arglist[i]
                 params.cores = int(arg)
 
-            elif arg.lower() == '-drop_above':
+            elif arg.lower() == "-drop_above":
                 i += 1
                 arg = arglist[i]
                 params.drop_above = arg
@@ -358,6 +359,7 @@ class parse_args:
                 et.params.sys.exit(1)
 
             i += 1
+
 
 def update_params(params):
     """
@@ -400,6 +402,7 @@ def update_params(params):
 
     # update the scratch directory for height-normalized tiles
     params.tiles_height = params.scratchdir + et.params.pathsep + params.dir_height
+
 
 def create_directories(params):
     """
@@ -454,6 +457,7 @@ def create_directories(params):
             print("[ ERROR ]: Unable to create output directory %s" % params.tiles_height)
             et.params.sys.exit(1)
 
+
 def step_1(params):
     """
     merges the input data files
@@ -462,14 +466,14 @@ def step_1(params):
     print("[ STATUS ]: Starting step 1 - merging")
 
     # set up the output file
-    output_file = params.scratchdir + et.params.pathsep + \
-      params.name + "_merged.laz"
+    output_file = params.scratchdir + et.params.pathsep + params.name + "_merged.laz"
 
     # run the command
     et.cmd.lasmerge(params.input_step_1, output_file)
 
     # update the inputs for next steps
     params.input_step_2 = output_file
+
 
 def step_2(params):
     """
@@ -482,12 +486,19 @@ def step_2(params):
     output_directory = params.tiles_unclassified
 
     # run the command
-    et.cmd.lastile(params.input_step_2, odir = output_directory,
-      tile_size = params.tile_size, buffer = params.buffer_size,
-      olaz = params.olaz, cores = params.cores, reversible=False)
+    et.cmd.lastile(
+        params.input_step_2,
+        odir=output_directory,
+        tile_size=params.tile_size,
+        buffer=params.buffer_size,
+        olaz=params.olaz,
+        cores=params.cores,
+        reversible=False,
+    )
 
     # update the inputs for next steps
     params.input_step_3 = output_directory + et.params.pathsep + "*" + params.lt
+
 
 def step_3(params):
     """
@@ -515,12 +526,20 @@ def step_3(params):
                 print("[ STATUS ]: Starting step 4 - calculating height")
 
         # run the command
-        et.cmd.lasground(params.input_step_3, odir = output_directory,
-          olaz = params.olaz, city = params.city, town = params.town,
-          compute_height = compute_height, fine = params.fine,
-          extra_fine = params.extra_fine, coarse = params.coarse,
-          extra_coarse = params.extra_coarse, cores = params.cores,
-          non_ground_unchanged=True)
+        et.cmd.lasground(
+            params.input_step_3,
+            odir=output_directory,
+            olaz=params.olaz,
+            city=params.city,
+            town=params.town,
+            compute_height=compute_height,
+            fine=params.fine,
+            extra_fine=params.extra_fine,
+            coarse=params.coarse,
+            extra_coarse=params.extra_coarse,
+            cores=params.cores,
+            non_ground_unchanged=True,
+        )
 
         # update inputs for next steps
         params.input_step_4 = output_directory + et.params.pathsep + "*" + params.lt
@@ -532,6 +551,7 @@ def step_3(params):
         params.input_step_4 = params.input_step_3
         params.input_step_5 = params.input_step_3
 
+
 def step_4(params):
     """
     calculates height agl
@@ -542,11 +562,11 @@ def step_4(params):
     # no need to set up output directory, calculates height in place
 
     # run the command
-    et.cmd.lasheight(params.input_step_4, cores=params.cores,
-      drop_above=params.drop_above)
+    et.cmd.lasheight(params.input_step_4, cores=params.cores, drop_above=params.drop_above)
 
     # update inputs for next steps
     params.input_step_5 = params.input_step_4
+
 
 def step_5(params):
     """
@@ -559,15 +579,21 @@ def step_5(params):
     output_directory = params.tiles_classified
 
     # run the command
-    et.cmd.lasclassify(params.input_step_5, odir = output_directory,
-      olaz = params.olaz, cores = params.cores, planar=0.1,
-      step = 5 * params.res)
+    et.cmd.lasclassify(
+        params.input_step_5,
+        odir=output_directory,
+        olaz=params.olaz,
+        cores=params.cores,
+        planar=0.1,
+        step=5 * params.res,
+    )
 
     # update inputs for next steps
     params.input_step_6 = output_directory + et.params.pathsep + "*" + params.lt
     params.input_step_7 = output_directory + et.params.pathsep + "*" + params.lt
     params.input_step_8 = output_directory + et.params.pathsep + "*" + params.lt
     params.input_step_12 = output_directory + et.params.pathsep + "*" + params.lt
+
 
 def step_6(params):
     """
@@ -580,14 +606,20 @@ def step_6(params):
     output_directory = params.tiles_height
 
     # run the command
-    et.cmd.lasheight(params.input_step_6, odir = output_directory,
-      replace_z = True, olaz = params.olaz, cores=params.cores,
-      drop_above = params.max_tch)
+    et.cmd.lasheight(
+        params.input_step_6,
+        odir=output_directory,
+        replace_z=True,
+        olaz=params.olaz,
+        cores=params.cores,
+        drop_above=params.max_tch,
+    )
 
     # update inputs for next steps
     params.input_step_9 = output_directory + et.params.pathsep + "*" + params.lt
     params.input_step_10 = output_directory + et.params.pathsep + "*" + params.lt
     params.input_step_11 = output_directory + et.params.pathsep + "*" + params.lt
+
 
 def step_7(params):
     """
@@ -600,21 +632,27 @@ def step_7(params):
     output_directory = params.tiles_classified
 
     # run the command
-    et.cmd.las2dem(params.input_step_7, odir = output_directory,
-      step = params.res, nodata = params.nodata, ground = True,
-      otif = True, use_tile_bb = True, odix = "_ground",
-      cores = params.cores)
+    et.cmd.las2dem(
+        params.input_step_7,
+        odir=output_directory,
+        step=params.res,
+        nodata=params.nodata,
+        ground=True,
+        otif=True,
+        use_tile_bb=True,
+        odix="_ground",
+        cores=params.cores,
+    )
 
     # mosaic the individual tiles into an output file
     tiles = output_directory + et.params.pathsep + "*_ground*.tif"
-    mosaic_file = params.odir + et.params.pathsep + \
-      params.name + "_ground.tif"
+    mosaic_file = params.odir + et.params.pathsep + params.name + "_ground.tif"
 
     # run the command
-    et.cmd.gdalwarp(tiles, mosaic_file, dstnodata=params.nodata,
-      n_threads = params.cores, overwrite = params.overwrite)
+    et.cmd.gdalwarp(tiles, mosaic_file, dstnodata=params.nodata, n_threads=params.cores, overwrite=params.overwrite)
 
     # no need to update inputs
+
 
 def step_8(params):
     """
@@ -627,22 +665,34 @@ def step_8(params):
     output_directory = params.tiles_classified
 
     # run the command
-    et.cmd.las2dem(params.input_step_8, odir = output_directory,
-      odix = "_surface", step = params.res, nodata = params.nodata,
-      ground = False, otif = True, use_tile_bb = True,
-      cores = params.cores)
+    et.cmd.las2dem(
+        params.input_step_8,
+        odir=output_directory,
+        odix="_surface",
+        step=params.res,
+        nodata=params.nodata,
+        ground=False,
+        otif=True,
+        use_tile_bb=True,
+        cores=params.cores,
+    )
 
     # mosaic the tiles to an output file
     tiles = output_directory + et.params.pathsep + "*_surface*.tif"
-    mosaic_file = params.odir + et.params.pathsep + \
-      params.name + "_surface.tif"
+    mosaic_file = params.odir + et.params.pathsep + params.name + "_surface.tif"
 
     # run the command
-    et.cmd.gdalwarp(tiles, mosaic_file, dstnodata = params.nodata,
-      n_threads = params.cores, overwrite = params.overwrite,
-      srcnodata = params.nodata)
+    et.cmd.gdalwarp(
+        tiles,
+        mosaic_file,
+        dstnodata=params.nodata,
+        n_threads=params.cores,
+        overwrite=params.overwrite,
+        srcnodata=params.nodata,
+    )
 
     # no need to update inputs
+
 
 def step_9(params):
     """
@@ -655,24 +705,31 @@ def step_9(params):
     output_directory = params.tiles_height
 
     # run the command
-    et.cmd.lascanopy(params.input_step_9, odir = output_directory,
-      height_cutoff = 0, step = params.res, max = True, otif = True,
-      use_tile_bb = True, cores = params.cores, veg=False)
-    #et.cmd.las2dem(params.input_step_9, odir = output_directory,
+    et.cmd.lascanopy(
+        params.input_step_9,
+        odir=output_directory,
+        height_cutoff=0,
+        step=params.res,
+        max=True,
+        otif=True,
+        use_tile_bb=True,
+        cores=params.cores,
+        veg=False,
+    )
+    # et.cmd.las2dem(params.input_step_9, odir = output_directory,
     #  step = params.res, nodata = params.nodata, otif = True,
     #  use_tile_bb = True, cores = params.cores, odix = "_max",
     #  etc = ["-drop_class", "6" "-kill", 3 * params.res])
 
     # mosaic the tiles to an output file
     tiles = output_directory + et.params.pathsep + "*_max.tif"
-    mosaic_file = params.odir + et.params.pathsep + \
-      params.name + "_tch.tif"
+    mosaic_file = params.odir + et.params.pathsep + params.name + "_tch.tif"
 
     # run the command
-    et.cmd.gdalwarp(tiles, mosaic_file, dstnodata=params.nodata,
-      n_threads = params.cores, overwrite = params.overwrite)
+    et.cmd.gdalwarp(tiles, mosaic_file, dstnodata=params.nodata, n_threads=params.cores, overwrite=params.overwrite)
 
     # no need to update inputs
+
 
 def step_10(params):
     """
@@ -685,21 +742,27 @@ def step_10(params):
     output_directory = params.tiles_height
 
     # run the command
-    et.cmd.lascanopy(params.input_step_9, odir = output_directory,
-      height_cutoff = 0, step = params.res, dns = True,
-      otif = True, cover_cutoff = params.cover_cutoff,
-      use_tile_bb = True, cores = params.cores)
+    et.cmd.lascanopy(
+        params.input_step_9,
+        odir=output_directory,
+        height_cutoff=0,
+        step=params.res,
+        dns=True,
+        otif=True,
+        cover_cutoff=params.cover_cutoff,
+        use_tile_bb=True,
+        cores=params.cores,
+    )
 
     # mosaic the tiles to an output file
     tiles = output_directory + et.params.pathsep + "*_dns.tif"
-    mosaic_file = params.odir + et.params.pathsep + \
-      params.name + "_dns.tif"
+    mosaic_file = params.odir + et.params.pathsep + params.name + "_dns.tif"
 
     # run the command
-    et.cmd.gdalwarp(tiles, mosaic_file, dstnodata=params.nodata,
-      n_threads = params.cores, overwrite = params.overwrite)
+    et.cmd.gdalwarp(tiles, mosaic_file, dstnodata=params.nodata, n_threads=params.cores, overwrite=params.overwrite)
 
     # no need to update inputs
+
 
 def step_11(params):
     """
@@ -714,34 +777,35 @@ def step_11(params):
     output_directory = params.tiles_height
 
     # set the range of heights to use, and set the min height at 0.5 m
-    rng = range(0,int(params.max_tch+1))
+    rng = range(0, int(params.max_tch + 1))
     rng[0] = 0.5
 
     # run the command
-    et.cmd.lascanopy(params.input_step_9, odir = output_directory,
-      height_cutoff = 0, step = params.sres, density = rng,
-      use_tile_bb = True, otif = True, cores = params.cores)
+    et.cmd.lascanopy(
+        params.input_step_9,
+        odir=output_directory,
+        height_cutoff=0,
+        step=params.sres,
+        density=rng,
+        use_tile_bb=True,
+        otif=True,
+        cores=params.cores,
+    )
 
     # mosaic the tiles to output files
     for i in range(0, int(params.max_tch)):
-        tiles = str(output_directory + et.params.pathsep + \
-          "*_d%02d.tif" % i)
-        mosaic_file = str(params.odir + et.params.pathsep + \
-          params.name + "_slicer_%02d.tif" % i)
+        tiles = str(output_directory + et.params.pathsep + "*_d%02d.tif" % i)
+        mosaic_file = str(params.odir + et.params.pathsep + params.name + "_slicer_%02d.tif" % i)
 
         # run the command
-        et.cmd.gdalwarp(tiles, mosaic_file, dstnodata=params.nodata,
-          n_threads = params.cores, overwrite = params.overwrite)
+        et.cmd.gdalwarp(tiles, mosaic_file, dstnodata=params.nodata, n_threads=params.cores, overwrite=params.overwrite)
 
     # stack the slicer bands into a single output file
-    individual_files = params.odir + et.params.pathsep + \
-      params.name + "_slicer_*.tif"
+    individual_files = params.odir + et.params.pathsep + params.name + "_slicer_*.tif"
     file_list = glob.glob(individual_files)
 
-    vrt_file = params.odir + et.params.pathsep + \
-      params.name + "_slicer.vrt"
-    output_stack = params.odir + et.params.pathsep + \
-      params.name + "_slicer.tif"
+    vrt_file = params.odir + et.params.pathsep + params.name + "_slicer.vrt"
+    output_stack = params.odir + et.params.pathsep + params.name + "_slicer.tif"
 
     # build a vrt
     et.cmd.gdalbuildvrt(individual_files, vrt_file, separate=True)
@@ -756,6 +820,7 @@ def step_11(params):
 
     # no need to update inputs
 
+
 def step_12(params):
     """
     creates a final classified las file
@@ -764,18 +829,17 @@ def step_12(params):
     print("[ STATUS ]: Starting step 12 - merging the final laz file")
 
     # set up output file
-    output_file = params.odir + et.params.pathsep + \
-      params.name + "_merged" + params.lt
+    output_file = params.odir + et.params.pathsep + params.name + "_merged" + params.lt
 
     # run the command
-    et.cmd.lasmerge(params.input_step_12, output_file,
-        rescale = False, olaz = params.olaz)
+    et.cmd.lasmerge(params.input_step_12, output_file, rescale=False, olaz=params.olaz)
 
     # index the files
     et.cmd.lasindex(output_file)
 
     # update inputs
     params.input_step_13 = output_file
+
 
 def step_13(params):
     """
@@ -785,14 +849,13 @@ def step_13(params):
     print("[ STATUS ]: Starting step 13 - creating a bounding box")
 
     # set up output file
-    output_file = params.odir + et.params.pathsep + \
-    params.name + "_boundary.shp"
+    output_file = params.odir + et.params.pathsep + params.name + "_boundary.shp"
 
     # run the command
-    et.cmd.lasboundary(params.input_step_13, output = output_file,
-      disjoint = True, cores=params.cores)
+    et.cmd.lasboundary(params.input_step_13, output=output_file, disjoint=True, cores=params.cores)
 
     # no need to update inputs
+
 
 def cleanup_files(params):
     """
@@ -804,29 +867,26 @@ def cleanup_files(params):
     try:
         shutil.rmtree(params.tiles_unclassified)
     except:
-        print("[ ERROR ]: Unable to delete scratch directory %s"
-          % params.tiles_unclassified)
+        print("[ ERROR ]: Unable to delete scratch directory %s" % params.tiles_unclassified)
 
     # delete ground classification
     try:
         shutil.rmtree(params.tiles_ground)
     except:
-        print("[ ERROR ]: Unable to delete scratch directory %s"
-          % params.tiles_ground)
+        print("[ ERROR ]: Unable to delete scratch directory %s" % params.tiles_ground)
 
     # delete classified tiles
     try:
         shutil.rmtree(params.tiles_classified)
     except:
-        print("[ ERROR ]: Unable to delete scratch directory %s"
-          % params.tiles_classified)
+        print("[ ERROR ]: Unable to delete scratch directory %s" % params.tiles_classified)
 
     # delete height-normalized tiles
     try:
         shutil.rmtree(params.tiles_height)
     except:
-        print("[ ERROR ]: Unable to delete scratch directory %s"
-          % params.tiles_classified)
+        print("[ ERROR ]: Unable to delete scratch directory %s" % params.tiles_classified)
+
 
 def usage(exit=False):
     """
@@ -845,12 +905,13 @@ $ etlas.py -i input_files [-odir output_directory]
   [-no_merged] [-no_shape] [-no_slicer] [-no_density] [-cores cores]
   [-city] [-town] [-fine] [-extra_fine] [-coarse] [-extra_coarse]
         """
-        )
+    )
 
     if exit:
         et.params.sys.exit(1)
 
-def main ():
+
+def main():
     """
     the main program for etlas.py
     the order of operations for las processing is as follows:
@@ -944,6 +1005,7 @@ def main ():
     print("[ STATUS ]: etlas.py processing complete")
     print("[ STATUS ]: Output project  : %s" % params.name)
     print("[ STATUS ]: Output directory: %s" % params.odir)
+
 
 if __name__ == "__main__":
     main()
