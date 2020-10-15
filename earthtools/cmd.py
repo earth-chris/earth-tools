@@ -5,6 +5,7 @@
 #####
 import subprocess
 
+
 # set up a function to run commands and return stdout/stderr
 def run(cmd, stderr=True):
     """"""
@@ -219,6 +220,7 @@ def gdalwarp(
     tr       [list] - output resolution [xres, yres]
     """
     import os
+
     import earthtools as et
 
     # return the docstring if user does not set inputs correctly
@@ -343,6 +345,7 @@ def gdal_translate(inputs="", output="", etc="", dstnodata=False, of=False, ot=F
     srcnodata [num] - input no data value
     """
     import os
+
     import earthtools as et
 
     # return the docstring if user does not set inputs correctly
@@ -421,6 +424,7 @@ def gdalbuildvrt(inputs="", output="", etc="", vrtnodata=False, of=False, ot=Fal
     separate [bool] - set inputs as separate bands
     """
     import os
+
     import earthtools as et
 
     # return the docstring if user does not set inputs correctly
@@ -513,6 +517,7 @@ def gdal_proximity(
     nodata    [num] - output no data value
     """
     import os
+
     import earthtools as et
 
     # return the docstring if user does not set inputs correctly

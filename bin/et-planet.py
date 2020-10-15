@@ -4,15 +4,18 @@
 ##
 ####################
 ##
-import earthtools as et
-import numpy as np
-import gdal as gdal
-import osr as osr
-import shutil
-import json
 import glob
-import cv2
+import json
+import shutil
 import sys
+
+import cv2
+import gdal as gdal
+import numpy as np
+import osr as osr
+
+import earthtools as et
+
 
 # define global parameters
 class default_params:
@@ -304,9 +307,9 @@ def main():
 
     syntax: main()
     """
+    import cv2
     import gdal
     import numpy as np
-    import cv2
 
     # first, read the default parameters to get the processing object
     params = default_params()

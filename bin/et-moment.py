@@ -6,8 +6,9 @@
 #####
 
 import argparse
-import gdal
 import sys
+
+import gdal
 import numpy as np
 from scipy import stats
 

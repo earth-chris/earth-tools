@@ -15,11 +15,13 @@
 #####
 
 import os
-import sys
-import earthtools as et
 import random
+import sys
+
 import gdal as gdal
 import numpy as np
+
+import earthtools as et
 
 
 class parse_args:

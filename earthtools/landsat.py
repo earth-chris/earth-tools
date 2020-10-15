@@ -53,6 +53,7 @@ def calcTOA(mtlFile, outFile, dnFile="", of="GTiff"):
       the unstacked tif data to create a reflectance stack.
     """
     import os
+
     import gdal
     import params
 

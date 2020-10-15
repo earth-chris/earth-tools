@@ -11,10 +11,12 @@
 
 import os
 import sys
-import earthtools as et
+
 import gdal as gdal
-import osr as osr
 import numpy as np
+import osr as osr
+
+import earthtools as et
 
 srs = osr.SpatialReference()
 

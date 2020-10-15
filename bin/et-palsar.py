@@ -7,9 +7,10 @@
 # c. 2017 Christopher Anderson
 #####
 
-import os
-import earthtools as et
 import argparse
+import os
+
+import earthtools as et
 
 
 # function to parse the input arguments

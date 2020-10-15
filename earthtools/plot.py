@@ -47,10 +47,11 @@ def density_dist(
     Returns:
         a matplotlib pyplot object
     """
-    import numpy as np
-    from earthtools import color as clr
     import matplotlib.pyplot as plt
+    import numpy as np
     from scipy.stats import gaussian_kde
+
+    from earthtools import color as clr
 
     # we want ydata to come as a list form to handle uneven sample sizes
     if type(ydata) is list:

@@ -6,13 +6,6 @@
 ###################
 
 # import modules to namespace
-from earthtools import cmd
-from earthtools import color
-from earthtools import eco
-from earthtools import landsat
-from earthtools import model
-from earthtools import objects
-from earthtools import params
-from earthtools import plot
-from earthtools import read
+from earthtools import cmd, color, eco
 from earthtools import functions as fn
+from earthtools import landsat, model, objects, params, plot, read

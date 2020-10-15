@@ -9,8 +9,8 @@ import numpy as np
 # method for fitting a pre-defined model and returning the fit data and
 #  r-squared/rmse
 def fit(func, x, y, *args, **kwargs):
-    import scipy as sp
     import numpy as np
+    import scipy as sp
     from sklearn import metrics
 
     opt, cov = sp.optimize.curve_fit(func, x, y, *args, **kwargs)
@@ -83,6 +83,7 @@ def scale(x, xlim=[0, 1], axis=0):
 def test_normal(x, method="shapiro-wilk", *args, **kwargs):
     """"""
     import scipy as sp
+
     import earthtools as et
 
     methods = ["shapiro-wilk", "anderson", "kstest"]
@@ -146,10 +147,10 @@ def kmeans_fit_multi(data, n_clusters, n_jobs=-1, **kwargs):
 # function to find the minimum rate of change for multi kmeans clusters
 def kmeans_find_min(data, n_clusters, start_cluster=1, function=exp_decay_neg, **kwargs):
     """"""
-    import scipy as sp
     import numpy as np
-    from sklearn import metrics
+    import scipy as sp
     from matplotlib import pyplot as plt
+    from sklearn import metrics
 
     # run the multi-fit function
     multi_ss = kmeans_fit_multi(data, n_clusters, **kwargs)
@@ -231,8 +232,9 @@ class tune:
         cv=None,
         n_splits=5,
     ):
-        from earthtools import params
         from sklearn import model_selection
+
+        from earthtools import params
 
         # set defaults for each of the potential parameters
         if optimizer is None:
@@ -294,7 +296,7 @@ class tune:
 
     # OLS linear regression
     def LinearRegression(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
-        from sklearn import linear_model, model_selection, metrics
+        from sklearn import linear_model, metrics, model_selection
 
         # check if the optimizer has changed, otherwise use default
         if optimizer is not None:
@@ -377,7 +379,7 @@ class tune:
 
     # function for decision tree classifier
     def DecisionTreeClassifier(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
-        from sklearn import tree, model_selection
+        from sklearn import model_selection, tree
 
         # check if the optimizer has changed, otherwise use default
         if optimizer is not None:
@@ -427,7 +429,7 @@ class tune:
 
     # function for Support Vector Classifier (SVC)
     def SVC(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None, class_weight=None):
-        from sklearn import svm, model_selection
+        from sklearn import model_selection, svm
 
         # check if the optimizer has changed, otherwise use default
         if optimizer is not None:
@@ -471,7 +473,7 @@ class tune:
 
     # function for Support Vector Regression (SVR)
     def SVR(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
-        from sklearn import svm, model_selection, metrics
+        from sklearn import metrics, model_selection, svm
 
         # check if the optimizer has changed, otherwise use default
         if optimizer is not None:
@@ -516,7 +518,7 @@ class tune:
 
     # function for Linear SVC
     def LinearSVC(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
-        from sklearn import svm, model_selection
+        from sklearn import model_selection, svm
 
         # check if the optimizer has changed, otherwise use default
         if optimizer is not None:
@@ -561,7 +563,7 @@ class tune:
 
     # function for Linear SVR
     def LinearSVR(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
-        from sklearn import svm, model_selection, metrics
+        from sklearn import metrics, model_selection, svm
 
         # check if the optimizer has changed, otherwise use default
         if optimizer is not None:
@@ -651,7 +653,7 @@ class tune:
 
     # Ada boosting regressor
     def AdaBoostRegressor(self, optimizer=None, param_grid=None, scoring=None, fit_params=None, cv=None):
-        from sklearn import ensemble, model_selection, metrics
+        from sklearn import ensemble, metrics, model_selection
 
         # check if the optimizer has changed, otherwise use default
         if optimizer is not None:

@@ -4,12 +4,13 @@
 # c. 2016-2017 Christopher Anderson
 #####
 
-import os
-import sys
-import platform
-import threading
-import subprocess
 import multiprocessing
+import os
+import platform
+import subprocess
+import sys
+import threading
+
 from psutil import virtual_memory
 
 ## get environment variables

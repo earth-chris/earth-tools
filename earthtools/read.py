@@ -125,8 +125,9 @@ def jfsc(infile):
 
     usage: et.read.jsfc(jsfcFile)
     """
-    import earthtools as et
     import numpy as np
+
+    import earthtools as et
 
     # check input file
     if not et.fn.checkFile(infile):
@@ -161,8 +162,9 @@ def usgs(infile):
     and returns an object with the mean and +/- standard deviation
     reflectance data
     """
-    import earthtools as et
     import numpy as np
+
+    import earthtools as et
 
     if not et.fn.checkFile(infile):
         return -1
@@ -236,9 +238,10 @@ def spectralLib(infile):
     and returns an object with the mean
     reflectance data
     """
-    import earthtools as et
     import numpy as np
     import spectral as spectral
+
+    import earthtools as et
 
     if not et.fn.checkFile(infile):
         return -1
@@ -436,8 +439,9 @@ class raster:
             with those properties written to its header. no raster data is written to
             this file, only metadata.
         """
-        import gdal
         import copy as cp
+
+        import gdal
 
         # create a copy of the input object to manipulate
         new_obj = cp.copy(self)

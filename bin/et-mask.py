@@ -8,9 +8,11 @@
 # c. 2016 Christopher Anderson
 #####
 
-import gdal as gdal
 import sys
+
+import gdal as gdal
 import numpy as np
+
 import earthtools as et
 
 

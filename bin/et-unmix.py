@@ -8,11 +8,14 @@
 #####
 
 import os
-import sys
-import earthtools as et
 import random
+import sys
+
 import gdal as gdal
 import numpy as np
+
+import earthtools as et
+
 
 # create a class to parse out the arguments passed to the main function
 class parse_args:

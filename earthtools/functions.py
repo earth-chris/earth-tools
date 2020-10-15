@@ -144,11 +144,12 @@ def rasterTile(infile, outfile, tiling=2, buff=0, of="GTiff"):
     buff        [int] - the number of pixels to buffer on each side
     of       [string] - the output format (in GDAL string format)
     """
-    import gdal as gdal
-    import osr as osr
     import cmd as cmd
-    import numpy as np
     import math
+
+    import gdal as gdal
+    import numpy as np
+    import osr as osr
 
     # set defaults for ensuring i/o is smooth
     if not checkFile(infile):
@@ -272,9 +273,9 @@ def rasterBoundingBox(infile):
     """
     creates a shape file from the bounding box of a raster file
     """
+    import gdal as gdal
     import ogr as ogr
     import osr as osr
-    import gdal as gdal
 
     # get metadata from input file
     inf = gdal.Open(infile)
