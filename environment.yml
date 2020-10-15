@@ -1,0 +1,31 @@
+name: earthtools
+
+channels:
+  - conda-forge
+  - orfeotoolbox
+
+dependencies:
+  - python>=3.7
+  - black
+  - flake8
+  - gdal
+  - geopandas
+  - ipython
+  - isort
+  - jupyter
+  - matplotlib
+  - openjdk
+  - otb=7.1.0
+  - pandas
+  - pre-commit
+  - psutil
+  - pytest
+  - pytest-cov
+  - python-dotenv
+  - rtree
+  - scikit-learn
+  - scipy
+  - shapely
+  - pip
+  - pip:
+    - -r requirements.txt
