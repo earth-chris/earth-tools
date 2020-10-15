@@ -1,5 +1,5 @@
 #####
-# contains the parameters accessed by aei functions
+# contains the parameters accessed by earthtools functions
 #
 # c. 2016-2017 Christopher Anderson
 #####
@@ -31,7 +31,7 @@ try:
     gdalbase = environ['GDALBASE']
 except KeyError:
     gdalbase = ''
-    
+
 # check if GDALBASE environment variable set
 #  points to custom install of gdal binaries
 try:
@@ -203,7 +203,7 @@ gdalTypes = ["AAIGrid",
             "XPM",
             "XYZ",
             "ZMap"]
-            
+
 # define ogr types
 ogrTypes = ["AeronavFAA",
             "AmigoCloud",

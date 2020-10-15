@@ -83,9 +83,9 @@ def ot(arg):
 
 # set function to join miscellaneous arguments
 def etc(etcList):
-    import aei as aei
+    import earthtools as et
 
-    etcStr = aei.fn.strJoin(etcList)
+    etcStr = et.fn.strJoin(etcList)
     if type(etcStr) is not str:
         print('[ ERROR ]: Unable to parse the etc argument. Must be of type: list')
         print('[ ERROR ]: ' + str(type(etcList)))
@@ -94,10 +94,10 @@ def etc(etcList):
 
 
 def ascii(infile):
-    import aei as aei
+    import earthtools as et
 
     # check input file
-    if not aei.fn.checkFile(infile):
+    if not et.fn.checkFile(infile):
         return -1
 
     # create the output list
@@ -123,17 +123,17 @@ def jfsc(infile):
     and returns an object with the mean and +/- standard deviation
     reflectance data
 
-    usage: aei.read.jsfc(jsfcFile)
+    usage: et.read.jsfc(jsfcFile)
     """
-    import aei as aei
+    import earthtools as et
     import numpy as np
 
     # check input file
-    if not aei.fn.checkFile(infile):
+    if not et.fn.checkFile(infile):
         return -1
 
     # create the spectral object
-    s = aei.objects.spectral(1, type='asd')
+    s = et.objects.spectral(1, type='asd')
     s.spectra_stdevm = np.zeros(s.spectra.shape)
     s.spectra_stdevp = np.zeros(s.spectra.shape)
 
@@ -161,10 +161,10 @@ def usgs(infile):
     and returns an object with the mean and +/- standard deviation
     reflectance data
     """
-    import aei as aei
+    import earthtools as et
     import numpy as np
 
-    if not aei.fn.checkFile(infile):
+    if not et.fn.checkFile(infile):
         return -1
 
     # open the file and read header info
@@ -216,7 +216,7 @@ def usgs(infile):
         reflectance /= 100.
 
     # create the spectral object
-    s = aei.objects.spectral(1, n_values, band_centers=band_centers,
+    s = et.objects.spectral(1, n_values, band_centers=band_centers,
                              band_unit=band_unit, band_quantity='Wavelength')
 
     # assign relevant values
@@ -237,18 +237,18 @@ def spectralLib(infile):
     and returns an object with the mean
     reflectance data
     """
-    import aei as aei
+    import earthtools as et
     import numpy as np
     import spectral as spectral
 
-    if not aei.fn.checkFile(infile):
+    if not et.fn.checkFile(infile):
         return -1
 
     # check for header file
-    if aei.fn.checkFile(infile[:-4] + '.hdr', quiet=True):
+    if et.fn.checkFile(infile[:-4] + '.hdr', quiet=True):
         hdr = infile[:-4] + '.hdr'
     else:
-        if aei.fn.checkFile(infile + '.hdr'):
+        if et.fn.checkFile(infile + '.hdr'):
             hdr = infile + '.hdr'
         else:
             return -1
@@ -257,7 +257,7 @@ def spectralLib(infile):
     slib = spectral.envi.open(hdr, infile)
 
     # create the spectral object
-    s = aei.objects.spectral(slib.params.nrows, slib.params.ncols,
+    s = et.objects.spectral(slib.params.nrows, slib.params.ncols,
                              band_centers=np.asarray(slib.bands.centers),
                              band_unit=slib.bands.band_unit,
                              band_quantity=slib.bands.band_quantity)
@@ -281,7 +281,7 @@ class raster:
 
         Returns:
             An object with the raster metadata as object variables (e.g.,
-            ras = aei.read.raster('file.tif') # file with dims x = 30, y = 50
+            ras = et.read.raster('file.tif') # file with dims x = 30, y = 50
             ras.nx will be 30, ras.ny will be 50, etc.)
         """
         import gdal
@@ -332,7 +332,7 @@ class raster:
             band: the 1-based index for the band to read
 
         Returns:
-            the aei.Raster object with the object.data variable updated with a
+            the et.Raster object with the object.data variable updated with a
             numpy array of raster values
         """
         import gdal
@@ -348,7 +348,7 @@ class raster:
             None
 
         Returns:
-            the aei.raster object with the object.data variable updated with a
+            the et.raster object with the object.data variable updated with a
             numpy array of raster values
         """
         import gdal
@@ -426,7 +426,7 @@ class raster:
             options  : gdal raster creation options, passed as a list
 
         Returns:
-            a new aei.raster object with updated properties, and a new gdal file
+            a new et.raster object with updated properties, and a new gdal file
             with those properties written to its header. no raster data is written to
             this file, only metadata.
         """

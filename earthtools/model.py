@@ -70,7 +70,7 @@ def normalize(x, axis=0):
     mn = np.mean(x, axis=axis)
     sd = np.std(x, axis=axis)
 
-    # return the normalized  
+    # return the normalized
     return (x - mn) / sd
 
 
@@ -84,11 +84,12 @@ def test_normal(x, method='shapiro-wilk', *args, **kwargs):
     """
     """
     import scipy as sp
+    import earthtools as et
 
     methods = ['shapiro-wilk', 'anderson', 'kstest']
 
     if method.lower() not in method:
-        print("[ ERROR ]: method must be one of: {}".format(aei.fn.strJoin(methods, ', ')))
+        print("[ ERROR ]: method must be one of: {}".format(et.fn.strJoin(methods, ', ')))
         return -1
 
     if method.lower() == 'shapiro-wilk':
@@ -114,7 +115,7 @@ def kmeans_ss(data, km_model):
     y_pred = km_model.predict(data)
 
     # loop through each cluster and calculate the sum of
-    #  squared residuals 
+    #  squared residuals
     for i in range(n_clusters):
         y_hat = km_model.cluster_centers_[i, :]
         y_cls = data[y_pred == i]
@@ -230,7 +231,7 @@ class tune:
                  scoring=None, fit_params=None, n_jobs=None, refit=True,
                  verbose=1, error_score=0, return_train_score=True,
                  cv=None, n_splits=5):
-        from aei import params
+        from earthtools import params
         from sklearn import model_selection
 
         # set defaults for each of the potential parameters
@@ -257,7 +258,7 @@ class tune:
     # function to actually run the tuning process and report outputs
     def run_gs(self, estimator):
 
-        # create the grid search 
+        # create the grid search
         gs = self.optimizer(estimator, param_grid=self.param_grid,
                             scoring=self.scoring, fit_params=self.fit_params,
                             n_jobs=self.n_jobs, cv=self.cv, refit=self.refit,
@@ -281,7 +282,7 @@ class tune:
     # create functions to tune each different model type based on
     #  a set of default parameter grids
 
-    ##### 
+    #####
     # LINEAR MODELS
 
     # OLS linear regression
@@ -424,8 +425,8 @@ class tune:
         estimator = tree.DecisionTreeClassifier()
         self.run_gs(estimator)
 
-    ##### 
-    # SVM FUNCTIONS 
+    #####
+    # SVM FUNCTIONS
 
     # function for Support Vector Classifier (SVC)
     def SVC(self, optimizer=None, param_grid=None,
@@ -462,7 +463,7 @@ class tune:
             if self.cv is None:
                 cv = model_selection.StratifiedKFold(n_splits=self.n_splits)
         self.cv = cv
-            
+
         # set the class weight
         if class_weght is not None:
             if self.class_weight is None:
